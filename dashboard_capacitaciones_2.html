@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Tablero de seguimiento - Capacitaciones de tecnología</title>
+<style>
+  :root{
+    --navy:#1E2761; --ice:#CADCFC; --teal:#1C7293; --bg:#F4F6FA;
+    --text:#1E2761; --muted:#5A5A5A; --border:#DDE3EC; --done:#1C7293; --pending:#B0B8C6;
+  }
+  *{box-sizing:border-box;}
+  body{font-family:Calibri, Arial, sans-serif; background:var(--bg); margin:0; padding:24px; color:var(--text);}
+  .wrap{max-width:1000px; margin:0 auto;}
+  h1{font-size:24px; margin:0 0 4px;}
+  .sub{color:var(--muted); font-size:14px; margin:0 0 20px;}
+  .stats{display:grid; grid-template-columns:repeat(4,1fr); gap:12px; margin-bottom:20px;}
+  .stat{background:#fff; border:1px solid var(--border); border-radius:10px; padding:14px;}
+  .stat .label{font-size:12px; color:var(--muted);}
+  .stat .value{font-size:26px; font-weight:bold; margin-top:4px;}
+  .bar{height:10px; background:#E4E9F1; border-radius:5px; overflow:hidden; margin-bottom:20px;}
+  .bar-fill{height:100%; background:var(--teal); width:0%; transition:width .2s;}
+  .toolbar{display:flex; gap:8px; margin-bottom:14px; flex-wrap:wrap;}
+  button{font-family:inherit; font-size:13px; padding:7px 14px; border-radius:8px; border:1px solid var(--border); background:#fff; cursor:pointer;}
+  button:hover{background:#EEF2F8;}
+  button.active{background:var(--navy); color:#fff; border-color:var(--navy);}
+  table{width:100%; border-collapse:collapse; background:#fff; border-radius:10px; overflow:hidden;}
+  th,td{padding:10px 12px; text-align:left; font-size:13.5px; border-bottom:1px solid var(--border);}
+  th{background:var(--navy); color:#fff; font-weight:normal; font-size:12.5px;}
+  input[type=date], select{font-family:inherit; font-size:13px; padding:4px 6px; border:1px solid var(--border); border-radius:6px;}
+  .badge{padding:3px 10px; border-radius:12px; font-size:12px; display:inline-block;}
+  .badge.pendiente{background:#EEF1F6; color:var(--muted);}
+  .badge.completada{background:#DCEEF1; color:var(--teal); font-weight:bold;}
+  .actions{display:flex; gap:16px; margin:18px 0 6px;}
+  a.linklike{color:var(--teal); font-size:13px; cursor:pointer; text-decoration:underline;}
+  @media print{
+    .toolbar, .actions, button{display:none !important;}
+    body{background:#fff; padding:0;}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Tablero de seguimiento - Capacitaciones de tecnología</h1>
+  <p class="sub" id="sub">Cronograma trimestral · 13 sesiones para empleados</p>
+
+  <div class="stats">
+    <div class="stat"><div class="label">Total sesiones</div><div class="value" id="stat-total">13</div></div>
+    <div class="stat"><div class="label">Completadas</div><div class="value" id="stat-done">0</div></div>
+    <div class="stat"><div class="label">Pendientes</div><div class="value" id="stat-pending">13</div></div>
+    <div class="stat"><div class="label">Progreso</div><div class="value" id="stat-pct">0%</div></div>
+  </div>
+  <div class="bar"><div class="bar-fill" id="bar"></div></div>
+
+  <div class="toolbar">
+    <button data-filter="all" class="active">Todas</button>
+    <button data-filter="pending">Pendientes</button>
+    <button data-filter="done">Completadas</button>
+  </div>
+
+  <table>
+    <thead>
+      <tr><th style="width:8%">#</th><th style="width:30%">Tema</th><th style="width:14%">Modalidad</th><th style="width:16%">Fecha</th><th style="width:16%">Estado</th><th style="width:16%">Acción</th></tr>
+    </thead>
+    <tbody id="tbody"></tbody>
+  </table>
+
+  <div class="actions">
+    <a class="linklike" id="btn-print">Imprimir / guardar reporte en PDF</a>
+    <a class="linklike" id="btn-export">Exportar datos (JSON)</a>
+    <a class="linklike" id="btn-import">Importar datos (JSON)</a>
+    <input type="file" id="file-import" accept=".json" style="display:none;">
+  </div>
+  <p class="sub" style="margin-top:18px;">Los datos (fechas y estado) se guardan automáticamente en este navegador. Usa "Exportar datos" para respaldar o compartir el avance, e "Importar datos" para restaurarlo en otro equipo.</p>
+</div>
+
+<script>
+const STORAGE_KEY = "capacitaciones_tecnologia_v1";
+
+const sessionsBase = [
+  {n:1, tema:"Seguridad informática (introducción)", modalidad:"Presencial"},
+  {n:2, tema:"Manejo seguro de contraseñas", modalidad:"Presencial"},
+  {n:3, tema:"Identificación de phishing", modalidad:"Virtual"},
+  {n:4, tema:"Uso correcto del correo corporativo", modalidad:"Presencial"},
+  {n:5, tema:"Cuidado de los equipos de cómputo", modalidad:"Presencial"},
+  {n:6, tema:"Uso del sistema de tickets", modalidad:"Virtual"},
+  {n:7, tema:"Navegación segura en internet", modalidad:"Presencial"},
+  {n:8, tema:"Uso seguro de USB / almacenamiento externo", modalidad:"Presencial"},
+  {n:9, tema:"Copias de seguridad", modalidad:"Virtual"},
+  {n:10, tema:"Tips de Word y Excel", modalidad:"Presencial"},
+  {n:11, tema:"Redes sociales y reputación digital", modalidad:"Virtual"},
+  {n:12, tema:"Repaso general", modalidad:"Presencial"},
+  {n:13, tema:"Evaluación final y retroalimentación", modalidad:"Presencial"}
+];
+
+function loadState(){
+  try{
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if(raw) return JSON.parse(raw);
+  }catch(e){}
+  const state = {};
+  sessionsBase.forEach(s => state[s.n] = {fecha:"", done:false});
+  return state;
+}
+
+let state = loadState();
+let filter = "all";
+
+function saveState(){
+  try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }catch(e){}
+}
+
+function render(){
+  const tbody = document.getElementById("tbody");
+  tbody.innerHTML = "";
+  let done = 0;
+  sessionsBase.forEach(s => { if(state[s.n] && state[s.n].done) done++; });
+  document.getElementById("stat-total").textContent = sessionsBase.length;
+  document.getElementById("stat-done").textContent = done;
+  document.getElementById("stat-pending").textContent = sessionsBase.length - done;
+  const pct = Math.round((done / sessionsBase.length) * 100);
+  document.getElementById("stat-pct").textContent = pct + "%";
+  document.getElementById("bar").style.width = pct + "%";
+
+  sessionsBase.forEach(s => {
+    const st = state[s.n] || {fecha:"", done:false};
+    if(filter === "pending" && st.done) return;
+    if(filter === "done" && !st.done) return;
+    const tr = document.createElement("tr");
+    tr.innerHTML = `
+      <td>${s.n}</td>
+      <td>${s.tema}</td>
+      <td>${s.modalidad}</td>
+      <td><input type="date" data-n="${s.n}" class="fecha-input" value="${st.fecha || ""}"></td>
+      <td><span class="badge ${st.done ? "completada" : "pendiente"}">${st.done ? "Completada" : "Pendiente"}</span></td>
+      <td><button data-n="${s.n}" class="toggle-btn">${st.done ? "Marcar pendiente" : "Marcar completada"}</button></td>
+    `;
+    tbody.appendChild(tr);
+  });
+
+  tbody.querySelectorAll(".fecha-input").forEach(inp => {
+    inp.onchange = () => {
+      const n = inp.dataset.n;
+      state[n] = state[n] || {done:false};
+      state[n].fecha = inp.value;
+      saveState();
+    };
+  });
+  tbody.querySelectorAll(".toggle-btn").forEach(btn => {
+    btn.onclick = () => {
+      const n = btn.dataset.n;
+      state[n] = state[n] || {fecha:""};
+      state[n].done = !state[n].done;
+      saveState();
+      render();
+    };
+  });
+}
+
+document.querySelectorAll(".toolbar button").forEach(b => {
+  b.onclick = () => {
+    document.querySelectorAll(".toolbar button").forEach(x => x.classList.remove("active"));
+    b.classList.add("active");
+    filter = b.dataset.filter;
+    render();
+  };
+});
+
+document.getElementById("btn-print").onclick = () => window.print();
+
+document.getElementById("btn-export").onclick = () => {
+  const blob = new Blob([JSON.stringify(state, null, 2)], {type:"application/json"});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = "avance_capacitaciones.json";
+  a.click();
+  URL.revokeObjectURL(url);
+};
+
+document.getElementById("btn-import").onclick = () => {
+  document.getElementById("file-import").click();
+};
+document.getElementById("file-import").onchange = (e) => {
+  const file = e.target.files[0];
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = () => {
+    try{
+      state = JSON.parse(reader.result);
+      saveState();
+      render();
+    }catch(err){
+      alert("No se pudo leer el archivo. Verifica que sea un JSON exportado desde este tablero.");
+    }
+  };
+  reader.readAsText(file);
+};
+
+render();
+</script>
+</body>
+</html>
