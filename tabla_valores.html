@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tablas de Valores — Área de Sistemas</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;600;700&family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<style>
+  :root{
+    --bg-page:#f3f5f3; --bg-header:#0d3d24; --bg-card:#ffffff;
+    --text-primary:#1c1c1a; --text-secondary:#6b6f6c; --text-on-dark:#f4f6f4;
+    --accent:#008651; --accent-dark:#0d3d24; --border:#e3e6e2; --radius:12px;
+    --danger:#c0392b;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;min-height:100vh;font-family:'Poppins',-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;background:var(--bg-page);color:var(--text-primary);display:flex;flex-direction:column;}
+
+  .top-band{position:relative;background:repeating-linear-gradient(115deg,rgba(255,255,255,0.035) 0px,rgba(255,255,255,0.035) 2px,transparent 2px,transparent 26px),linear-gradient(135deg,var(--bg-header),#145232 55%,#0a2e1c);color:var(--text-on-dark);padding:26px 26px 30px;border-bottom:4px solid #4fae7a;box-shadow:0 8px 24px rgba(13,61,36,0.25);}
+  .top-band-inner{max-width:1180px;margin:0 auto;}
+  .back-link{display:inline-flex;align-items:center;gap:6px;color:#7fd9a8;text-decoration:none;font-size:12.5px;font-weight:600;letter-spacing:.4px;margin-bottom:14px;}
+  .back-link:hover{color:#a8e9c5;}
+  .eyebrow{font-size:11.5px;letter-spacing:1.5px;text-transform:uppercase;color:#7fd9a8;font-weight:600;margin:0 0 8px 0;}
+  h1{font-family:'Oswald',sans-serif;font-size:25px;font-weight:700;margin:0 0 8px 0;letter-spacing:.3px;text-transform:uppercase;}
+  .top-band p.desc{margin:0;font-size:13.5px;color:rgba(244,246,244,0.78);max-width:70ch;}
+
+  main{flex:1;max-width:1180px;margin:0 auto;width:100%;padding:26px 26px 60px;}
+
+  /* Resumen / gran total */
+  .summary{background:linear-gradient(135deg,var(--accent-dark),#145232);color:#fff;border-radius:var(--radius);padding:20px 22px;margin-bottom:24px;box-shadow:0 10px 26px rgba(13,61,36,0.18);position:sticky;top:10px;z-index:20;}
+  .summary-top{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:14px;}
+  .summary-top .lbl{font-size:12px;letter-spacing:1.2px;text-transform:uppercase;color:#7fd9a8;font-weight:600;}
+  .grand{font-family:'Oswald',sans-serif;font-size:34px;font-weight:700;line-height:1;}
+  .chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:16px;}
+  .chip{background:rgba(255,255,255,0.10);border:1px solid rgba(255,255,255,0.18);border-radius:20px;padding:6px 12px;font-size:12px;display:flex;gap:8px;align-items:center;}
+  .chip b{font-weight:600;}
+  .chip .cv{color:#a8e9c5;font-weight:600;}
+
+  /* Toolbar */
+  .toolbar{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:22px;align-items:center;}
+  .btn{font-family:'Poppins',sans-serif;font-size:12.5px;font-weight:600;border-radius:8px;padding:9px 14px;border:1px solid var(--border);background:#fff;color:var(--text-primary);cursor:pointer;transition:all .15s ease;display:inline-flex;align-items:center;gap:7px;}
+  .btn:hover{border-color:var(--accent);color:var(--accent);}
+  .btn.primary{background:var(--accent);color:#fff;border-color:var(--accent);}
+  .btn.primary:hover{background:#00733f;color:#fff;}
+  .btn.ghost-dark{background:transparent;}
+  .btn.danger-toggle.on{background:var(--danger);color:#fff;border-color:var(--danger);}
+  .spacer{flex:1;}
+
+  /* Tabla card */
+  .tcard{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);padding:0;margin-bottom:22px;overflow:hidden;box-shadow:0 2px 10px rgba(13,61,36,0.04);}
+  .tcard-head{display:flex;align-items:center;gap:12px;padding:16px 18px;border-bottom:1px solid var(--border);background:#fbfcfb;}
+  .tcard-icon{width:38px;height:38px;border-radius:9px;background:#e6f4ec;color:var(--accent);display:flex;align-items:center;justify-content:center;font-size:19px;flex-shrink:0;}
+  .tcard-title{font-family:'Oswald',sans-serif;font-size:16px;font-weight:600;letter-spacing:.2px;border:1px solid transparent;background:transparent;color:var(--text-primary);padding:4px 6px;border-radius:6px;flex:1;min-width:120px;}
+  .tcard-title:focus{outline:none;border-color:var(--accent);background:#fff;}
+  .tcard-sub{font-size:12px;color:var(--text-secondary);font-weight:500;}
+  .tcard-sub b{color:var(--accent);font-family:'Oswald',sans-serif;font-size:15px;}
+  .del-table{color:var(--danger);background:transparent;border:1px solid transparent;border-radius:6px;cursor:pointer;font-size:16px;padding:4px 8px;display:none;}
+  .del-table:hover{background:#fdece9;}
+  body.editmode .del-table{display:inline-block;}
+
+  .tbl-wrap{overflow-x:auto;}
+  table{width:100%;border-collapse:collapse;font-size:12.5px;}
+  thead th{text-align:left;background:#f6f8f6;color:var(--text-secondary);font-weight:600;font-size:11px;letter-spacing:.4px;text-transform:uppercase;padding:10px 12px;border-bottom:1px solid var(--border);white-space:nowrap;}
+  thead th.num{text-align:right;}
+  thead th.act{width:34px;}
+  tbody td{padding:5px 8px;border-bottom:1px solid #f0f2ef;vertical-align:middle;}
+  tbody tr:hover{background:#fafcfa;}
+  tbody input{width:100%;border:1px solid transparent;background:transparent;font-family:inherit;font-size:12.5px;color:var(--text-primary);padding:6px 8px;border-radius:6px;}
+  tbody input:hover{border-color:var(--border);}
+  tbody input:focus{outline:none;border-color:var(--accent);background:#fff;box-shadow:0 0 0 2px rgba(0,134,81,0.10);}
+  tbody input.num{text-align:right;font-variant-numeric:tabular-nums;}
+  .del-row{color:var(--danger);background:transparent;border:none;cursor:pointer;font-size:14px;padding:4px 6px;border-radius:6px;visibility:hidden;}
+  .del-row:hover{background:#fdece9;}
+  body.editmode .del-row{visibility:visible;}
+  th.act, td.act{display:none;}
+  body.editmode th.act, body.editmode td.act{display:table-cell;}
+  tfoot td{padding:10px 12px;border-top:2px solid var(--border);font-weight:600;}
+  tfoot td.num{text-align:right;font-family:'Oswald',sans-serif;font-size:15px;color:var(--accent);}
+  tfoot td.lbl{color:var(--text-secondary);font-size:11px;letter-spacing:.5px;text-transform:uppercase;}
+  .add-row{margin:12px 18px 16px;font-size:12px;padding:8px 12px;}
+
+  .hint{font-size:12px;color:var(--text-secondary);background:#eef4ef;border:1px solid #dbe8df;border-radius:8px;padding:10px 14px;margin-bottom:22px;}
+  .hint b{color:var(--accent-dark);}
+  footer{text-align:center;font-size:11.5px;color:var(--text-secondary);padding:18px 0 26px;}
+  .toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--accent-dark);color:#fff;padding:11px 20px;border-radius:10px;font-size:13px;opacity:0;pointer-events:none;transition:all .25s ease;z-index:50;box-shadow:0 8px 24px rgba(0,0,0,.25);}
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+  input[type=file]{display:none;}
+  @media(max-width:640px){.grand{font-size:26px;}h1{font-size:20px;}}
+</style>
+</head>
+<body>
+  <div class="top-band">
+    <div class="top-band-inner">
+      <a class="back-link" href="index.html">← Volver al portal</a>
+      <p class="eyebrow">Área de Sistemas</p>
+      <h1>Tablas de valores del inventario</h1>
+      <p class="desc">Valorización de los activos de TI organizada por categorías. Edita cualquier celda, agrega nuevos dispositivos o crea tablas nuevas. Los subtotales y el gran total se recalculan solos y tus cambios se guardan en este navegador.</p>
+    </div>
+  </div>
+
+  <main>
+    <div class="summary">
+      <div class="summary-top">
+        <div>
+          <div class="lbl">Gran total del inventario</div>
+          <div class="grand" id="grandTotal">$0</div>
+        </div>
+        <div style="text-align:right;">
+          <div class="lbl">Categorías</div>
+          <div class="grand" id="tableCount" style="font-size:22px;">0</div>
+        </div>
+      </div>
+      <div class="chips" id="chips"></div>
+    </div>
+
+    <div class="toolbar">
+      <button class="btn primary" id="addTable">＋ Agregar tabla nueva</button>
+      <button class="btn" id="exportXlsx">⬇ Exportar a Excel</button>
+      <button class="btn" id="exportJson">💾 Descargar backup</button>
+      <button class="btn" id="importBtn">⬆ Importar backup</button>
+      <input type="file" id="importFile" accept=".json,application/json">
+      <div class="spacer"></div>
+      <button class="btn danger-toggle" id="editToggle">🗑 Modo eliminar: OFF</button>
+      <button class="btn" id="resetBtn">↺ Restablecer</button>
+    </div>
+
+    <div class="hint">
+      <b>Cómo usar:</b> escribe directamente sobre cualquier celda para editarla. Usa <b>＋ Agregar dispositivo</b> al final de cada tabla para sumar filas, o <b>＋ Agregar tabla nueva</b> para una categoría nueva. Activa <b>Modo eliminar</b> para poder borrar filas o tablas completas. Los valores van en pesos colombianos (solo números).
+    </div>
+
+    <div id="tables"></div>
+  </main>
+
+  <footer>Portal interno · Área de Sistemas · Tablas de valores</footer>
+  <div class="toast" id="toast"></div>
+
+<script>
+const DEFAULT_DATA = [{"title": "Equipos de cómputo (portátiles y PC)", "icon": "💻", "columns": ["Marca", "Modelo", "Serial / Activo Fijo", "Procesador", "RAM", "Almacenamiento", "Valor (COP)"], "valueCol": 6, "rows": [["Lenovo", "83ER", "PF5F7HZW", "I5-12450H", "16 GB", "500GB", 1830122.0], ["Lenovo", "83ER", "pf5f90hp", "I5-12450H", "16 GB", "500GB", 1830122.0], ["Lenovo", "Ideacentre A340-22IWL", "MP2G2P3K", "I5-12450H", "8 GB", "500GB", 1700000.0], ["Lenovo", "X390", "PC1AD932", "I5-8265U", "8GB", "256GB", 1633885.0], ["Lenovo", "T14 Gen 1", "PC1G0V1W", "i7-8565u", "16 GB", "256GB", 1633885.0], ["Lenovo", "T14 Gen 1", "PF2MRX5V", "i5-10210u", "16 GB", "256GB", 1633885.0], ["Lenovo", "T14 Gen 1", "PF2PPKP3", "i5-10210ui", "16 GB", "256GB", 1851737.0], ["Lenovo", "T14 Gen 1", "PF2PPAAK", "i5-1021u", "16 GB", "512GB", 1960662.0], ["ACER", "Aspire a315-51", "145B7600", "i5-7200u", "12GB", "1T", 1749000.0], ["Lenovo", "Ideacentre A340-22IWL", "MP1RHGQH", "I3-10110U", "4GB", "1T", 1700000.0], ["Lenovo", "X390", "PC1AX5H6", "I5-8265U", "8GB", "265 GB", 1633885.0], ["Lenovo", "T14 Gen 1", "PF2PPJRA", "I5- 10210U", "16 GB", "256GB", 1633885.0], ["HP", "HP ProDesk 400 G6", "8CC1124476", "I5-10500T", "8GB", "512GB", 1119000.0], ["Lenovo", "L390", "R90Y12YP", "I5-8365U", "16 GB", "512GB", 1710133.0], ["Lenovo", "82TS", "PF4WGY8E", "i7-1255u", "16GB", "512GB", 3690000.0], ["ACER", "V1.17", "NXMZCAL015635062927600", "n3710@", "8GB", "500GB", 1049000.0], ["Lenovo", "X390", "PC1AX5KB", "i5-8265u", "8GB", "256GB", 1633885.0], ["Lenovo", "ThinkCentre neo 50a 24 Gen 5", "MP2GDZQE", "i7-13620h", "16gb", "512gb", 1633885.0], ["HP", "Hewlett-Packard  1.00", "3CR5260645", "I3-4160T", "8GB", "1T", 1299000.0], ["Lenovo", "T14 Gen 1", "PW0B0LE2", "i5-1345u", "16gb", "512gb", 1633885.0], ["Lenovo", "83A0", "PF544ARP", "I7-1355U", "16gb", "930GB", 2240000.0], ["Lenovo", "E14", "PF5ETRG4", "I5-1335U", "16gb", "512gb", 4049901.0], ["Lenovo", "83ER", "PF52ARB8", "I5-12450H", "16gb", "512gb", 1830122.0], ["Lenovo", "T14 Gen 1", "PW0B0LHP", "I5-1345U", "16gb", "512gb", 1633885.0], ["Lenovo", "83ER", "PF5F8W3C", "I5-12450H", "16gb", "512gb", 1830122.0], ["Lenovo", "L14", "PW-0EKZ2S", "I7-1365U", "32GB", "512gb", 4129999.0], ["Lenovo", "L14", "PW-0EKZ2D", "I7-1365U", "32GB", "512gb", 4129999.0], ["Lenovo", "G410", "3328384800146", "I5-4200M", "4GB", "237GB", 720.0], ["Toshiba", "C645D", "ZB313649Q", "", "", "", 200590.0], ["Lenovo", "L14", "PW0HVE47", "ULTRA 5 135U", "32GB", "512GB", 5062184.0], ["Lenovo", "83A1", "PF5BM5NF", "I5-1342h", "16GB", "512GB", 2200000.0]]}, {"title": "Impresoras", "icon": "🖨️", "columns": ["Marca", "Modelo", "Número de Serie", "Valor (COP)"], "valueCol": 3, "rows": [["BROTHER", "MFC-T920DW", "U66056D3H975080", 2151260.0], ["HP", "Thank 580", "1F3Y280003", 455303.0], ["BROTHER", "MFC-T920DW", "U66056D3H975126", 2151260.0], ["EPSON", "L375", "WBGK140763", 679000.0], ["HP", "Tank 520", "1f3w28003", 671428.57], ["EPSON", "L355", "S3YK505306", 440000.0], ["HP", "Laser MFP 137fnw", "CNB3N3J16F", 699000.0]]}, {"title": "Software y licencias", "icon": "🧩", "columns": ["Software", "Versión", "N° Licencias", "Valor unitario (COP)", "Valor total (COP)"], "valueCol": 4, "rows": [["OFICCE", "2021", "13", 380000.0, 4940000.0], ["Siigo", "9.1", "25", 330939.0, 3971275.0], ["WINDOWS 11", "PRO", "24", 369500.0, 8868000.0]]}, {"title": "Equipos de red", "icon": "🌐", "columns": ["Marca", "Modelo", "Serial", "Valor (COP)"], "valueCol": 3, "rows": [["ETB", "G-2425G-A", "ALCLB2938E65", 109900.0], ["ETB", "G-240W-F", "ALCLB3CF8849", 309000.0], ["Jhua", "DHI-XVR5232AN-S2", "8A0464APAZ2FDF6", 1100000.0], ["Jhua", "DHI-NVR4232-16P-4KS2/L", "9E0E371PAZ10A79", 2700000.0], ["Juniper", "SRX300", "", 309000.0], ["Panasonic", "KX-T824", "", 0], ["Ubitiqui", "USW-242POE", "", 1500000.0], ["Ubitiqui", "USW-242POE", "", 1500000.0], ["Ubitiqui", "U6-LR WIFI AX3000", "", 1500000.0], ["Ubitiqui", "U6-LR WIFI AX3000", "", 1500000.0], ["Ubitiqui", "U6-LR WIFI AX3000", "", 1500000.0]]}, {"title": "Servidores", "icon": "🖥️", "columns": ["Marca", "Modelo", "Serial", "Valor (COP)"], "valueCol": 3, "rows": [["HPE ProLiant", "ML110 Gen11", "2M235200S9", 11680000.0], ["HPE ProLiant", "ML310e Gen8", "BRC3243E0K", 3207000.0]]}, {"title": "Teléfonos", "icon": "📱", "columns": ["Marca", "Modelo", "Serial", "Valor (COP)"], "valueCol": 3, "rows": [["Motorola", "E13", "", 339900.0], ["Motorola", "E13", "", 339900.0], ["Motorola", "E13", "", 329900.0], ["Redmi", "9A", "", 391226.0], ["", "", "", 339900.0], ["Motorola", "E13", "", 659800.0], ["Motorola", "E13", "", 339900.0], ["Motorola", "G04S", "", 339900.0], ["Motorola", "E13", "", 339900.0], ["Si Aplica", "", "", 339900.0], ["Motorola", "E13", "", 339900.0], ["Galaxy", "S22 Ultra", "", 4873866.0], ["Motorola", "E(7I) ULTRA", "", 339900.0], ["Motorola", "E(7I) ULTRA", "", 339900.0], ["Motorola", "G06", "ZY32MFM5BT", 419050.0], ["Motorola", "G06", "ZY32M9R4J6", 419050.0], ["Motorola", "G06", "ZY32M9R46P", 419050.0], ["Motorola", "G06", "ZY32M9R4X6", 419050.0], ["Motorola", "G06", "ZY32MFMVHL", 419050.0], ["Motorola", "G06", "ZY32MFMT49", 419050.0], ["Motorola", "G06", "ZY32MFM2TL", 419050.0]]}];
+const KEY = 'bvicol_tablas_valores_v1';
+const fmt = new Intl.NumberFormat('es-CO',{style:'currency',currency:'COP',maximumFractionDigits:0});
+let data, editMode=false;
+
+function load(){
+  try{const s=localStorage.getItem(KEY);if(s){return JSON.parse(s);}}catch(e){}
+  return JSON.parse(JSON.stringify(DEFAULT_DATA));
+}
+function save(){try{localStorage.setItem(KEY,JSON.stringify(data));}catch(e){}}
+function parseNum(v){if(typeof v==='number')return v;if(v==null)return 0;const n=parseFloat(String(v).replace(/[^0-9.-]/g,''));return isNaN(n)?0:n;}
+function isNumericCol(t,ci){
+  if(ci===t.valueCol)return true;
+  return t.rows.some(r=>typeof r[ci]==='number');
+}
+function subtotal(t){return t.rows.reduce((a,r)=>a+parseNum(r[t.valueCol]),0);}
+
+function toast(msg){const el=document.getElementById('toast');el.textContent=msg;el.classList.add('show');clearTimeout(el._t);el._t=setTimeout(()=>el.classList.remove('show'),2200);}
+
+function render(){
+  const cont=document.getElementById('tables');cont.innerHTML='';
+  data.forEach((t,ti)=>{
+    const numeric=t.columns.map((_,ci)=>isNumericCol(t,ci));
+    const card=document.createElement('div');card.className='tcard';
+    // head
+    const head=document.createElement('div');head.className='tcard-head';
+    head.innerHTML=`<div class="tcard-icon">${t.icon||'📦'}</div>`;
+    const title=document.createElement('input');title.className='tcard-title';title.value=t.title;
+    title.addEventListener('input',()=>{t.title=title.value;save();});
+    head.appendChild(title);
+    const sub=document.createElement('div');sub.className='tcard-sub';sub.id='sub-'+ti;
+    sub.innerHTML=`Subtotal: <b>${fmt.format(subtotal(t))}</b>`;
+    head.appendChild(sub);
+    const delT=document.createElement('button');delT.className='del-table';delT.textContent='🗑';delT.title='Eliminar esta tabla';
+    delT.addEventListener('click',()=>{if(confirm('¿Eliminar la tabla "'+t.title+'" completa?')){data.splice(ti,1);save();render();updateTotals();toast('Tabla eliminada');}});
+    head.appendChild(delT);
+    card.appendChild(head);
+    // table
+    const wrap=document.createElement('div');wrap.className='tbl-wrap';
+    const tbl=document.createElement('table');
+    const thead=document.createElement('thead');const htr=document.createElement('tr');
+    t.columns.forEach((c,ci)=>{const th=document.createElement('th');th.textContent=c;if(numeric[ci])th.className='num';htr.appendChild(th);});
+    const tha=document.createElement('th');tha.className='act';htr.appendChild(tha);
+    thead.appendChild(htr);tbl.appendChild(thead);
+    const tbody=document.createElement('tbody');
+    t.rows.forEach((row,ri)=>tbody.appendChild(buildRow(t,ti,row,ri,numeric)));
+    tbl.appendChild(tbody);
+    // foot
+    const tfoot=document.createElement('tfoot');const ftr=document.createElement('tr');
+    const valPos=t.valueCol;
+    for(let ci=0;ci<t.columns.length;ci++){
+      const td=document.createElement('td');
+      if(ci===0){td.className='lbl';td.textContent='Subtotal';}
+      else if(ci===valPos){td.className='num';td.id='foot-'+ti;td.textContent=fmt.format(subtotal(t));}
+      ftr.appendChild(td);
+    }
+    const fa=document.createElement('td');fa.className='act';ftr.appendChild(fa);
+    tfoot.appendChild(ftr);tbl.appendChild(tfoot);
+    wrap.appendChild(tbl);card.appendChild(wrap);
+    // add row btn
+    const addBtn=document.createElement('button');addBtn.className='btn add-row';addBtn.textContent='＋ Agregar dispositivo';
+    addBtn.addEventListener('click',()=>{const nr=t.columns.map((_,ci)=>numeric[ci]?0:'');t.rows.push(nr);save();render();updateTotals();});
+    card.appendChild(addBtn);
+    cont.appendChild(card);
+  });
+  document.getElementById('tableCount').textContent=data.length;
+}
+
+function buildRow(t,ti,row,ri,numeric){
+  const tr=document.createElement('tr');
+  t.columns.forEach((c,ci)=>{
+    const td=document.createElement('td');
+    const inp=document.createElement('input');
+    if(numeric[ci]){
+      inp.className='num';inp.inputMode='numeric';
+      const nf=new Intl.NumberFormat('es-CO',{maximumFractionDigits:0});
+      const showFmt=()=>{inp.value=(row[ci]===''||row[ci]==null||row[ci]===0 && String(row[ci])==='')?'':nf.format(parseNum(row[ci]));};
+      inp.value=(row[ci]===''||row[ci]==null)?'':nf.format(parseNum(row[ci]));
+      inp.addEventListener('focus',()=>{const v=parseNum(row[ci]);inp.value=v===0&&(row[ci]===''||row[ci]==null)?'':v;});
+      inp.addEventListener('blur',showFmt);
+    }
+    else{inp.value=row[ci]==null?'':row[ci];}
+    inp.addEventListener('input',()=>{row[ci]=numeric[ci]?parseNum(inp.value):inp.value;save();updateTotals();});
+    td.appendChild(inp);tr.appendChild(td);
+  });
+  const tda=document.createElement('td');tda.className='act';
+  const del=document.createElement('button');del.className='del-row';del.textContent='🗑';del.title='Eliminar fila';
+  del.addEventListener('click',()=>{t.rows.splice(ri,1);save();render();updateTotals();});
+  tda.appendChild(del);tr.appendChild(tda);
+  return tr;
+}
+
+function updateTotals(){
+  let grand=0;const chips=document.getElementById('chips');chips.innerHTML='';
+  data.forEach((t,ti)=>{
+    const st=subtotal(t);grand+=st;
+    const f=document.getElementById('foot-'+ti);if(f)f.textContent=fmt.format(st);
+    const s=document.getElementById('sub-'+ti);if(s)s.innerHTML=`Subtotal: <b>${fmt.format(st)}</b>`;
+    const chip=document.createElement('div');chip.className='chip';
+    chip.innerHTML=`<span>${t.icon||'📦'} <b>${t.title}</b></span><span class="cv">${fmt.format(st)}</span>`;
+    chips.appendChild(chip);
+  });
+  document.getElementById('grandTotal').textContent=fmt.format(grand);
+  document.getElementById('tableCount').textContent=data.length;
+}
+
+// Toolbar actions
+document.getElementById('addTable').addEventListener('click',()=>{
+  const name=prompt('Nombre de la nueva tabla:','Nueva categoría');if(name===null)return;
+  data.push({title:name||'Nueva categoría',icon:'📦',columns:['Descripción','Detalle','Valor (COP)'],valueCol:2,rows:[['','',0]]});
+  save();render();updateTotals();toast('Tabla creada');
+});
+document.getElementById('editToggle').addEventListener('click',(e)=>{
+  editMode=!editMode;document.body.classList.toggle('editmode',editMode);
+  e.target.classList.toggle('on',editMode);
+  e.target.textContent='🗑 Modo eliminar: '+(editMode?'ON':'OFF');
+});
+document.getElementById('resetBtn').addEventListener('click',()=>{
+  if(confirm('¿Restablecer todas las tablas a los datos originales del Excel? Se perderán tus cambios guardados.')){
+    data=JSON.parse(JSON.stringify(DEFAULT_DATA));save();render();updateTotals();toast('Datos restablecidos');
+  }
+});
+document.getElementById('exportJson').addEventListener('click',()=>{
+  const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='tablas_valores_backup.json';a.click();toast('Backup descargado');
+});
+document.getElementById('importBtn').addEventListener('click',()=>document.getElementById('importFile').click());
+document.getElementById('importFile').addEventListener('change',(e)=>{
+  const file=e.target.files[0];if(!file)return;const rd=new FileReader();
+  rd.onload=()=>{try{const d=JSON.parse(rd.result);if(Array.isArray(d)){data=d;save();render();updateTotals();toast('Backup importado');}else{alert('Archivo no válido.');}}catch(err){alert('No se pudo leer el archivo.');}};
+  rd.readAsText(file);e.target.value='';
+});
+function exportCSV(){
+  const rowsOut=[];
+  data.forEach(t=>{
+    rowsOut.push([t.title]);
+    rowsOut.push(t.columns.slice());
+    t.rows.forEach(r=>rowsOut.push(t.columns.map((_,ci)=>ci===t.valueCol?parseNum(r[ci]):(r[ci]==null?'':r[ci]))));
+    rowsOut.push(['SUBTOTAL','',...(t.columns.length>2?Array(t.columns.length-3).fill(''):[]) ]);
+    rowsOut[rowsOut.length-1]=t.columns.map((_,ci)=>ci===0?'SUBTOTAL':(ci===t.valueCol?subtotal(t):''));
+    rowsOut.push([]);
+  });
+  rowsOut.push(['GRAN TOTAL',data.reduce((a,t)=>a+subtotal(t),0)]);
+  const esc=v=>{v=(v==null?'':String(v));return /[",;\n]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v;};
+  const csv='﻿'+rowsOut.map(r=>r.map(esc).join(';')).join('\n');
+  const blob=new Blob([csv],{type:'text/csv;charset=utf-8;'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='tablas_valores.csv';a.click();
+  toast('Exportado a CSV (se abre en Excel)');
+}
+document.getElementById('exportXlsx').addEventListener('click',()=>{
+  if(typeof XLSX==='undefined'){exportCSV();return;}
+  const wb=XLSX.utils.book_new();
+  data.forEach(t=>{
+    const aoa=[t.columns.slice()];
+    t.rows.forEach(r=>aoa.push(t.columns.map((_,ci)=>ci===t.valueCol?parseNum(r[ci]):(typeof r[ci]==='number'?r[ci]:(r[ci]||'')))));
+    aoa.push(t.columns.map((_,ci)=>ci===0?'SUBTOTAL':(ci===t.valueCol?subtotal(t):'')));
+    const ws=XLSX.utils.aoa_to_sheet(aoa);
+    let name=(t.title||'Tabla').replace(/[\\\/\?\*\[\]:]/g,' ').slice(0,28);
+    let base=name,k=1;const used=wb.SheetNames;while(used.includes(name)){name=base.slice(0,26)+' '+(++k);}
+    XLSX.utils.book_append_sheet(wb,ws,name||'Tabla');
+  });
+  const g=data.reduce((a,t)=>a+subtotal(t),0);
+  const res=XLSX.utils.aoa_to_sheet([['Categoría','Subtotal (COP)'],...data.map(t=>[t.title,subtotal(t)]),['GRAN TOTAL',g]]);
+  XLSX.utils.book_append_sheet(wb,res,'Resumen');
+  XLSX.writeFile(wb,'tablas_valores.xlsx');toast('Excel exportado');
+});
+
+data=load();render();updateTotals();
+</script>
+</body>
+</html>
