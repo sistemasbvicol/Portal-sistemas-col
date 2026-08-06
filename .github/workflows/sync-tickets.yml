@@ -1,0 +1,35 @@
+name: Sincronizar Tickets osTicket → Dashboard BVI
+
+on:
+  schedule:
+    - cron: '*/30 * * * *'
+  workflow_dispatch:
+
+jobs:
+  sync:
+    name: Obtener tickets de osTicket
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repositorio
+        uses: actions/checkout@v4
+
+      - name: Descargar tickets desde bvi-stats.php
+        run: |
+          HTTP_STATUS=$(curl -s -o tickets-data.json -w "%{http_code}" "https://ticket.barronvieyra.cl/bvi-stats.php?token=${{ secrets.BVI_STATS_TOKEN }}&format=tickets")
+          echo "HTTP Status: $HTTP_STATUS"
+          if [ "$HTTP_STATUS" != "200" ]; then echo "Error HTTP $HTTP_STATUS"; exit 1; fi
+          python3 -c "import json,sys; d=json.load(sys.stdin); print(f'OK: {d["totalTickets"]} tickets')" < tickets-data.json
+
+      - name: Confirmar cambios
+        run: |
+          git config user.email "github-actions@github.com"
+          git config user.name "BVI Dashboard Bot"
+          git add tickets-data.json
+          if git diff --staged --quiet; then
+            echo "Sin cambios."
+          else
+            COUNT=$(python3 -c "import json; print(json.load(open('tickets-data.json'))['totalTickets'])" 2>/dev/null || echo "?")
+            git commit -m "Auto-sync: $COUNT tickets - $(date '+%d/%m/%Y %H:%M') [skip ci]"
+            git push
+          fi
