@@ -88,10 +88,47 @@
   .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
   input[type=file]{display:none;}
   @media(max-width:640px){.grand{font-size:26px;}h1{font-size:20px;}}
+  /* Análisis */
+  .analysis{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);padding:20px 22px;margin-bottom:22px;box-shadow:0 2px 10px rgba(13,61,36,.04);}
+  .analysis h2{font-family:'Oswald',sans-serif;font-size:16px;margin:0 0 14px;letter-spacing:.3px;color:var(--accent-dark);display:flex;align-items:center;gap:8px;}
+  .an-kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:18px;}
+  .an-kpi{background:#f6f8f6;border:1px solid var(--border);border-radius:10px;padding:12px 14px;}
+  .an-kpi .k{font-size:10.5px;letter-spacing:.5px;text-transform:uppercase;color:var(--text-secondary);}
+  .an-kpi .v{font-family:'Oswald',sans-serif;font-size:21px;color:var(--accent);line-height:1.2;}
+  .an-cols{display:grid;grid-template-columns:1.2fr 1fr;gap:22px;}
+  .an-sub{font-family:'Oswald',sans-serif;font-size:12.5px;letter-spacing:.4px;text-transform:uppercase;color:var(--text-secondary);margin:0 0 10px;}
+  .an-bars{display:flex;flex-direction:column;gap:9px;}
+  .an-bar{display:grid;grid-template-columns:150px 1fr 130px;gap:10px;align-items:center;font-size:12.5px;}
+  .an-bar .lab{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .an-bar .track{background:#eef2ef;border-radius:6px;height:16px;overflow:hidden;}
+  .an-bar .fill{height:100%;background:linear-gradient(90deg,var(--accent),#4fae7a);}
+  .an-bar .val{text-align:right;font-variant-numeric:tabular-nums;}
+  .an-bar .val small{color:var(--text-secondary);}
+  .an-list{list-style:none;margin:0;padding:0;}
+  .an-list li{display:flex;justify-content:space-between;gap:10px;padding:6px 0;border-bottom:1px solid #f0f2ef;font-size:12.5px;}
+  .an-list li span:last-child{font-variant-numeric:tabular-nums;color:var(--accent);font-weight:600;white-space:nowrap;}
+  .an-insights{font-size:12.5px;line-height:1.7;color:var(--text-primary);margin-top:14px;background:#eef4ef;border:1px solid #dbe8df;border-radius:8px;padding:12px 14px;}
+  .an-insights b{color:var(--accent-dark);}
+  @media(max-width:720px){.an-kpis{grid-template-columns:repeat(2,1fr);}.an-cols{grid-template-columns:1fr;}.an-bar{grid-template-columns:100px 1fr 92px;}}
+  /* Modal */
+  .overlay{position:fixed;inset:0;background:rgba(13,61,36,.45);display:none;align-items:flex-start;justify-content:center;z-index:100;padding:40px 16px;overflow:auto;}
+  .overlay.show{display:flex;}
+  .modal{background:#fff;border-radius:14px;max-width:580px;width:100%;box-shadow:0 20px 60px rgba(0,0,0,.3);overflow:hidden;}
+  .modal-head{background:linear-gradient(135deg,var(--accent-dark),#145232);color:#fff;padding:16px 20px;font-family:'Oswald',sans-serif;font-size:16px;letter-spacing:.3px;}
+  .modal-body{padding:18px 20px;max-height:60vh;overflow:auto;}
+  .modal-body label{display:block;font-size:11px;font-weight:600;color:var(--text-secondary);margin:12px 0 5px;text-transform:uppercase;letter-spacing:.4px;}
+  .modal-body input[type=text]{width:100%;border:1px solid var(--border);border-radius:8px;padding:9px 10px;font-family:inherit;font-size:13px;}
+  .modal-body input[type=text]:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 2px rgba(13,122,63,.12);}
+  .col-row{display:flex;gap:10px;align-items:center;margin-bottom:8px;}
+  .col-row .cn{flex:1;}
+  .col-row .mini{font-size:11px;color:var(--text-secondary);display:inline-flex;align-items:center;gap:4px;white-space:nowrap;cursor:pointer;}
+  .col-del{border:none;background:transparent;color:#c23b3b;cursor:pointer;font-size:16px;padding:2px 4px;}
+  .modal-note{font-size:11.5px;color:var(--text-secondary);margin-top:6px;}
+  .modal-foot{padding:14px 20px;border-top:1px solid var(--border);display:flex;justify-content:flex-end;gap:10px;background:#fbfcfb;}
 </style>
-
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;600;700&family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="bvi-theme.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pptxgenjs/3.12.0/pptxgen.bundle.js"></script>
 </head>
 <body>
   <div class="top-band">
@@ -120,6 +157,7 @@
 
     <div class="toolbar">
       <button class="btn primary" id="addTable">＋ Agregar tabla nueva</button>
+      <button class="btn" id="exportPptx">📊 Informe PowerPoint</button>
       <button class="btn" id="exportXlsx">⬇ Exportar a Excel</button>
       <button class="btn" id="exportJson">💾 Descargar backup</button>
       <button class="btn" id="importBtn">⬆ Importar backup</button>
@@ -133,11 +171,33 @@
       <b>Cómo usar:</b> escribe directamente sobre cualquier celda para editarla. Usa <b>＋ Agregar dispositivo</b> al final de cada tabla para sumar filas, o <b>＋ Agregar tabla nueva</b> para una categoría nueva. Activa <b>Modo eliminar</b> para poder borrar filas o tablas completas. Los valores van en pesos colombianos (solo números).
     </div>
 
+    <div class="analysis" id="analysis"></div>
+
     <div id="tables"></div>
   </main>
 
   <footer>Portal interno · Área de Sistemas · Tablas de valores</footer>
   <div class="toast" id="toast"></div>
+
+  <div class="overlay" id="modalOverlay">
+    <div class="modal">
+      <div class="modal-head">Nueva tabla — define los datos a solicitar</div>
+      <div class="modal-body">
+        <label>Nombre de la tabla</label>
+        <input type="text" id="mTitle" placeholder="Ej. Cámaras de seguridad">
+        <label>Ícono (emoji, opcional)</label>
+        <input type="text" id="mIcon" placeholder="📦" maxlength="4" style="width:90px;">
+        <label>Columnas / datos que quieres solicitar</label>
+        <div id="mCols"></div>
+        <button class="btn" id="mAddCol" style="margin-top:6px;font-size:12px;">＋ Agregar columna</button>
+        <p class="modal-note">Marca <b>Número</b> en las columnas de valores numéricos, y elige con <b>Suma al total</b> cuál columna alimenta los subtotales y el gran total.</p>
+      </div>
+      <div class="modal-foot">
+        <button class="btn" id="mCancel">Cancelar</button>
+        <button class="btn primary" id="mCreate">Crear tabla</button>
+      </div>
+    </div>
+  </div>
 
 <script>
 const DEFAULT_DATA = [{"title": "Equipos de cómputo (portátiles y PC)", "icon": "💻", "columns": ["Marca", "Modelo", "Serial / Activo Fijo", "Procesador", "RAM", "Almacenamiento", "Valor (COP)"], "valueCol": 6, "rows": [["Lenovo", "83ER", "PF5F7HZW", "I5-12450H", "16 GB", "500GB", 1830122.0], ["Lenovo", "83ER", "pf5f90hp", "I5-12450H", "16 GB", "500GB", 1830122.0], ["Lenovo", "Ideacentre A340-22IWL", "MP2G2P3K", "I5-12450H", "8 GB", "500GB", 1700000.0], ["Lenovo", "X390", "PC1AD932", "I5-8265U", "8GB", "256GB", 1633885.0], ["Lenovo", "T14 Gen 1", "PC1G0V1W", "i7-8565u", "16 GB", "256GB", 1633885.0], ["Lenovo", "T14 Gen 1", "PF2MRX5V", "i5-10210u", "16 GB", "256GB", 1633885.0], ["Lenovo", "T14 Gen 1", "PF2PPKP3", "i5-10210ui", "16 GB", "256GB", 1851737.0], ["Lenovo", "T14 Gen 1", "PF2PPAAK", "i5-1021u", "16 GB", "512GB", 1960662.0], ["ACER", "Aspire a315-51", "145B7600", "i5-7200u", "12GB", "1T", 1749000.0], ["Lenovo", "Ideacentre A340-22IWL", "MP1RHGQH", "I3-10110U", "4GB", "1T", 1700000.0], ["Lenovo", "X390", "PC1AX5H6", "I5-8265U", "8GB", "265 GB", 1633885.0], ["Lenovo", "T14 Gen 1", "PF2PPJRA", "I5- 10210U", "16 GB", "256GB", 1633885.0], ["HP", "HP ProDesk 400 G6", "8CC1124476", "I5-10500T", "8GB", "512GB", 1119000.0], ["Lenovo", "L390", "R90Y12YP", "I5-8365U", "16 GB", "512GB", 1710133.0], ["Lenovo", "82TS", "PF4WGY8E", "i7-1255u", "16GB", "512GB", 3690000.0], ["ACER", "V1.17", "NXMZCAL015635062927600", "n3710@", "8GB", "500GB", 1049000.0], ["Lenovo", "X390", "PC1AX5KB", "i5-8265u", "8GB", "256GB", 1633885.0], ["Lenovo", "ThinkCentre neo 50a 24 Gen 5", "MP2GDZQE", "i7-13620h", "16gb", "512gb", 1633885.0], ["HP", "Hewlett-Packard  1.00", "3CR5260645", "I3-4160T", "8GB", "1T", 1299000.0], ["Lenovo", "T14 Gen 1", "PW0B0LE2", "i5-1345u", "16gb", "512gb", 1633885.0], ["Lenovo", "83A0", "PF544ARP", "I7-1355U", "16gb", "930GB", 2240000.0], ["Lenovo", "E14", "PF5ETRG4", "I5-1335U", "16gb", "512gb", 4049901.0], ["Lenovo", "83ER", "PF52ARB8", "I5-12450H", "16gb", "512gb", 1830122.0], ["Lenovo", "T14 Gen 1", "PW0B0LHP", "I5-1345U", "16gb", "512gb", 1633885.0], ["Lenovo", "83ER", "PF5F8W3C", "I5-12450H", "16gb", "512gb", 1830122.0], ["Lenovo", "L14", "PW-0EKZ2S", "I7-1365U", "32GB", "512gb", 4129999.0], ["Lenovo", "L14", "PW-0EKZ2D", "I7-1365U", "32GB", "512gb", 4129999.0], ["Lenovo", "G410", "3328384800146", "I5-4200M", "4GB", "237GB", 720.0], ["Toshiba", "C645D", "ZB313649Q", "", "", "", 200590.0], ["Lenovo", "L14", "PW0HVE47", "ULTRA 5 135U", "32GB", "512GB", 5062184.0], ["Lenovo", "83A1", "PF5BM5NF", "I5-1342h", "16GB", "512GB", 2200000.0]]}, {"title": "Impresoras", "icon": "🖨️", "columns": ["Marca", "Modelo", "Número de Serie", "Valor (COP)"], "valueCol": 3, "rows": [["BROTHER", "MFC-T920DW", "U66056D3H975080", 2151260.0], ["HP", "Thank 580", "1F3Y280003", 455303.0], ["BROTHER", "MFC-T920DW", "U66056D3H975126", 2151260.0], ["EPSON", "L375", "WBGK140763", 679000.0], ["HP", "Tank 520", "1f3w28003", 671428.57], ["EPSON", "L355", "S3YK505306", 440000.0], ["HP", "Laser MFP 137fnw", "CNB3N3J16F", 699000.0]]}, {"title": "Software y licencias", "icon": "🧩", "columns": ["Software", "Versión", "N° Licencias", "Valor unitario (COP)", "Valor total (COP)"], "valueCol": 4, "rows": [["OFICCE", "2021", "13", 380000.0, 4940000.0], ["Siigo", "9.1", "25", 330939.0, 3971275.0], ["WINDOWS 11", "PRO", "24", 369500.0, 8868000.0]]}, {"title": "Equipos de red", "icon": "🌐", "columns": ["Marca", "Modelo", "Serial", "Valor (COP)"], "valueCol": 3, "rows": [["ETB", "G-2425G-A", "ALCLB2938E65", 109900.0], ["ETB", "G-240W-F", "ALCLB3CF8849", 309000.0], ["Jhua", "DHI-XVR5232AN-S2", "8A0464APAZ2FDF6", 1100000.0], ["Jhua", "DHI-NVR4232-16P-4KS2/L", "9E0E371PAZ10A79", 2700000.0], ["Juniper", "SRX300", "", 309000.0], ["Panasonic", "KX-T824", "", 0], ["Ubitiqui", "USW-242POE", "", 1500000.0], ["Ubitiqui", "USW-242POE", "", 1500000.0], ["Ubitiqui", "U6-LR WIFI AX3000", "", 1500000.0], ["Ubitiqui", "U6-LR WIFI AX3000", "", 1500000.0], ["Ubitiqui", "U6-LR WIFI AX3000", "", 1500000.0]]}, {"title": "Servidores", "icon": "🖥️", "columns": ["Marca", "Modelo", "Serial", "Valor (COP)"], "valueCol": 3, "rows": [["HPE ProLiant", "ML110 Gen11", "2M235200S9", 11680000.0], ["HPE ProLiant", "ML310e Gen8", "BRC3243E0K", 3207000.0]]}, {"title": "Teléfonos", "icon": "📱", "columns": ["Marca", "Modelo", "Serial", "Valor (COP)"], "valueCol": 3, "rows": [["Motorola", "E13", "", 339900.0], ["Motorola", "E13", "", 339900.0], ["Motorola", "E13", "", 329900.0], ["Redmi", "9A", "", 391226.0], ["", "", "", 339900.0], ["Motorola", "E13", "", 659800.0], ["Motorola", "E13", "", 339900.0], ["Motorola", "G04S", "", 339900.0], ["Motorola", "E13", "", 339900.0], ["Si Aplica", "", "", 339900.0], ["Motorola", "E13", "", 339900.0], ["Galaxy", "S22 Ultra", "", 4873866.0], ["Motorola", "E(7I) ULTRA", "", 339900.0], ["Motorola", "E(7I) ULTRA", "", 339900.0], ["Motorola", "G06", "ZY32MFM5BT", 419050.0], ["Motorola", "G06", "ZY32M9R4J6", 419050.0], ["Motorola", "G06", "ZY32M9R46P", 419050.0], ["Motorola", "G06", "ZY32M9R4X6", 419050.0], ["Motorola", "G06", "ZY32MFMVHL", 419050.0], ["Motorola", "G06", "ZY32MFMT49", 419050.0], ["Motorola", "G06", "ZY32MFM2TL", 419050.0]]}];
@@ -153,6 +213,7 @@ function save(){try{localStorage.setItem(KEY,JSON.stringify(data));}catch(e){}}
 function parseNum(v){if(typeof v==='number')return v;if(v==null)return 0;const n=parseFloat(String(v).replace(/[^0-9.-]/g,''));return isNaN(n)?0:n;}
 function isNumericCol(t,ci){
   if(ci===t.valueCol)return true;
+  if(Array.isArray(t.numCols)&&t.numCols.includes(ci))return true;
   return t.rows.some(r=>typeof r[ci]==='number');
 }
 function subtotal(t){return t.rows.reduce((a,r)=>a+parseNum(r[t.valueCol]),0);}
@@ -244,13 +305,61 @@ function updateTotals(){
   });
   document.getElementById('grandTotal').textContent=fmt.format(grand);
   document.getElementById('tableCount').textContent=data.length;
+  renderAnalysis();
 }
 
 // Toolbar actions
-document.getElementById('addTable').addEventListener('click',()=>{
-  const name=prompt('Nombre de la nueva tabla:','Nueva categoría');if(name===null)return;
-  data.push({title:name||'Nueva categoría',icon:'📦',columns:['Descripción','Detalle','Valor (COP)'],valueCol:2,rows:[['','',0]]});
-  save();render();updateTotals();toast('Tabla creada');
+// ---- Modal: nueva tabla con columnas personalizadas ----
+const overlay=document.getElementById('modalOverlay');
+const mCols=document.getElementById('mCols');
+function colRow(name,isNum,isVal){
+  const div=document.createElement('div');div.className='col-row';
+  const inp=document.createElement('input');inp.type='text';inp.className='cn';inp.placeholder='Nombre de la columna';inp.value=name||'';
+  const numL=document.createElement('label');numL.className='mini';
+  const num=document.createElement('input');num.type='checkbox';num.className='cnum';num.checked=!!isNum;
+  numL.appendChild(num);numL.appendChild(document.createTextNode('Número'));
+  const valL=document.createElement('label');valL.className='mini';
+  const val=document.createElement('input');val.type='radio';val.name='valcol';val.className='cval';val.checked=!!isVal;
+  valL.appendChild(val);valL.appendChild(document.createTextNode('Suma al total'));
+  // si marca "suma al total" forzamos que sea número
+  val.addEventListener('change',()=>{if(val.checked)num.checked=true;});
+  const del=document.createElement('button');del.className='col-del';del.textContent='🗑';del.title='Quitar columna';
+  del.addEventListener('click',()=>{div.remove();});
+  div.appendChild(inp);div.appendChild(numL);div.appendChild(valL);div.appendChild(del);
+  return div;
+}
+function openTableModal(){
+  document.getElementById('mTitle').value='';
+  document.getElementById('mIcon').value='📦';
+  mCols.innerHTML='';
+  mCols.appendChild(colRow('Descripción',false,false));
+  mCols.appendChild(colRow('Detalle',false,false));
+  mCols.appendChild(colRow('Valor (COP)',true,true));
+  overlay.classList.add('show');
+  setTimeout(()=>document.getElementById('mTitle').focus(),50);
+}
+function closeModal(){overlay.classList.remove('show');}
+document.getElementById('addTable').addEventListener('click',openTableModal);
+document.getElementById('mAddCol').addEventListener('click',()=>mCols.appendChild(colRow('',false,false)));
+document.getElementById('mCancel').addEventListener('click',closeModal);
+overlay.addEventListener('click',(e)=>{if(e.target===overlay)closeModal();});
+document.getElementById('mCreate').addEventListener('click',()=>{
+  const title=document.getElementById('mTitle').value.trim()||'Nueva categoría';
+  const icon=document.getElementById('mIcon').value.trim()||'📦';
+  const rows=[...mCols.querySelectorAll('.col-row')];
+  const cols=[], nums=[]; let valCol=-1;
+  rows.forEach((r)=>{
+    const nm=r.querySelector('.cn').value.trim(); if(!nm)return;
+    const idx=cols.length;
+    cols.push(nm);
+    if(r.querySelector('.cnum').checked)nums.push(idx);
+    if(r.querySelector('.cval').checked)valCol=idx;
+  });
+  if(!cols.length){alert('Agrega al menos una columna.');return;}
+  if(valCol<0){ valCol = nums.length?nums[nums.length-1]:cols.length-1; if(!nums.includes(valCol))nums.push(valCol); }
+  const empty=cols.map((_,i)=>nums.includes(i)?0:'');
+  data.push({title,icon,columns:cols,valueCol:valCol,numCols:nums,rows:[empty]});
+  save();render();updateTotals();closeModal();toast('Tabla "'+title+'" creada');
 });
 document.getElementById('editToggle').addEventListener('click',(e)=>{
   editMode=!editMode;document.body.classList.toggle('editmode',editMode);
@@ -306,6 +415,121 @@ document.getElementById('exportXlsx').addEventListener('click',()=>{
   XLSX.utils.book_append_sheet(wb,res,'Resumen');
   XLSX.writeFile(wb,'tablas_valores.xlsx');toast('Excel exportado');
 });
+
+// ---- Análisis ----
+function itemLabel(t,r){
+  let l=(r[0]!=null&&String(r[0]).trim())?String(r[0]).trim():'';
+  if(!l){const f=r.find(x=>x!=null&&String(x).trim()&&typeof x!=='number');l=f?String(f).trim():'(sin nombre)';}
+  const extra=(r[1]!=null&&String(r[1]).trim()&&String(r[1]).trim()!==l)?(' '+String(r[1]).trim()):'';
+  return (l+extra).slice(0,42);
+}
+function analytics(){
+  const cats=data.map(t=>({title:t.title,icon:t.icon||'📦',sub:subtotal(t),items:t.rows.length}));
+  const grand=cats.reduce((a,c)=>a+c.sub,0);
+  const totalItems=cats.reduce((a,c)=>a+c.items,0);
+  const byVal=[...cats].sort((a,b)=>b.sub-a.sub);
+  const byItems=[...cats].sort((a,b)=>b.items-a.items);
+  const items=[];
+  data.forEach(t=>t.rows.forEach(r=>items.push({label:itemLabel(t,r),cat:t.title,val:parseNum(r[t.valueCol])})));
+  items.sort((a,b)=>b.val-a.val);
+  return {cats,grand,totalItems,byVal,byItems,top:byVal[0],low:byVal[byVal.length-1],mostItems:byItems[0],
+    topItems:items.filter(i=>i.val>0).slice(0,5),avg: totalItems?grand/totalItems:0};
+}
+function renderAnalysis(){
+  const el=document.getElementById('analysis');if(!el)return;
+  const A=analytics();
+  if(!A.cats.length){el.innerHTML='<h2>📊 Análisis de datos</h2><p style="color:var(--text-secondary);font-size:13px;">No hay tablas todavía.</p>';return;}
+  const max=Math.max(1,...A.cats.map(c=>c.sub));
+  const bars=A.cats.map(c=>{const pct=A.grand?(c.sub/A.grand*100):0;return `<div class="an-bar"><span class="lab">${c.icon} ${c.title}</span><span class="track"><span class="fill" style="width:${(c.sub/max*100).toFixed(1)}%"></span></span><span class="val">${fmt.format(c.sub)} <small>${pct.toFixed(1)}%</small></span></div>`;}).join('');
+  const items=A.topItems.length?A.topItems.map(i=>`<li><span>${i.label} <small style="color:var(--text-secondary)">· ${i.cat}</small></span><span>${fmt.format(i.val)}</span></li>`).join(''):'<li><span style="color:var(--text-secondary)">Sin valores aún</span></li>';
+  el.innerHTML=`<h2>📊 Análisis de datos</h2>
+  <div class="an-kpis">
+    <div class="an-kpi"><div class="k">Valor total</div><div class="v">${fmt.format(A.grand)}</div></div>
+    <div class="an-kpi"><div class="k">Categorías</div><div class="v">${A.cats.length}</div></div>
+    <div class="an-kpi"><div class="k">Ítems / dispositivos</div><div class="v">${A.totalItems}</div></div>
+    <div class="an-kpi"><div class="k">Valor promedio / ítem</div><div class="v">${fmt.format(Math.round(A.avg))}</div></div>
+  </div>
+  <div class="an-cols">
+    <div><p class="an-sub">Valor por categoría</p><div class="an-bars">${bars}</div></div>
+    <div><p class="an-sub">Top 5 ítems de mayor valor</p><ul class="an-list">${items}</ul></div>
+  </div>
+  <div class="an-insights">La categoría de mayor valor es <b>${A.top.title}</b> (${fmt.format(A.top.sub)}, ${A.grand?(A.top.sub/A.grand*100).toFixed(1):0}% del total); la de menor valor es <b>${A.low.title}</b> (${fmt.format(A.low.sub)}). La categoría con más ítems es <b>${A.mostItems.title}</b> con <b>${A.mostItems.items}</b> registros. En total se valoran <b>${A.totalItems}</b> ítems en <b>${A.cats.length}</b> categorías.</div>`;
+}
+
+// ---- Informe PowerPoint (identidad Barron Vieyra) ----
+const nf0=new Intl.NumberFormat('es-CO',{maximumFractionDigits:0});
+function exportPPTX(){
+  if(typeof PptxGenJS==='undefined'){alert('No se pudo cargar el generador de PowerPoint. Verifica tu conexión a internet e inténtalo de nuevo.');return;}
+  toast('Generando informe...');
+  const A=analytics();
+  const GREEN='067131', DARK='101010', GRAY='6B6F6C', LIGHT='F3F5F3';
+  const FF='Poppins';
+  const pptx=new PptxGenJS();
+  pptx.defineLayout({name:'BVI',width:13.33,height:7.5});
+  pptx.layout='BVI';
+  pptx.defineSlideMaster({title:'BVI_MASTER',background:{color:'FFFFFF'},objects:[
+    {image:{path:'bvi-logo.png',x:11.35,y:0.28,w:1.6,h:0.96}},
+    {text:{text:'Barron Vieyra International · Área de Sistemas',options:{x:0.4,y:7.08,w:9,h:0.3,fontFace:FF,fontSize:9,color:GRAY}}}
+  ]});
+  let dateStr='';try{dateStr=new Date().toLocaleDateString('es-CO',{year:'numeric',month:'long',day:'numeric'});}catch(e){dateStr='';}
+
+  // --- Portada ---
+  let s=pptx.addSlide({masterName:'BVI_MASTER'});
+  try{s.addImage({path:'bvi-wave.png',x:0,y:3.2,w:13.33,h:4.3});}catch(e){}
+  s.addShape(pptx.ShapeType.rect,{x:0,y:0,w:13.33,h:0.28,fill:{color:GREEN}});
+  s.addText('ÁREA DE SISTEMAS',{x:0.6,y:1.5,w:10,h:0.4,fontFace:FF,fontSize:14,color:GREEN,charSpacing:2,bold:true});
+  s.addText('Informe de Tablas de Valores del Inventario',{x:0.6,y:1.95,w:11,h:1.6,fontFace:FF,fontSize:38,bold:true,color:DARK,lineSpacingMultiple:0.95});
+  s.addText('Valorización de los activos de TI por categorías',{x:0.62,y:3.55,w:11,h:0.5,fontFace:FF,fontSize:16,color:GRAY});
+  s.addText([{text:'Gran total del inventario\n',options:{fontSize:12,color:GRAY,charSpacing:1}},{text:fmt.format(A.grand),options:{fontSize:34,bold:true,color:GREEN}}],{x:0.6,y:4.4,w:8,h:1.2,fontFace:FF,valign:'top'});
+  if(dateStr)s.addText(dateStr,{x:0.6,y:6.4,w:8,h:0.4,fontFace:FF,fontSize:12,color:GRAY});
+
+  // --- Resumen y análisis ---
+  s=pptx.addSlide({masterName:'BVI_MASTER'});
+  s.addShape(pptx.ShapeType.rect,{x:0,y:0,w:13.33,h:1.05,fill:{color:GREEN}});
+  s.addText('Resumen y análisis',{x:0.5,y:0.2,w:9,h:0.65,fontFace:FF,fontSize:24,bold:true,color:'FFFFFF'});
+  const kpis=[['Valor total',fmt.format(A.grand)],['Categorías',String(A.cats.length)],['Ítems',String(A.totalItems)],['Prom. / ítem',fmt.format(Math.round(A.avg))]];
+  kpis.forEach((k,i)=>{const x=0.5+i*3.08;s.addShape(pptx.ShapeType.roundRect,{x,y:1.35,w:2.9,h:1.15,fill:{color:LIGHT},line:{color:'E3E6E2',width:1},rectRadius:0.08});s.addText([{text:k[0].toUpperCase()+'\n',options:{fontSize:9,color:GRAY,charSpacing:1}},{text:k[1],options:{fontSize:18,bold:true,color:GREEN}}],{x:x+0.15,y:1.5,w:2.6,h:0.9,fontFace:FF,valign:'middle'});});
+  s.addText('Valor por categoría',{x:0.5,y:2.75,w:8,h:0.35,fontFace:FF,fontSize:13,bold:true,color:DARK});
+  s.addChart(pptx.ChartType.bar,[{name:'Subtotal (COP)',labels:A.byVal.map(c=>c.title),values:A.byVal.map(c=>Math.round(c.sub))}],
+    {x:0.4,y:3.1,w:7.6,h:3.9,barDir:'bar',chartColors:[GREEN],showLegend:false,showValue:true,
+     dataLabelFontFace:FF,dataLabelFontSize:8,dataLabelColor:DARK,dataLabelPosition:'outEnd',
+     catAxisLabelFontFace:FF,catAxisLabelFontSize:9,valAxisLabelFontFace:FF,valAxisLabelFontSize:8,valAxisHidden:true,
+     catGridLine:{style:'none'},valGridLine:{color:'EEF2EF'}});
+  s.addText('Hallazgos',{x:8.4,y:2.75,w:4.4,h:0.35,fontFace:FF,fontSize:13,bold:true,color:DARK});
+  const ins=[`Mayor valor: ${A.top.title} (${fmt.format(A.top.sub)}, ${A.grand?(A.top.sub/A.grand*100).toFixed(1):0}%).`,
+    `Menor valor: ${A.low.title} (${fmt.format(A.low.sub)}).`,
+    `Más ítems: ${A.mostItems.title} (${A.mostItems.items}).`,
+    `Ítem más costoso: ${A.topItems[0]?A.topItems[0].label+' — '+fmt.format(A.topItems[0].val):'—'}.`];
+  s.addText(ins.map(t=>({text:t,options:{bullet:{code:'2022'},color:DARK}})),{x:8.4,y:3.15,w:4.5,h:3.6,fontFace:FF,fontSize:11.5,lineSpacingMultiple:1.3,valign:'top'});
+
+  // --- Una diapositiva por tabla ---
+  data.forEach(t=>{
+    const numeric=t.columns.map((_,ci)=>isNumericCol(t,ci));
+    const s2=pptx.addSlide({masterName:'BVI_MASTER'});
+    s2.addShape(pptx.ShapeType.rect,{x:0,y:0,w:13.33,h:1.05,fill:{color:GREEN}});
+    s2.addText((t.icon||'')+' '+t.title,{x:0.5,y:0.2,w:9.5,h:0.65,fontFace:FF,fontSize:22,bold:true,color:'FFFFFF'});
+    s2.addText('Subtotal: '+fmt.format(subtotal(t)),{x:9.6,y:0.32,w:3.3,h:0.45,fontFace:FF,fontSize:13,bold:true,color:'FFFFFF',align:'right'});
+    const header=t.columns.map(c=>({text:String(c),options:{fill:{color:'0d3d24'},color:'FFFFFF',bold:true,align:'left',fontFace:FF}}));
+    const body=t.rows.map(r=>t.columns.map((_,ci)=>{
+      const isN=numeric[ci];const v=isN?nf0.format(parseNum(r[ci])):(r[ci]==null?'':String(r[ci]));
+      return {text:v,options:{align:isN?'right':'left',fontFace:FF,color:DARK}};
+    }));
+    const foot=t.columns.map((_,ci)=>({text:ci===0?'SUBTOTAL':(ci===t.valueCol?fmt.format(subtotal(t)):''),options:{bold:true,fill:{color:'E6F4EC'},color:'067131',align:ci===t.valueCol?'right':'left',fontFace:FF}}));
+    s2.addTable([header,...body,foot],{x:0.4,y:1.3,w:12.5,fontFace:FF,fontSize:9,color:DARK,
+      border:{type:'solid',pt:0.5,color:'E3E6E2'},valign:'middle',align:'left',
+      autoPage:true,autoPageRepeatHeader:true,autoPageLineWeight:-0.5,newSlideStartY:1.3,margin:3});
+  });
+
+  // --- Cierre ---
+  s=pptx.addSlide();
+  s.background={color:GREEN};
+  try{s.addImage({path:'bvi-logo-white.png',x:5.67,y:2.1,w:2,h:1.2});}catch(e){}
+  s.addText('GRACIAS',{x:0,y:3.5,w:13.33,h:1.4,align:'center',fontFace:FF,fontSize:54,bold:true,color:'FFFFFF',charSpacing:2});
+  s.addText('Área de Sistemas · Barron Vieyra International',{x:0,y:4.9,w:13.33,h:0.5,align:'center',fontFace:FF,fontSize:14,color:'D9EAD9'});
+
+  pptx.writeFile({fileName:'Informe_Tablas_de_Valores.pptx'}).then(()=>toast('Informe PowerPoint descargado')).catch(err=>{console.error(err);alert('No se pudo generar el informe: '+err.message);});
+}
+document.getElementById('exportPptx').addEventListener('click',exportPPTX);
 
 data=load();render();updateTotals();
 </script>
