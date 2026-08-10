@@ -502,22 +502,28 @@ function exportPPTX(){
     `Ítem más costoso: ${A.topItems[0]?A.topItems[0].label+' — '+fmt.format(A.topItems[0].val):'—'}.`];
   s.addText(ins.map(t=>({text:t,options:{bullet:{code:'2022'},color:DARK}})),{x:8.4,y:3.15,w:4.5,h:3.6,fontFace:FF,fontSize:11.5,lineSpacingMultiple:1.3,valign:'top'});
 
-  // --- Una diapositiva por tabla ---
+  // --- Una diapositiva por tabla (paginación manual: estable, sin autoPage) ---
+  const ROWS_PER=16;
   data.forEach(t=>{
     const numeric=t.columns.map((_,ci)=>isNumericCol(t,ci));
-    const s2=pptx.addSlide({masterName:'BVI_MASTER'});
-    s2.addShape(pptx.ShapeType.rect,{x:0,y:0,w:13.33,h:1.05,fill:{color:GREEN}});
-    s2.addText((t.icon||'')+' '+t.title,{x:0.5,y:0.2,w:9.5,h:0.65,fontFace:FF,fontSize:22,bold:true,color:'FFFFFF'});
-    s2.addText('Subtotal: '+fmt.format(subtotal(t)),{x:9.6,y:0.32,w:3.3,h:0.45,fontFace:FF,fontSize:13,bold:true,color:'FFFFFF',align:'right'});
     const header=t.columns.map(c=>({text:String(c),options:{fill:{color:'0d3d24'},color:'FFFFFF',bold:true,align:'left',fontFace:FF}}));
     const body=t.rows.map(r=>t.columns.map((_,ci)=>{
       const isN=numeric[ci];const v=isN?nf0.format(parseNum(r[ci])):(r[ci]==null?'':String(r[ci]));
       return {text:v,options:{align:isN?'right':'left',fontFace:FF,color:DARK}};
     }));
     const foot=t.columns.map((_,ci)=>({text:ci===0?'SUBTOTAL':(ci===t.valueCol?fmt.format(subtotal(t)):''),options:{bold:true,fill:{color:'E6F4EC'},color:'067131',align:ci===t.valueCol?'right':'left',fontFace:FF}}));
-    s2.addTable([header,...body,foot],{x:0.4,y:1.3,w:12.5,fontFace:FF,fontSize:9,color:DARK,
-      border:{type:'solid',pt:0.5,color:'E3E6E2'},valign:'middle',align:'left',
-      autoPage:true,autoPageRepeatHeader:true,autoPageLineWeight:-0.5,newSlideStartY:1.3,margin:3});
+    const groups=[];
+    if(body.length){for(let i=0;i<body.length;i+=ROWS_PER)groups.push(body.slice(i,i+ROWS_PER));}else{groups.push([]);}
+    groups.forEach((g,gi)=>{
+      const last=gi===groups.length-1;
+      const s2=pptx.addSlide({masterName:'BVI_MASTER'});
+      s2.addShape(pptx.ShapeType.rect,{x:0,y:0,w:13.33,h:1.05,fill:{color:GREEN}});
+      s2.addText((t.icon||'')+' '+t.title+(groups.length>1?('  ('+(gi+1)+'/'+groups.length+')'):''),{x:0.5,y:0.2,w:9,h:0.65,fontFace:FF,fontSize:22,bold:true,color:'FFFFFF'});
+      s2.addText('Subtotal: '+fmt.format(subtotal(t)),{x:9.6,y:0.32,w:3.3,h:0.45,fontFace:FF,fontSize:13,bold:true,color:'FFFFFF',align:'right'});
+      const rows=[header,...g];if(last)rows.push(foot);
+      s2.addTable(rows,{x:0.4,y:1.3,w:12.5,fontFace:FF,fontSize:9,color:DARK,
+        border:{type:'solid',pt:0.5,color:'E3E6E2'},valign:'middle',align:'left',rowH:0.3,margin:3});
+    });
   });
 
   // --- Cierre ---
