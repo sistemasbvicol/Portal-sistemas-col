@@ -1,0 +1,28 @@
+/* ===== BVI - Tema unificado del Portal de Sistemas =====
+   Paleta de referencia: tablero "Indicadores y Graficos de TI" */
+:root{
+  --bg-page:#f3f5f3; --bg-header:#0d3d24; --bg-card:#ffffff;
+  --text-primary:#1c1c1a; --text-secondary:#6b6f6c; --text-on-dark:#f4f6f4;
+  --accent:#0d7a3f; --accent-dark:#0d3d24; --accent2:#d64545;
+  --positive:#0d7a3f; --negative:#c23b3b; --warning:#c98a1e;
+  --border:#e3e6e2; --radius:12px;
+  --icon-blue:#2f6fa0; --icon-amber:#c98a1e; --icon-plum:#7a4a8f; --icon-teal:#1a7d7d;
+  --navy:#1c1c1a; --ice:#e6f4ec; --teal:#0d7a3f; --teal-dark:#0d3d24;
+  --bg:#f3f5f3; --text:#1c1c1a; --muted:#6b6f6c; --danger:#c23b3b;
+  --done:#0d7a3f; --pending:#b0b8c6;
+  --panel:#ffffff; --panel-border:#e3e6e2; --accent-dim:#e3f3ea;
+  --warn:#c98a1e; --warn-dim:#f7ecd6; --danger-dim:#f7e4e2; --line:#ebedec; --ink:#0b0b0c;
+  --sans:'Poppins',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;
+}
+body{ font-family:'Poppins',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif !important;
+  background:var(--bg-page) !important; color:var(--text-primary); }
+h1,h2,h3,h4,.brand strong,.brand b,.page-title,.stat b,.stat .num{ font-family:'Oswald',sans-serif !important; letter-spacing:.3px; }
+/* Encabezado en banda verde (solo .brand-row, confirmado como header) */
+.brand-row{ background:linear-gradient(135deg,#0d3d24,#145232 55%,#0a2e1c) !important; color:#f4f6f4 !important;
+  padding:16px 20px !important; border-radius:12px !important; border-bottom:4px solid #4fae7a !important;
+  box-shadow:0 8px 24px rgba(13,61,36,.18) !important; margin-bottom:18px !important; }
+.brand-row *{ color:#f4f6f4 !important; }
+/* Tarjetas / paneles unificados */
+.stat,.routine-card,.year-summary,.progress-panel,.panel-page{ background:#ffffff !important;
+  border:1px solid var(--border) !important; border-radius:12px !important; box-shadow:0 2px 10px rgba(13,61,36,.05); }
+.stat{ border-top:3px solid var(--accent) !important; }
