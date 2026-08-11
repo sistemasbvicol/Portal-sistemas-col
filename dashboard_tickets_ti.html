@@ -2408,12 +2408,13 @@ dashboard.listenCloud();
   function two(n){ return (n<10?'0':'')+n; }
   function fmt(d){ if(!d)return ''; return d.getFullYear()+'-'+two(d.getMonth()+1)+'-'+two(d.getDate())+' '+two(d.getHours())+':'+two(d.getMinutes()); }
   function tx(c){ return (c&&c.v!=null)?String(c.v).trim():''; }
+  function normEstado(s){ if(!s) return ''; var x=s.toLowerCase(); x=x.split('á').join('a').split('é').join('e').split('í').join('i').split('ó').join('o').split('ú').join('u'); if(x.indexOf('proces')>=0||x.indexOf('progres')>=0||x.indexOf('curso')>=0||x.indexOf('tramit')>=0||x.indexOf('gestion')>=0||x.indexOf('pendient')>=0||x.indexOf('asignad')>=0||x.indexOf('atend')>=0) return 'En proceso'; if(x.indexOf('cerrad')>=0||x.indexOf('resuelt')>=0||x.indexOf('finaliz')>=0||x.indexOf('solucion')>=0||x.indexOf('termin')>=0||x.indexOf('complet')>=0||x.indexOf('closed')>=0) return 'Cerrado'; if(x.indexOf('abiert')>=0||x.indexOf('nuev')>=0||x.indexOf('open')>=0||x.indexOf('reabiert')>=0) return 'Abierto'; return s.trim(); }
   function mapRows(g){ if(!g||!g.table||!g.table.rows)return [];
     var out=[]; g.table.rows.forEach(function(row){ var c=row.c||[];
       var id=(c[0]&&c[0].v!=null)?String(c[0].f!=null?c[0].f:c[0].v).trim():''; if(!id)return;
       var fc=pgd(c[2]), cl=pgd(c[7]); var horas=''; if(fc&&cl){ horas=Math.round((cl-fc)/36000)/100; }
       out.push({ ticket:id, tipo:'', fecha_creacion:fmt(fc), mes:fc?fmt(fc).slice(0,7):'',
-        asunto:tx(c[3]), solicitante:tx(c[1]), prioridad:tx(c[4]), tema:'', estado:tx(c[5]),
+        asunto:tx(c[3]), solicitante:tx(c[1]), prioridad:tx(c[4]), tema:'', estado:normEstado(tx(c[5])),
         agente:tx(c[6]), fecha_cierre:fmt(cl), horas_resolucion:horas }); });
     return out; }
   function loadGviz(){ return new Promise(function(res){
