@@ -2389,5 +2389,63 @@ const dashboard = new Dashboard(DATA);
 dashboard.loadFromCloud();
 dashboard.listenCloud();
 </script>
+<script id="sheets-sync-module">
+(function(){
+  var SHEET_ID='1KTdFkipV5kOSaRtObLpiCrD1SFkZPIh-TaK0cYq2Yzg';
+  var GVIZ='https://docs.google.com/spreadsheets/d/'+SHEET_ID+'/gviz/tq?tqx=out:json&gid=0&range=A3:H1000&headers=1';
+  var DKEY='ti_dashboard_tickets_data_v1';
+  var BKEY='ti_dashboard_tickets_backup_v1';
+  var lastHash=null, chip=null;
+  function setChip(t,color){
+    if(!chip){ chip=document.createElement('div'); chip.id='gsheetSync';
+      chip.style.cssText='position:fixed;left:14px;bottom:14px;z-index:99999;background:#0d3d24;color:#fff;font:600 12px Poppins,Arial,sans-serif;padding:8px 12px;border-radius:20px;box-shadow:0 6px 18px rgba(0,0,0,.25);cursor:pointer;display:flex;align-items:center;gap:6px;';
+      chip.title='Sincronizar ahora desde Google Sheets'; chip.onclick=function(){sync(true);}; document.body.appendChild(chip); }
+    chip.textContent='Google Sheets: '+t; chip.style.background=color||'#0d3d24';
+  }
+  function pgd(cell){ if(!cell)return null; var v=cell.v; if(v==null||v==='')return null;
+    if(typeof v==='string'&&v.slice(0,5)==='Date('){ var a=v.slice(5,-1).split(','); return new Date(+a[0],+a[1],+a[2],+(a[3]||0),+(a[4]||0),+(a[5]||0)); }
+    if(cell.f){ var d=new Date(cell.f); if(!isNaN(d))return d; } var d2=new Date(v); return isNaN(d2)?null:d2; }
+  function two(n){ return (n<10?'0':'')+n; }
+  function fmt(d){ if(!d)return ''; return d.getFullYear()+'-'+two(d.getMonth()+1)+'-'+two(d.getDate())+' '+two(d.getHours())+':'+two(d.getMinutes()); }
+  function tx(c){ return (c&&c.v!=null)?String(c.v).trim():''; }
+  function mapRows(g){ if(!g||!g.table||!g.table.rows)return [];
+    var out=[]; g.table.rows.forEach(function(row){ var c=row.c||[];
+      var id=(c[0]&&c[0].v!=null)?String(c[0].f!=null?c[0].f:c[0].v).trim():''; if(!id)return;
+      var fc=pgd(c[2]), cl=pgd(c[7]); var horas=''; if(fc&&cl){ horas=Math.round((cl-fc)/36000)/100; }
+      out.push({ ticket:id, tipo:'', fecha_creacion:fmt(fc), mes:fc?fmt(fc).slice(0,7):'',
+        asunto:tx(c[3]), solicitante:tx(c[1]), prioridad:tx(c[4]), tema:'', estado:tx(c[5]),
+        agente:tx(c[6]), fecha_cierre:fmt(cl), horas_resolucion:horas }); });
+    return out; }
+  function loadGviz(){ return new Promise(function(res){
+    window.google={visualization:{Query:{setResponse:function(r){window.__gsheet=r;}}}}; window.__gsheet=null;
+    var s=document.createElement('script'); s.src=GVIZ+'&_cb='+Date.now();
+    s.onload=function(){res(window.__gsheet);}; s.onerror=function(){res(null);}; document.body.appendChild(s);
+    setTimeout(function(){res(window.__gsheet);},7000); }); }
+  async function sync(manual){
+    if(!window.storage){ setChip('sin conexion','#8a3b3b'); return; }
+    setChip('actualizando...','#9a6b12');
+    var g=await loadGviz();
+    if(!g||g.status!=='ok'){ setChip('no se pudo leer la hoja','#8a3b3b'); return; }
+    var tickets=mapRows(g);
+    if(tickets.length===0){ setChip('hoja vacia (datos actuales sin cambios)','#6b6f6c'); return; }
+    var hash=JSON.stringify(tickets);
+    if(hash===lastHash && !manual){ setChip(tickets.length+' tickets - '+new Date().toLocaleTimeString('es-CO'),'#0d7a3f'); return; }
+    var upHist=[];
+    try{
+      var cur=await window.storage.get(DKEY);
+      var curVal=cur?(cur.value!==undefined?cur.value:cur):null;
+      if(typeof curVal==='string'){ try{ var pj=JSON.parse(curVal); if(pj&&Array.isArray(pj.uploadHistory))upHist=pj.uploadHistory; }catch(e){} }
+      var bk=await window.storage.get(BKEY);
+      if(!bk && curVal){ try{ await window.storage.set(BKEY, typeof curVal==='string'?curVal:JSON.stringify(curVal)); }catch(e){} }
+    }catch(e){}
+    var payload={ rawData:tickets, uploadHistory:upHist, savedAt:Date.now(), source:'google_sheets' };
+    try{ await window.storage.set(DKEY, JSON.stringify(payload)); lastHash=hash;
+      setChip(tickets.length+' tickets - '+new Date().toLocaleTimeString('es-CO'),'#0d7a3f'); }
+    catch(e){ setChip('error al guardar','#8a3b3b'); }
+  }
+  function start(){ sync(false); setInterval(function(){sync(false);},60000); }
+  if(window.storage){ start(); } else { window.addEventListener('storage-ready',start,{once:true}); setTimeout(function(){ if(window.storage&&lastHash===null) start(); },5000); }
+})();
+</script>
 </body>
 </html>
