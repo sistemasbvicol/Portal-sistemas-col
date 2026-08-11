@@ -125,10 +125,18 @@
   .col-del{border:none;background:transparent;color:#c23b3b;cursor:pointer;font-size:16px;padding:2px 4px;}
   .modal-note{font-size:11.5px;color:var(--text-secondary);margin-top:6px;}
   .modal-foot{padding:14px 20px;border-top:1px solid var(--border);display:flex;justify-content:flex-end;gap:10px;background:#fbfcfb;}
+  .sync-pill{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:600;padding:8px 12px;border-radius:8px;border:1px solid var(--border);white-space:nowrap;}
+  .sync-pill.online{background:#e6f4ec;color:#0d7a3f;border-color:#bfe4cd;}
+  .sync-pill.saving{background:#fbf3df;color:#9a6b12;border-color:#efdca8;}
+  .sync-pill.offline{background:#f3f4f2;color:#6b6f6c;}
 </style>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;600;700&family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="bvi-theme.css">
 <script src="https://cdn.jsdelivr.net/npm/pptxgenjs@3.12.0/dist/pptxgen.bundle.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<script src="firebase-init.js"></script>
 </head>
 <body>
   <div class="top-band">
@@ -136,7 +144,7 @@
       <a class="back-link" href="index.html">← Volver al portal</a>
       <p class="eyebrow">Área de Sistemas</p>
       <h1>Tablas de valores del inventario</h1>
-      <p class="desc">Valorización de los activos de TI organizada por categorías. Edita cualquier celda, agrega nuevos dispositivos o crea tablas nuevas. Los subtotales y el gran total se recalculan solos y tus cambios se guardan en este navegador.</p>
+      <p class="desc">Valorización de los activos de TI organizada por categorías. Edita cualquier celda, agrega nuevos dispositivos o crea tablas nuevas. Los subtotales y el gran total se recalculan solos y los cambios se guardan en línea: todas las personas que abran este enlace ven las actualizaciones.</p>
     </div>
   </div>
 
@@ -163,6 +171,7 @@
       <button class="btn" id="importBtn">⬆ Importar backup</button>
       <input type="file" id="importFile" accept=".json,application/json">
       <div class="spacer"></div>
+      <span class="sync-pill offline" id="syncPill">● Iniciando…</span>
       <button class="btn danger-toggle" id="editToggle">🗑 Modo eliminar: OFF</button>
       <button class="btn" id="resetBtn">↺ Restablecer</button>
     </div>
@@ -209,7 +218,48 @@ function load(){
   try{const s=localStorage.getItem(KEY);if(s){return JSON.parse(s);}}catch(e){}
   return JSON.parse(JSON.stringify(DEFAULT_DATA));
 }
-function save(){try{localStorage.setItem(KEY,JSON.stringify(data));}catch(e){}}
+// ---- Persistencia: cache local + sincronización en la nube (Firestore compartido) ----
+const FKEY='tablas_valores_inventario_v1';
+let cloudReady=false, saveTimer=null, pendingRemote=null;
+function setSync(state,msg){const p=document.getElementById('syncPill');if(!p)return;p.className='sync-pill '+state;p.textContent=msg;}
+function localSave(){try{localStorage.setItem(KEY,JSON.stringify(data));}catch(e){}}
+function cloudSave(){
+  if(!cloudReady||!window.storage)return;
+  setSync('saving','● Guardando…');
+  clearTimeout(saveTimer);
+  saveTimer=setTimeout(()=>{
+    window.storage.set(FKEY,data)
+      .then(()=>setSync('online','● En línea'))
+      .catch(()=>setSync('offline','● Error al guardar'));
+  },500);
+}
+function save(){ localSave(); cloudSave(); }
+function unwrap(raw){ return (raw&&typeof raw==='object'&&'value' in raw)?raw.value:raw; }
+function isEditingNow(){const a=document.activeElement;return a&&(a.tagName==='INPUT'||a.tagName==='TEXTAREA')&&(a.closest('#tables')||a.closest('.overlay'));}
+function applyRemote(val){
+  if(!Array.isArray(val))return;
+  if(JSON.stringify(val)===JSON.stringify(data))return; // mismo contenido (o eco de mi propio guardado)
+  data=val; localSave(); render(); updateTotals();
+  setSync('online','● Actualizado por otro usuario');
+  setTimeout(()=>setSync('online','● En línea'),2000);
+}
+function onRemote(raw){
+  const val=unwrap(raw); if(val==null)return;
+  if(isEditingNow()){ pendingRemote=val; return; }
+  applyRemote(val);
+}
+document.addEventListener('focusout',()=>{setTimeout(()=>{if(pendingRemote&&!isEditingNow()){const v=pendingRemote;pendingRemote=null;applyRemote(v);}},200);});
+function initCloud(){
+  if(cloudReady)return;
+  if(!window.storage){ setSync('offline','● Local (sin conexión)'); return; }
+  cloudReady=true; setSync('saving','● Conectando…');
+  window.storage.get(FKEY).then(raw=>{
+    const val=unwrap(raw);
+    if(Array.isArray(val)&&val.length){ data=val; localSave(); render(); updateTotals(); setSync('online','● En línea'); }
+    else { window.storage.set(FKEY,data).then(()=>setSync('online','● En línea')).catch(()=>setSync('offline','● Local')); }
+    try{ window.storage.watch(FKEY,onRemote); }catch(e){}
+  }).catch(()=>{ setSync('offline','● Local'); });
+}
 function parseNum(v){if(typeof v==='number')return v;if(v==null)return 0;const n=parseFloat(String(v).replace(/[^0-9.-]/g,''));return isNaN(n)?0:n;}
 function isNumericCol(t,ci){
   if(ci===t.valueCol)return true;
@@ -279,7 +329,7 @@ function buildRow(t,ti,row,ri,numeric){
       const nf=new Intl.NumberFormat('es-CO',{maximumFractionDigits:0});
       const showFmt=()=>{inp.value=(row[ci]===''||row[ci]==null||row[ci]===0 && String(row[ci])==='')?'':nf.format(parseNum(row[ci]));};
       inp.value=(row[ci]===''||row[ci]==null)?'':nf.format(parseNum(row[ci]));
-      inp.addEventListener('focus',()=>{const v=parseNum(row[ci]);inp.value=v===0&&(row[ci]===''||row[ci]==null)?'':v;});
+      inp.addEventListener('focus',()=>{const v=parseNum(row[ci]);inp.value=v?v:'';});
       inp.addEventListener('blur',showFmt);
     }
     else{inp.value=row[ci]==null?'':row[ci];}
@@ -367,7 +417,7 @@ document.getElementById('editToggle').addEventListener('click',(e)=>{
   e.target.textContent='🗑 Modo eliminar: '+(editMode?'ON':'OFF');
 });
 document.getElementById('resetBtn').addEventListener('click',()=>{
-  if(confirm('¿Restablecer todas las tablas a los datos originales del Excel? Se perderán tus cambios guardados.')){
+  if(confirm('¿Restablecer todas las tablas a los datos originales del Excel? Esto reemplaza los datos EN LÍNEA para TODOS los usuarios y no se puede deshacer.')){
     data=JSON.parse(JSON.stringify(DEFAULT_DATA));save();render();updateTotals();toast('Datos restablecidos');
   }
 });
@@ -538,6 +588,9 @@ function exportPPTX(){
 document.getElementById('exportPptx').addEventListener('click',exportPPTX);
 
 data=load();render();updateTotals();
+// Conectar a la nube (Firestore compartido) cuando esté lista
+if(window.storage){ initCloud(); }
+else { window.addEventListener('storage-ready',initCloud,{once:true}); setTimeout(initCloud,5000); }
 </script>
 </body>
 </html>
