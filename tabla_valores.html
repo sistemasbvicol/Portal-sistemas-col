@@ -228,13 +228,17 @@ function cloudSave(){
   setSync('saving','● Guardando…');
   clearTimeout(saveTimer);
   saveTimer=setTimeout(()=>{
-    window.storage.set(FKEY,data)
+    window.storage.set(FKEY,{json:JSON.stringify(data)})
       .then(()=>setSync('online','● En línea'))
       .catch(()=>setSync('offline','● Error al guardar'));
   },500);
 }
 function save(){ localSave(); cloudSave(); }
-function unwrap(raw){ return (raw&&typeof raw==='object'&&'value' in raw)?raw.value:raw; }
+function readCloud(raw){
+  let v=(raw&&typeof raw==='object'&&'value' in raw)?raw.value:raw;
+  if(v&&typeof v==='object'&&typeof v.json==='string'){ try{ return JSON.parse(v.json); }catch(e){ return null; } }
+  return Array.isArray(v)?v:null; // compatibilidad
+}
 function isEditingNow(){const a=document.activeElement;return a&&(a.tagName==='INPUT'||a.tagName==='TEXTAREA')&&(a.closest('#tables')||a.closest('.overlay'));}
 function applyRemote(val){
   if(!Array.isArray(val))return;
@@ -244,7 +248,7 @@ function applyRemote(val){
   setTimeout(()=>setSync('online','● En línea'),2000);
 }
 function onRemote(raw){
-  const val=unwrap(raw); if(val==null)return;
+  const val=readCloud(raw); if(val==null)return;
   if(isEditingNow()){ pendingRemote=val; return; }
   applyRemote(val);
 }
@@ -254,9 +258,9 @@ function initCloud(){
   if(!window.storage){ setSync('offline','● Local (sin conexión)'); return; }
   cloudReady=true; setSync('saving','● Conectando…');
   window.storage.get(FKEY).then(raw=>{
-    const val=unwrap(raw);
+    const val=readCloud(raw);
     if(Array.isArray(val)&&val.length){ data=val; localSave(); render(); updateTotals(); setSync('online','● En línea'); }
-    else { window.storage.set(FKEY,data).then(()=>setSync('online','● En línea')).catch(()=>setSync('offline','● Local')); }
+    else { window.storage.set(FKEY,{json:JSON.stringify(data)}).then(()=>setSync('online','● En línea')).catch(()=>setSync('offline','● Local')); }
     try{ window.storage.watch(FKEY,onRemote); }catch(e){}
   }).catch(()=>{ setSync('offline','● Local'); });
 }
