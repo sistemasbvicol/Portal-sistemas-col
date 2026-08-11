@@ -22,11 +22,14 @@
   .top-band-inner{max-width:1180px;margin:0 auto;}
   .back-link{display:inline-flex;align-items:center;gap:6px;color:#7fd9a8;text-decoration:none;font-size:12.5px;font-weight:600;letter-spacing:.4px;margin-bottom:14px;}
   .back-link:hover{color:#a8e9c5;}
-  .top-band-inner{position:relative;}
-  .brand-logo{position:absolute;top:0;right:0;display:inline-block;background:#fff;border-radius:10px;padding:8px 12px;box-shadow:0 6px 18px rgba(0,0,0,.20);transition:transform .15s ease, box-shadow .15s ease;line-height:0;}
+  .brand-head{display:flex;align-items:center;gap:16px;margin-bottom:12px;}
+  .brand-text{display:flex;flex-direction:column;}
+  .brand-text .eyebrow{margin:0 0 3px;}
+  .brand-text h1{margin:0;}
+  .brand-logo{flex-shrink:0;display:inline-block;background:#fff;border-radius:10px;padding:7px 11px;box-shadow:0 6px 18px rgba(0,0,0,.20);transition:transform .15s ease, box-shadow .15s ease;line-height:0;}
   .brand-logo:hover{transform:translateY(-2px);box-shadow:0 10px 24px rgba(0,0,0,.30);}
-  .brand-logo img{height:48px;width:auto;display:block;}
-  @media(max-width:640px){.brand-logo{position:static;margin-bottom:14px;}.brand-logo img{height:40px;}}
+  .brand-logo img{height:44px;width:auto;display:block;}
+  @media(max-width:640px){.brand-head{gap:12px;}.brand-logo img{height:36px;}.brand-text h1{font-size:18px;}}
   .eyebrow{font-size:11.5px;letter-spacing:1.5px;text-transform:uppercase;color:#7fd9a8;font-weight:600;margin:0 0 8px 0;}
   h1{font-family:'Oswald',sans-serif;font-size:25px;font-weight:700;margin:0 0 8px 0;letter-spacing:.3px;text-transform:uppercase;}
   .top-band p.desc{margin:0;font-size:13.5px;color:rgba(244,246,244,0.78);max-width:70ch;}
@@ -146,10 +149,13 @@
 <body>
   <div class="top-band">
     <div class="top-band-inner">
-      <a class="brand-logo" href="index.html" title="Volver al portal"><img src="bvi-logo.png" alt="Barron Vieyra International — Volver al portal"></a>
-      <a class="back-link" href="index.html">← Volver al portal</a>
-      <p class="eyebrow">Área de Sistemas</p>
-      <h1>Tablas de valores del inventario</h1>
+      <div class="brand-head">
+        <a class="brand-logo" href="index.html" title="Volver al portal"><img src="bvi-logo.png" alt="Barron Vieyra International — Volver al portal"></a>
+        <div class="brand-text">
+          <p class="eyebrow">Área de Sistemas</p>
+          <h1>Tablas de valores del inventario</h1>
+        </div>
+      </div>
       <p class="desc">Valorización de los activos de TI organizada por categorías. Edita cualquier celda, agrega nuevos dispositivos o crea tablas nuevas. Los subtotales y el gran total se recalculan solos y los cambios se guardan en línea: todas las personas que abran este enlace ven las actualizaciones.</p>
     </div>
   </div>
