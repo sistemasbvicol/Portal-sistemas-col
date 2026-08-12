@@ -2389,5 +2389,151 @@ const dashboard = new Dashboard(DATA);
 dashboard.loadFromCloud();
 dashboard.listenCloud();
 </script>
+<!-- ===== SINCRONIZACION CON GOOGLE SHEETS (sheets-sync) ===== -->
+<script id="sheets-sync-module">
+(function(){
+  var SHEET_ID = "1KTdFkipV5kOSaRtObLpiCrD1SFkZPIh-TaK0cYq2Yzg";
+  var RANGE = "A3:H1000";
+  var DKEY = "ti_dashboard_tickets_data_v1";
+  var SYNC_MS = 60000;
+  var cbName = "__sheetsSyncCb";
+  var lastSig = "";
+
+  function pad(n){ n = "" + n; return n.length < 2 ? "0" + n : n; }
+  function tx(c){ return (c && c.v != null) ? String(c.v).trim() : ""; }
+  function pgd(cell){
+    if(!cell || cell.v == null) return null;
+    var v = String(cell.v);
+    if(v.indexOf("Date(") !== 0){
+      var d0 = new Date(v);
+      return isNaN(d0) ? null : d0;
+    }
+    var parts = v.slice(5, -1).split(",");
+    var y = parseInt(parts[0],10), mo = parseInt(parts[1],10), d = parseInt(parts[2],10);
+    var h = parts.length>3 ? parseInt(parts[3],10) : 0;
+    var mi = parts.length>4 ? parseInt(parts[4],10) : 0;
+    var s = parts.length>5 ? parseInt(parts[5],10) : 0;
+    if(isNaN(y)) return null;
+    return new Date(y, isNaN(mo)?0:mo, isNaN(d)?1:d, isNaN(h)?0:h, isNaN(mi)?0:mi, isNaN(s)?0:s);
+  }
+  function fmt(dt){
+    if(!dt || isNaN(dt)) return "";
+    return dt.getFullYear() + "-" + pad(dt.getMonth()+1) + "-" + pad(dt.getDate()) + " " + pad(dt.getHours()) + ":" + pad(dt.getMinutes());
+  }
+  function mesOf(dt){
+    if(!dt || isNaN(dt)) return "";
+    return dt.getFullYear() + "-" + pad(dt.getMonth()+1);
+  }
+  function stripAcc(s){
+    return s.split("á").join("a").split("é").join("e").split("í").join("i").split("ó").join("o").split("ú").join("u").split("Á").join("A").split("É").join("E").split("Í").join("I").split("Ó").join("O").split("Ú").join("U").split("ñ").join("n").split("Ñ").join("N");
+  }
+  // Devuelve el valor canonico interno del dashboard: 'Abrir' = ABIERTO (lo que detecta la campanita)
+  function normEstado(raw){
+    var s = stripAcc(String(raw || "").toLowerCase().trim());
+    if(s === "") return "Abrir";
+    if(s.indexOf("abiert") >= 0 || s.indexOf("nuev") >= 0 || s.indexOf("open") >= 0 || s.indexOf("reabiert") >= 0 || s.indexOf("proces") >= 0 || s.indexOf("curso") >= 0 || s.indexOf("tramit") >= 0 || s.indexOf("pendient") >= 0 || s.indexOf("asignad") >= 0 || s.indexOf("gestion") >= 0) return "Abrir";
+    if(s.indexOf("resuelt") >= 0 || s.indexOf("solucion") >= 0) return "Resuelto";
+    if(s.indexOf("cerrad") >= 0 || s.indexOf("closed") >= 0 || s.indexOf("finaliz") >= 0 || s.indexOf("complet") >= 0 || s.indexOf("termin") >= 0) return "Cerrado";
+    return "Cerrado";
+  }
+  function normPrio(raw){
+    var s = stripAcc(String(raw || "").toLowerCase().trim());
+    if(s.indexOf("urgent") >= 0) return "Urgente";
+    if(s.indexOf("alta") >= 0 || s.indexOf("high") >= 0) return "Alta";
+    if(s.indexOf("baja") >= 0 || s.indexOf("low") >= 0) return "Baja";
+    return "Normal";
+  }
+  function mapRows(table){
+    var rows = (table && table.rows) || [];
+    var out = [];
+    for(var i=0;i<rows.length;i++){
+      var c = rows[i].c || [];
+      var ticket = tx(c[0]);
+      if(!ticket) continue;
+      var creada = pgd(c[2]);
+      var cerrada = pgd(c[7]);
+      var horas = null;
+      if(creada && cerrada && !isNaN(creada) && !isNaN(cerrada)){
+        horas = Math.round(((cerrada - creada) / 3600000) * 100) / 100;
+        if(horas < 0) horas = null;
+      }
+      out.push({
+        ticket: ticket,
+        tipo: "REQUERIMIENTO",
+        fecha_creacion: fmt(creada),
+        mes: mesOf(creada),
+        asunto: tx(c[3]),
+        solicitante: tx(c[1]),
+        prioridad: normPrio(tx(c[4])),
+        tema: "GENERAL",
+        estado: normEstado(tx(c[5])),
+        agente: tx(c[6]),
+        fecha_cierre: fmt(cerrada),
+        horas_resolucion: horas,
+        reabierto: 0
+      });
+    }
+    return out;
+  }
+  function chip(txt, ok){
+    var el = document.getElementById("gsheetSync");
+    if(!el){
+      el = document.createElement("div");
+      el.id = "gsheetSync";
+      el.style.cssText = "position:fixed;right:14px;bottom:14px;z-index:9999;font:600 12px 'Poppins',sans-serif;padding:7px 12px;border-radius:20px;box-shadow:0 2px 10px rgba(0,0,0,.18);display:flex;align-items:center;gap:6px;transition:opacity .4s;";
+      document.body.appendChild(el);
+    }
+    el.style.background = ok ? "#0d7a3f" : "#c98a1e";
+    el.style.color = "#fff";
+    el.textContent = txt;
+    el.style.opacity = "1";
+    if(ok){ setTimeout(function(){ if(el) el.style.opacity = "0.35"; }, 4000); }
+  }
+  function loadGviz(){
+    return new Promise(function(resolve){
+      window[cbName] = function(resp){
+        try{
+          if(resp && resp.table){ resolve(resp.table); }
+          else { resolve(null); }
+        }catch(e){ resolve(null); }
+      };
+      var url = "https://docs.google.com/spreadsheets/d/" + SHEET_ID + "/gviz/tq?tqx=out:json;responseHandler:" + cbName + "&range=" + RANGE + "&headers=1";
+      var s = document.createElement("script");
+      s.src = url;
+      s.onerror = function(){ resolve(null); };
+      document.body.appendChild(s);
+      setTimeout(function(){ resolve(null); }, 12000);
+    });
+  }
+  async function sync(){
+    if(!window.storage){ return; }
+    try{
+      chip("🔄 Sincronizando Google Sheets...", true);
+      var table = await loadGviz();
+      var tickets = table ? mapRows(table) : [];
+      if(!tickets.length){ chip("⚠️ Sin datos de la hoja", false); return; }
+      var sig = tickets.length + "|" + tickets.filter(function(t){return t.estado==="Abrir";}).length;
+      var payload = JSON.stringify({ rawData: tickets, uploadHistory: [], savedAt: Date.now(), source: "google_sheets" });
+      await window.storage.ready;
+      await window.storage.set(DKEY, payload, true);
+      lastSig = sig;
+      var ab = tickets.filter(function(t){return t.estado==="Abrir";}).length;
+      chip("✅ Google Sheets · " + tickets.length + " tickets · " + ab + " abiertos", true);
+    }catch(e){
+      chip("⚠️ Error de sincronización", false);
+    }
+  }
+  var started = false;
+  function start(){
+    if(started) return;
+    started = true;
+    sync();
+    setInterval(sync, SYNC_MS);
+  }
+  if(window.storage && window.storage.ready){ start(); }
+  else { window.addEventListener("storage-ready", start, { once: true }); setTimeout(start, 6000); }
+})();
+</script>
+
 </body>
 </html>
