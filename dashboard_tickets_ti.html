@@ -2393,7 +2393,7 @@ dashboard.listenCloud();
 <script id="sheets-sync-module">
 (function(){
   var SHEET_ID = "1KTdFkipV5kOSaRtObLpiCrD1SFkZPIh-TaK0cYq2Yzg";
-  var RANGE = "A3:K3000";
+  var RANGE = "A3:L3000";
   var DKEY = "ti_dashboard_tickets_data_v1";
   var SYNC_MS = 60000;
   var cbName = "__sheetsSyncCb";
@@ -2448,28 +2448,32 @@ dashboard.listenCloud();
     var out = [];
     for(var i=0;i<rows.length;i++){
       var c = rows[i].c || [];
-      // Columnas de la hoja (A..K):
-      // 0 Ticket ID · 1 Usuario · 2 Tipo · 3 Categoria · 4 Descripcion ·
-      // 5 Prioridad · 6 Estado · 7 Tecnico · 8 Fecha · 9 Fecha Resolucion · 10 Dias Resolucion
+      // Columnas de la hoja (A..L):
+      // 0 Ticket ID · 1 Usuario · 2 Tipo · 3 Categoria · 4 Descripcion · 5 Prioridad ·
+      // 6 Estado · 7 Tecnico · 8 Fecha · 9 Reabrir contador · 10 Fecha Resolucion · 11 Dias Resolucion
       var ticket = tx(c[0]);
       if(!ticket) continue;
       var creada = pgd(c[8]);
-      var cerrada = pgd(c[9]);
+      var cerrada = pgd(c[10]);
       var horas = null;
       if(creada && cerrada && !isNaN(creada) && !isNaN(cerrada)){
         horas = Math.round(((cerrada - creada) / 3600000) * 100) / 100;
         if(horas < 0) horas = null;
       }
-      // Respaldo: si faltan fechas, usar la columna "Dias Resolucion" (K)
+      // Respaldo: si faltan fechas, usar la columna "Dias Resolucion" (L)
       if(horas === null){
-        var dR = parseFloat(tx(c[10]));
+        var dR = parseFloat(tx(c[11]));
         if(!isNaN(dR) && dR >= 0) horas = Math.round(dR * 24 * 100) / 100;
       }
       var estadoRaw = tx(c[6]);
-      // Reabierto: si el Estado dice "Reabierto"
+      // Reabierto: desde la columna "Reabrir contador" (J); si no, por Estado "Reabierto"
       var reab = 0;
-      var el = stripAcc(estadoRaw.toLowerCase());
-      if(el.indexOf("reab") >= 0) reab = 1;
+      var rn = parseInt(tx(c[9]), 10);
+      if(!isNaN(rn) && rn > 0){ reab = rn; }
+      else {
+        var el = stripAcc(estadoRaw.toLowerCase());
+        if(el.indexOf("reab") >= 0) reab = 1;
+      }
       var tipoRaw = tx(c[2]); if(!tipoRaw) tipoRaw = "REQUERIMIENTO";
       var temaRaw = tx(c[3]); if(!temaRaw) temaRaw = "GENERAL";
       out.push({
