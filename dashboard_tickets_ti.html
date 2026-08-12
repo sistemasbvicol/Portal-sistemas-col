@@ -2555,5 +2555,308 @@ dashboard.listenCloud();
 })();
 </script>
 
+<!-- ===== AREAS (GRUPOS DE SOLICITANTES) + DOBLE CLIC EN GRAFICOS ===== -->
+<style id="areas-dc-style">
+  #filter-area-group select { min-width: 150px; }
+  .area-edit-btn { border:1px solid var(--border,#d5dbde); background:#fff; border-radius:6px; padding:4px 8px; font-size:13px; cursor:pointer; margin-left:4px; }
+  .area-edit-btn:hover { background:#EEF7F1; }
+  #areas-overlay { position:fixed; inset:0; background:rgba(10,30,20,.45); z-index:10000; display:none; align-items:center; justify-content:center; }
+  #areas-overlay.open { display:flex; }
+  #areas-modal { background:#fff; width:min(760px,94vw); max-height:88vh; border-radius:14px; overflow:hidden; display:flex; flex-direction:column; box-shadow:0 20px 60px rgba(0,0,0,.3); font-family:'Poppins',sans-serif; }
+  #areas-modal .am-head { background:linear-gradient(135deg,#0d3d24,#145232 55%,#0a2e1c); color:#fff; padding:14px 18px; display:flex; align-items:center; justify-content:space-between; }
+  #areas-modal .am-head h3 { margin:0; font-family:'Oswald',sans-serif; letter-spacing:.4px; font-size:18px; }
+  #areas-modal .am-close { background:none; border:none; color:#fff; font-size:22px; cursor:pointer; line-height:1; }
+  #areas-modal .am-body { display:flex; gap:0; min-height:340px; }
+  #areas-modal .am-left { width:38%; border-right:1px solid #e6ebe8; padding:12px; overflow-y:auto; max-height:70vh; }
+  #areas-modal .am-right { width:62%; padding:12px 14px; overflow-y:auto; max-height:70vh; }
+  #areas-modal .am-area-item { display:flex; align-items:center; gap:6px; padding:8px 10px; border-radius:8px; cursor:pointer; font-size:13px; color:#123; }
+  #areas-modal .am-area-item:hover { background:#EEF7F1; }
+  #areas-modal .am-area-item.active { background:#12324B; color:#fff; }
+  #areas-modal .am-area-item .am-del { margin-left:auto; border:none; background:none; color:inherit; cursor:pointer; opacity:.7; font-size:14px; }
+  #areas-modal .am-newrow { display:flex; gap:6px; margin-top:10px; }
+  #areas-modal .am-newrow input { flex:1; border:1px solid #d5dbde; border-radius:8px; padding:7px 9px; font-size:13px; font-family:inherit; }
+  #areas-modal .am-btn { border:none; border-radius:8px; padding:7px 12px; font-size:13px; font-weight:600; cursor:pointer; font-family:inherit; }
+  #areas-modal .am-btn.green { background:#1F7A5A; color:#fff; }
+  #areas-modal .am-btn.green:hover { background:#155f45; }
+  #areas-modal .am-search { width:100%; border:1px solid #d5dbde; border-radius:8px; padding:7px 9px; font-size:13px; margin-bottom:8px; box-sizing:border-box; font-family:inherit; }
+  #areas-modal .am-mem { display:flex; align-items:center; gap:8px; padding:5px 6px; border-radius:6px; font-size:13px; }
+  #areas-modal .am-mem:hover { background:#f4f8f6; }
+  #areas-modal .am-mem .cnt { margin-left:auto; color:#7a8a82; font-size:12px; }
+  #areas-modal .am-foot { padding:12px 18px; border-top:1px solid #e6ebe8; display:flex; align-items:center; justify-content:space-between; }
+  #areas-modal .am-hint { color:#7a8a82; font-size:12px; }
+  #areas-modal .am-empty { color:#9aa; font-size:13px; padding:14px; text-align:center; }
+</style>
+<script id="areas-doubleclick-module">
+(function(){
+  var AREAS_KEY = "ti_dashboard_areas_v1";
+  var model = { areas: [] };
+  var selectedAreaId = null;
+
+  function getApp(){ try { return (typeof dashboard !== "undefined" && dashboard) ? dashboard : (window.dashboard || null); } catch(e){ return null; } }
+  function allSolicitantes(app){
+    if(app && app._msAllSolicitantes && app._msAllSolicitantes.length) return app._msAllSolicitantes.slice();
+    if(app && app.rawData){ var s={}; app.rawData.forEach(function(r){ if(r.solicitante) s[r.solicitante]=1; }); return Object.keys(s).sort(); }
+    return [];
+  }
+  function counts(app){ var c={}; if(app&&app.rawData){ app.rawData.forEach(function(r){ c[r.solicitante]=(c[r.solicitante]||0)+1; }); } return c; }
+  function uid(){ return "a" + (model.areas.reduce(function(m,a){ var n=parseInt((a.id||"a0").slice(1),10); return Math.max(m, isNaN(n)?0:n); },0) + 1); }
+  function toast(app,msg,type){ if(app && typeof app.showToast==="function") app.showToast(msg, type||"success", 3500); }
+
+  /* ---------- persistencia (nube compartida) ---------- */
+  function loadAreas(){
+    if(!window.storage){ return; }
+    window.storage.ready.then(function(){
+      return window.storage.get(AREAS_KEY, true);
+    }).then(function(res){
+      if(res && res.value){ try{ var m=JSON.parse(res.value); if(m && m.areas) model=m; }catch(e){} }
+      if(!model.areas) model.areas=[];
+      renderAreaFilter();
+    }).catch(function(){});
+  }
+  function saveAreas(){
+    if(!window.storage) return Promise.resolve();
+    return window.storage.ready.then(function(){ return window.storage.set(AREAS_KEY, JSON.stringify(model), true); });
+  }
+  function watchAreas(){
+    if(window.storage && typeof window.storage.watch==="function"){
+      window.storage.watch(AREAS_KEY, function(res){
+        if(res && res.value){ try{ var m=JSON.parse(res.value); if(m && m.areas){ model=m; renderAreaFilter(); if(document.getElementById("areas-overlay").classList.contains("open")) renderModal(); } }catch(e){} }
+      });
+    }
+  }
+
+  /* ---------- filtro Area en la barra ---------- */
+  function ensureAreaFilter(){
+    if(document.getElementById("filter-area-group")) return;
+    var filters=document.querySelector(".filters"); if(!filters) return;
+    var group=document.createElement("div");
+    group.className="filter-group"; group.id="filter-area-group";
+    group.innerHTML='<label>Área</label>';
+    var row=document.createElement("div");
+    row.style.cssText="display:flex;align-items:center;";
+    var sel=document.createElement("select"); sel.id="filter-area";
+    sel.innerHTML='<option value="">Todas</option>';
+    var edit=document.createElement("button");
+    edit.type="button"; edit.className="area-edit-btn"; edit.id="area-edit-btn"; edit.title="Crear y editar áreas"; edit.textContent="🗂️";
+    row.appendChild(sel); row.appendChild(edit);
+    group.appendChild(row);
+    // insertar antes del grupo "Desde" (fecha inicio) si existe
+    var fi=document.getElementById("filter-fecha-inicio");
+    var beforeNode=fi ? fi.closest(".filter-group") : null;
+    if(beforeNode) filters.insertBefore(group, beforeNode); else filters.appendChild(group);
+
+    sel.addEventListener("change", function(){ applyAreaFilter(sel.value); });
+    edit.addEventListener("click", openModal);
+  }
+  function renderAreaFilter(){
+    ensureAreaFilter();
+    var sel=document.getElementById("filter-area"); if(!sel) return;
+    var cur=sel.value;
+    sel.innerHTML='<option value="">Todas</option>';
+    (model.areas||[]).forEach(function(a){
+      var o=document.createElement("option"); o.value=a.name; o.textContent=a.name + " ("+(a.members?a.members.length:0)+")";
+      sel.appendChild(o);
+    });
+    if(cur && (model.areas||[]).some(function(a){return a.name===cur;})) sel.value=cur; else sel.value="";
+  }
+  function applyAreaFilter(name){
+    var app=getApp(); if(!app) return;
+    app.selectedSolicitantes.clear();
+    if(name){
+      var area=(model.areas||[]).find(function(a){return a.name===name;});
+      var mem=(area && area.members) ? area.members : [];
+      mem.forEach(function(m){ app.selectedSolicitantes.add(m); });
+    }
+    if(typeof app.renderMultiselectList==="function") app.renderMultiselectList();
+    if(typeof app.updateMultiselectBtn==="function") app.updateMultiselectBtn();
+    app.page=0; app.applyFilters();
+    if(name) toast(app,'Área aplicada: '+name+' ('+app.selectedSolicitantes.size+' usuarios)','success');
+  }
+
+  /* ---------- modal de edicion ---------- */
+  function ensureModal(){
+    if(document.getElementById("areas-overlay")) return;
+    var ov=document.createElement("div"); ov.id="areas-overlay";
+    ov.innerHTML =
+      '<div id="areas-modal">'
+      + '<div class="am-head"><h3>🗂️ Áreas por grupo de usuarios</h3><button class="am-close" title="Cerrar">×</outton></div>'
+      + '<div class="am-body"><div class="am-left" id="am-left"></div><div class="am-right" id="am-right"></div></div>'
+      + '<div class="am-foot"><span class="am-hint">Los cambios se guardan y comparten en la nube.</span><button class="am-btn green" id="am-save">Guardar cambios</button></div>'
+      + '</div>';
+    document.body.appendChild(ov);
+    ov.querySelector(".am-close").addEventListener("click", closeModal);
+    ov.addEventListener("click", function(e){ if(e.target===ov) closeModal(); });
+    document.getElementById("am-save").addEventListener("click", function(){
+      saveAreas().then(function(){ var app=getApp(); toast(app,"Áreas guardadas","success"); renderAreaFilter(); }).catch(function(){});
+    });
+  }
+  function openModal(){ ensureModal(); if(!selectedAreaId && model.areas.length) selectedAreaId=model.areas[0].id; renderModal(); document.getElementById("areas-overlay").classList.add("open"); }
+  function closeModal(){ var ov=document.getElementById("areas-overlay"); if(ov) ov.classList.remove("open"); }
+
+  function renderModal(){
+    var app=getApp();
+    var left=document.getElementById("am-left"); var right=document.getElementById("am-right");
+    if(!left||!right) return;
+    var html="";
+    (model.areas||[]).forEach(function(a){
+      html += '<div class="am-area-item '+(a.id===selectedAreaId?"active":"")+'" data-id="'+a.id+'">'
+            + '<span class="am-name">'+escapeHtml(a.name)+'</span>'
+            + '<span style="opacity:.7;font-size:12px;">'+(a.members?a.members.length:0)+'</span>'
+            + '<button class="am-del" title="Eliminar área" data-del="'+a.id+'">🗑</button>'
+            + '</div>';
+    });
+    if(!model.areas.length) html='<div class="am-empty">Aún no hay áreas. Crea la primera abajo.</div>';
+    html += '<div class="am-newrow"><input id="am-new-name" type="text" placeholder="Nombre del área (ej. CONTABILIDAD)"><button class="am-btn green" id="am-add">Crear</button></div>';
+    left.innerHTML=html;
+
+    left.querySelectorAll(".am-area-item").forEach(function(el){
+      el.addEventListener("click", function(e){ if(e.target.getAttribute("data-del")) return; selectedAreaId=el.getAttribute("data-id"); renderModal(); });
+    });
+    left.querySelectorAll("[data-del]").forEach(function(b){
+      b.addEventListener("click", function(e){ e.stopPropagation(); var id=b.getAttribute("data-del"); model.areas=model.areas.filter(function(a){return a.id!==id;}); if(selectedAreaId===id) selectedAreaId=model.areas.length?model.areas[0].id:null; renderModal(); });
+    });
+    document.getElementById("am-add").addEventListener("click", function(){
+      var inp=document.getElementById("am-new-name"); var nm=(inp.value||"").trim();
+      if(!nm) return;
+      if(model.areas.some(function(a){return a.name.toLowerCase()===nm.toLowerCase();})){ toast(app,"Ya existe un área con ese nombre","warning"); return; }
+      var na={ id:uid(), name:nm, members:[] }; model.areas.push(na); selectedAreaId=na.id; renderModal();
+    });
+
+    var area=(model.areas||[]).find(function(a){return a.id===selectedAreaId;});
+    if(!area){ right.innerHTML='<div class="am-empty">Selecciona o crea un área para asignar usuarios.</div>'; return; }
+    var all=allSolicitantes(app); var cnt=counts(app);
+    var rhtml='<div style="font-weight:600;color:#12324B;margin-bottom:6px;">Usuarios en «'+escapeHtml(area.name)+'»</div>'
+            + '<input class="am-search" id="am-mem-search" type="text" placeholder="Buscar usuario...">'
+            + '<div id="am-mem-list"></div>';
+    right.innerHTML=rhtml;
+    var searchEl=document.getElementById("am-mem-search");
+    function paintMembers(term){
+      term=(term||"").trim().toLowerCase();
+      var list=document.getElementById("am-mem-list"); var mh="";
+      all.filter(function(s){ return s.toLowerCase().indexOf(term)>=0; }).forEach(function(s){
+        var checked=area.members.indexOf(s)>=0 ? "checked":"";
+        mh += '<label class="am-mem"><input type="checkbox" value="'+escapeAttr(s)+'" '+checked+'><span>'+escapeHtml(s)+'</span><span class="cnt">'+(cnt[s]||0)+'</span></label>';
+      });
+      if(!all.length) mh='<div class="am-empty">No hay usuarios cargados todavía.</div>';
+      list.innerHTML=mh;
+      list.querySelectorAll('input[type="checkbox"]').forEach(function(cb){
+        cb.addEventListener("change", function(){
+          var v=cb.value; var i=area.members.indexOf(v);
+          if(cb.checked){ if(i<0) area.members.push(v); } else { if(i>=0) area.members.splice(i,1); }
+          var lab=document.querySelector('.am-area-item[data-id="'+area.id+'"] span:nth-child(2)'); if(lab) lab.textContent=area.members.length;
+        });
+      });
+    }
+    paintMembers("");
+    searchEl.addEventListener("input", function(){ paintMembers(searchEl.value); });
+  }
+
+  function escapeHtml(s){ return String(s==null?"":s).split("&").join("&amp;").split("<").join("&lt;").split(">").join("&gt;"); }
+  function escapeAttr(s){ return escapeHtml(s).split('"').join("&quot;"); }
+
+  /* ---------- doble clic en graficos -> filtro ---------- */
+  var CHART_MAP = {
+    "chart-prioridad": { type:"select", sel:"filter-prioridad" },
+    "chart-temas": { type:"select", sel:"filter-tema" },
+    "chart-agentes": { type:"select", sel:"filter-agente" },
+    "chart-estado": { type:"estado" },
+    "chart-tiempo-prioridad": { type:"select", sel:"filter-prioridad" },
+    "chart-tiempo-tema": { type:"select", sel:"filter-tema" },
+    "chart-mensual": { type:"mes" },
+    "chart-solicitantes": { type:"solicitante" }
+  };
+  var attached = {};
+  function setSelectFilter(app, id, value){
+    var sel=document.getElementById(id); if(!sel) return;
+    var opt=null; Array.prototype.forEach.call(sel.options, function(o){ if(o.value===value) opt=o; });
+    if(!opt) return;
+    sel.value = (sel.value===value) ? "" : value;
+    app.page=0; app.applyFilters();
+    toast(app, sel.value ? ('Filtro: '+opt.textContent) : 'Filtro quitado', "info");
+  }
+  function setEstado(app, label){
+    var sel=document.getElementById("filter-estado"); if(!sel) return; var val=null, txt=null;
+    Array.prototype.forEach.call(sel.options, function(o){ if(o.value && o.textContent.trim()===String(label).trim()){ val=o.value; txt=o.textContent; } });
+    if(val==null) return;
+    sel.value = (sel.value===val) ? "" : val;
+    app.page=0; app.applyFilters();
+    toast(app, sel.value ? ('Filtro: '+txt) : 'Filtro quitado', "info");
+  }
+  function setMes(app, label){
+    var sel=document.getElementById("filter-mes"); if(!sel) return; var val=null;
+    Array.prototype.forEach.call(sel.options, function(o){ if(o.value && typeof app.formatMesLabel==="function" && app.formatMesLabel(o.value)===String(label)){ val=o.value; } });
+    if(val==null){ Array.prototype.forEach.call(sel.options, function(o){ if(o.value===String(label)) val=o.value; }); }
+    if(val==null) return;
+    sel.value = (sel.value===val) ? "" : val;
+    app.page=0; app.applyFilters();
+    toast(app, sel.value ? ('Mes: '+label) : 'Filtro quitado', "info");
+  }
+  function setSolicitante(app, name){
+    if(app.selectedSolicitantes.has(name) && app.selectedSolicitantes.size===1){ app.selectedSolicitantes.clear(); }
+    else { app.selectedSolicitantes.clear(); app.selectedSolicitantes.add(name); }
+    var af=document.getElementById("filter-area"); if(af) af.value="";
+    if(typeof app.renderMultiselectList==="function") app.renderMultiselectList();
+    if(typeof app.updateMultiselectBtn==="function") app.updateMultiselectBtn();
+    app.page=0; app.applyFilters();
+    toast(app, app.selectedSolicitantes.size ? ('Usuario: '+name) : 'Filtro quitado', "info");
+  }
+  function onDbl(canvasId, evt){
+    var app=getApp(); if(!app || !app.charts) return;
+    var chart=app.charts[canvasId]; if(!chart) return;
+    var pts=chart.getElementsAtEventForMode(evt, "nearest", { intersect:true }, true);
+    if(!pts || !pts.length) return;
+    var idx=pts[0].index;
+    var label=chart.data.labels[idx];
+    var m=CHART_MAP[canvasId]; if(!m) return;
+    if(m.type==="select") setSelectFilter(app, m.sel, label);
+    else if(m.type==="estado") setEstado(app, label);
+    else if(m.type==="mes") setMes(app, label);
+    else if(m.type==="solicitante") setSolicitante(app, String(label));
+  }
+  function attachDbl(){
+    var app=getApp(); if(!app || !app.charts) return;
+    Object.keys(CHART_MAP).forEach(function(cid){
+      if(attached[cid]) return;
+      var cv=document.getElementById(cid);
+      if(cv){
+        cv.style.cursor="pointer";
+        cv.addEventListener("dblclick", function(evt){ onDbl(cid, evt); });
+        cv.title="Doble clic para filtrar por este valor";
+        attached[cid]=true;
+      }
+    });
+  }
+
+  /* ---------- envolver resetFilters para limpiar el filtro Area ---------- */
+  function patchReset(){
+    var app=getApp(); if(!app || app.__areaResetPatched) return;
+    if(typeof app.resetFilters==="function"){
+      var orig=app.resetFilters.bind(app);
+      app.resetFilters=function(){ var af=document.getElementById("filter-area"); if(af) af.value=""; return orig(); };
+      app.__areaResetPatched=true;
+    }
+  }
+
+  /* ---------- arranque ---------- */
+  var tries=0;
+  function boot(){
+    tries++;
+    ensureAreaFilter();
+    var app=getApp();
+    if(app){ patchReset(); if(app.charts && Object.keys(app.charts).length){ attachDbl(); } }
+    if(tries<60) setTimeout(boot, 500);
+  }
+  function start(){
+    ensureModal();
+    loadAreas();
+    watchAreas();
+    boot();
+  }
+  if(document.readyState==="complete" || document.readyState==="interactive"){ setTimeout(start, 300); }
+  else { window.addEventListener("DOMContentLoaded", function(){ setTimeout(start,300); }); }
+  if(window.storage && window.storage.ready){ /* ya listo */ } else { window.addEventListener("storage-ready", function(){ loadAreas(); watchAreas(); }, { once:true }); }
+})();
+</script>
+
 </body>
 </html>
