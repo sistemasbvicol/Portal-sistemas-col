@@ -2393,7 +2393,7 @@ dashboard.listenCloud();
 <script id="sheets-sync-module">
 (function(){
   var SHEET_ID = "1KTdFkipV5kOSaRtObLpiCrD1SFkZPIh-TaK0cYq2Yzg";
-  var RANGE = "A3:H1000";
+  var RANGE = "A3:I1000";
   var DKEY = "ti_dashboard_tickets_data_v1";
   var SYNC_MS = 60000;
   var cbName = "__sheetsSyncCb";
@@ -2457,6 +2457,22 @@ dashboard.listenCloud();
         horas = Math.round(((cerrada - creada) / 3600000) * 100) / 100;
         if(horas < 0) horas = null;
       }
+      var estadoRaw = tx(c[5]);
+      // Reabierto: desde la columna I (numero, "Si" o "X"), o si el Estado dice "Reabierto"
+      var reab = 0;
+      var rc = c.length > 8 ? tx(c[8]) : "";
+      if(rc){
+        var rn = parseInt(rc, 10);
+        if(!isNaN(rn)){ reab = rn; }
+        else {
+          var rl = stripAcc(rc.toLowerCase());
+          if(rl.indexOf("si") >= 0 || rl === "x" || rl.indexOf("true") >= 0 || rl.indexOf("reab") >= 0) reab = 1;
+        }
+      }
+      if(reab === 0){
+        var el = stripAcc(estadoRaw.toLowerCase());
+        if(el.indexOf("reab") >= 0) reab = 1;
+      }
       out.push({
         ticket: ticket,
         tipo: "REQUERIMIENTO",
@@ -2466,11 +2482,11 @@ dashboard.listenCloud();
         solicitante: tx(c[1]),
         prioridad: normPrio(tx(c[4])),
         tema: "GENERAL",
-        estado: normEstado(tx(c[5])),
+        estado: normEstado(estadoRaw),
         agente: tx(c[6]),
         fecha_cierre: fmt(cerrada),
         horas_resolucion: horas,
-        reabierto: 0
+        reabierto: reab
       });
     }
     return out;
@@ -2518,7 +2534,8 @@ dashboard.listenCloud();
       await window.storage.set(DKEY, payload, true);
       lastSig = sig;
       var ab = tickets.filter(function(t){return t.estado==="Abrir";}).length;
-      chip("✅ Google Sheets · " + tickets.length + " tickets · " + ab + " abiertos", true);
+      var re = tickets.filter(function(t){return t.reabierto > 0;}).length;
+      chip("✅ Google Sheets · " + tickets.length + " tickets · " + ab + " abiertos · " + re + " reabiertos", true);
     }catch(e){
       chip("⚠️ Error de sincronización", false);
     }
