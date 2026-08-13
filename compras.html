@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Compras en proceso — Área de Sistemas</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;600;700&family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="bvi-theme.css">
+<style>
+  :root{ --accent:#0d7a3f; --border:#e0e5e2; --text-primary:#1c2b24; --text-secondary:#6b7680; --bg:#f4f7f5; }
+  *{box-sizing:border-box;}
+  body{font-family:'Poppins',sans-serif; margin:0; background:var(--bg); color:var(--text-primary);}
+  .top-band{ background:linear-gradient(135deg,#0d3d24,#145232 55%,#0a2e1c); color:#f4f6f4; padding:18px 0; }
+  .top-band-inner{ max-width:1400px; margin:0 auto; padding:0 24px; }
+  .brand-head{ display:flex; align-items:center; gap:16px; }
+  .brand-logo img{ height:48px; width:auto; display:block; }
+  .brand-text .eyebrow{ margin:0; font-size:12px; letter-spacing:.5px; text-transform:uppercase; opacity:.85; }
+  .brand-text h1{ margin:2px 0 0; font-family:'Oswald',sans-serif; letter-spacing:.4px; font-size:26px; }
+  .desc{ max-width:1400px; margin:8px auto 0; padding:0 24px; color:#dfe8e2; font-size:13.5px; }
+  main{ max-width:1400px; margin:0 auto; padding:22px 24px 60px; }
+  .summary{ background:#fff; border:1px solid var(--border); border-radius:14px; padding:16px 18px; margin-bottom:16px; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:12px; }
+  .summary .lbl{ font-size:12px; color:var(--text-secondary); text-transform:uppercase; letter-spacing:.4px; }
+  .summary .grand{ font-family:'Oswald',sans-serif; font-size:30px; color:var(--accent); }
+  .summary .mini{ font-size:22px; }
+  .toolbar{ display:flex; gap:8px; align-items:center; flex-wrap:wrap; margin-bottom:14px; }
+  .btn{ font-family:inherit; font-size:13px; padding:9px 14px; border-radius:9px; border:1px solid var(--border); background:#fff; cursor:pointer; color:var(--text-primary); text-decoration:none; display:inline-flex; align-items:center; gap:6px; }
+  .btn:hover{ background:#eef7f1; }
+  .btn.primary{ background:var(--accent); color:#fff; border-color:var(--accent); font-weight:600; }
+  .btn.primary:hover{ background:#0a6234; }
+  .btn.danger-toggle.on{ background:#c23b3b; color:#fff; border-color:#c23b3b; }
+  .spacer{ flex:1; }
+  .sync-pill{ font-size:12px; padding:5px 10px; border-radius:20px; }
+  .sync-pill.online{ background:#e6f4ec; color:#0a6234; }
+  .sync-pill.saving{ background:#fff6e0; color:#9a6a00; }
+  .sync-pill.offline{ background:#f1e1e1; color:#a13; }
+  .hint{ background:#eef7f1; border:1px solid #d6ebdf; color:#2c5b43; border-radius:10px; padding:10px 14px; font-size:12.5px; margin-bottom:16px; }
+  .tcard{ background:#fff; border:1px solid var(--border); border-radius:14px; overflow:hidden; }
+  .tcard-head{ display:flex; align-items:center; gap:10px; padding:12px 16px; border-bottom:1px solid #eef2ef; }
+  .tcard-icon{ width:36px; height:36px; border-radius:9px; background:#e6f4ec; display:flex; align-items:center; justify-content:center; font-size:18px; }
+  .tcard-head h2{ margin:0; font-family:'Oswald',sans-serif; font-size:18px; letter-spacing:.3px; }
+  .table-scroll{ width:100%; overflow-x:auto; }
+  table{ width:100%; border-collapse:collapse; min-width:1000px; }
+  thead th{ background:#12324B; color:#fff; font-weight:500; font-size:12px; text-align:left; padding:9px 10px; position:sticky; top:0; white-space:nowrap; }
+  tbody td{ padding:4px 8px; border-bottom:1px solid #f0f2ef; vertical-align:middle; }
+  tbody tr:hover{ background:#fafcfa; }
+  tbody input, tbody select{ width:100%; border:1px solid transparent; background:transparent; font-family:inherit; font-size:12.5px; color:var(--text-primary); padding:6px 8px; border-radius:6px; }
+  tbody input:hover, tbody select:hover{ border-color:var(--border); }
+  tbody input:focus, tbody select:focus{ outline:none; border-color:var(--accent); background:#fff; box-shadow:0 0 0 2px rgba(13,122,63,.10); }
+  tbody input.num{ text-align:right; font-variant-numeric:tabular-nums; }
+  select.estado-en{ color:#9a6a00; font-weight:600; }
+  select.estado-ok{ color:#0a6234; font-weight:600; }
+  .del-x{ border:none; background:none; color:#c23b3b; cursor:pointer; font-size:15px; }
+  .addrow{ padding:10px 16px; }
+  .empty{ padding:22px; text-align:center; color:var(--text-secondary); font-size:13px; }
+  .toast{ position:fixed; bottom:20px; left:50%; transform:translateX(-50%) translateY(20px); background:#12324B; color:#fff; padding:11px 18px; border-radius:10px; font-size:13px; opacity:0; transition:.25s; z-index:9999; box-shadow:0 6px 20px rgba(0,0,0,.2); }
+  .toast.show{ opacity:1; transform:translateX(-50%) translateY(0); }
+  footer{ text-align:center; color:var(--text-secondary); font-size:12px; padding:20px; }
+</style>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<script src="firebase-init.js"></script>
+</head>
+<body>
+  <div class="top-band">
+    <div class="top-band-inner">
+      <div class="brand-head">
+        <a class="brand-logo" href="index.html" title="Volver al portal"><img src="bvi-logo.png" alt="Barron Vieyra International — Volver al portal"></a>
+        <div class="brand-text">
+          <p class="eyebrow">Área de Sistemas</p>
+          <h1>Compras en proceso</h1>
+        </div>
+      </div>
+    </div>
+    <p class="desc">Registra aquí las compras que están en trámite. Cuando cambies el estado de una compra a <b>Comprado</b>, el ítem se moverá automáticamente a la tabla del inventario que corresponda según su categoría.</p>
+  </div>
+
+  <main>
+    <div class="summary">
+      <div>
+        <div class="lbl">Valor en compras en proceso</div>
+        <div class="grand" id="totalProceso">$0</div>
+      </div>
+      <div style="text-align:right;">
+        <div class="lbl">Compras registradas</div>
+        <div class="grand mini" id="countProceso">0</div>
+      </div>
+    </div>
+
+    <div class="toolbar">
+      <button class="btn primary" id="addRow">＋ Agregar compra</button>
+      <a class="btn" href="tabla_valores.html">🧮 Ver inventario</a>
+      <div class="spacer"></div>
+      <span class="sync-pill offline" id="syncPill">● Iniciando…</span>
+      <button class="btn danger-toggle" id="delToggle">🗑 Modo eliminar: OFF</button>
+    </div>
+
+    <div class="hint"><b>Cómo usar:</b> escribe sobre cualquier celda para editarla. El <b>Valor (COP)</b> es el valor unitario. Al marcar <b>Comprado</b>, si la cantidad es mayor a 1 se agregan varias filas al inventario (una por unidad); para Software/licencias se agrega una fila con el número de licencias.</div>
+
+    <div class="tcard">
+      <div class="tcard-head"><div class="tcard-icon">🛒</div><h2>Compras en proceso</h2></div>
+      <div class="table-scroll">
+        <table>
+          <thead>
+            <tr>
+              <th style="min-width:170px;">Categoría</th>
+              <th style="min-width:130px;">Marca</th>
+              <th style="min-width:140px;">Modelo</th>
+              <th style="min-width:130px;">Serial</th>
+              <th style="min-width:140px;">Proveedor</th>
+              <th style="min-width:130px;">Fecha</th>
+              <th style="min-width:80px;">Cantidad</th>
+              <th style="min-width:130px;">Valor unitario (COP)</th>
+              <th style="min-width:150px;">Estado</th>
+              <th style="width:40px;"></th>
+            </tr>
+          </thead>
+          <tbody id="tbody"></tbody>
+        </table>
+      </div>
+      <div id="emptyMsg" class="empty" style="display:none;">No hay compras en proceso. Usa “＋ Agregar compra”.</div>
+    </div>
+  </main>
+
+  <footer>Portal interno · Área de Sistemas · Compras en proceso</footer>
+  <div class="toast" id="toast"></div>
+
+<script>
+(function(){
+  var COMPRAS_KEY = "compras_en_proceso_v1";
+  var INV_KEY = "tablas_valores_inventario_v1";
+  var LKEY = "compras_en_proceso_local_v1";
+
+  // Categoría -> tabla del inventario
+  var CATS = [
+    { key:"Equipo de cómputo", table:"Equipos de cómputo (portátiles y PC)", icon:"💻" },
+    { key:"Impresora", table:"Impresoras", icon:"🖨️" },
+    { key:"Software o licencias", table:"Software y licencias", icon:"🧩" },
+    { key:"Equipo de red", table:"Equipos de red", icon:"🌐" },
+    { key:"Servidores", table:"Servidores", icon:"🖥️" },
+    { key:"Teléfonos", table:"Teléfonos", icon:"📱" },
+    { key:"Monitores", table:"Monitores", icon:"🖥️" }
+  ];
+  var ESTADOS = ["En proceso", "Comprado"];
+
+  var fmt = new Intl.NumberFormat('es-CO', { style:'currency', currency:'COP', maximumFractionDigits:0 });
+  var data = [];            // array de compras
+  var cloudReady=false, saveTimer=null, delMode=false, pendingRemote=null;
+
+  function stripAcc(s){ return String(s||"").toLowerCase().split("á").join("a").split("é").join("e").split("í").join("i").split("ó").join("o").split("ú").join("u").split("ñ").join("n"); }
+  function num(v){ if(typeof v==="number") return v; if(v==null) return 0; var n=parseFloat(String(v).replace(/[^0-9.-]/g,"")); return isNaN(n)?0:n; }
+  function toast(msg){ var el=document.getElementById('toast'); el.textContent=msg; el.classList.add('show'); clearTimeout(el._t); el._t=setTimeout(function(){el.classList.remove('show');},2600); }
+  function setSync(state,msg){ var p=document.getElementById('syncPill'); if(!p) return; p.className='sync-pill '+state; p.textContent=msg; }
+  function newId(){ return 'c'+Math.floor(num(Date.now?Date.now():0)).toString(36)+Math.floor((''+Math.random()).slice(2,7)); }
+
+  /* ---- persistencia ---- */
+  function localSave(){ try{ localStorage.setItem(LKEY, JSON.stringify(data)); }catch(e){} }
+  function readCloud(raw){
+    var v=(raw&&typeof raw==='object'&&'value' in raw)?raw.value:raw;
+    if(v&&typeof v==='object'&&typeof v.json==='string'){ try{ return JSON.parse(v.json); }catch(e){ return null; } }
+    return Array.isArray(v)?v:null;
+  }
+  function cloudSave(){
+    if(!cloudReady||!window.storage) return;
+    setSync('saving','● Guardando…');
+    clearTimeout(saveTimer);
+    saveTimer=setTimeout(function(){
+      window.storage.set(COMPRAS_KEY,{json:JSON.stringify(data)})
+        .then(function(){ setSync('online','● En línea'); })
+        .catch(function(){ setSync('offline','● Error al guardar'); });
+    },500);
+  }
+  function save(){ localSave(); cloudSave(); }
+  function isEditingNow(){ var a=document.activeElement; return a&&(a.tagName==='INPUT'||a.tagName==='SELECT'); }
+  function applyRemote(val){
+    if(!Array.isArray(val)) return;
+    if(JSON.stringify(val)===JSON.stringify(data)) return;
+    data=val; localSave(); render();
+    setSync('online','● Actualizado por otro usuario');
+    setTimeout(function(){ setSync('online','● En línea'); },2000);
+  }
+  function onRemote(raw){ var val=readCloud(raw); if(val==null) return; if(isEditingNow()){ pendingRemote=val; return; } applyRemote(val); }
+  document.addEventListener('focusout',function(){ setTimeout(function(){ if(pendingRemote&&!isEditingNow()){ var v=pendingRemote; pendingRemote=null; applyRemote(v); } },200); });
+  function initCloud(){
+    if(cloudReady) return;
+    if(!window.storage){ setSync('offline','● Local (sin conexión)'); return; }
+    cloudReady=true; setSync('saving','● Conectando…');
+    window.storage.get(COMPRAS_KEY).then(function(raw){
+      var val=readCloud(raw);
+      if(Array.isArray(val)){ data=val; localSave(); render(); setSync('online','● En línea'); }
+      else { window.storage.set(COMPRAS_KEY,{json:JSON.stringify(data)}).then(function(){ setSync('online','● En línea'); }).catch(function(){ setSync('offline','● Local'); }); }
+      try{ window.storage.watch(COMPRAS_KEY,onRemote); }catch(e){}
+    }).catch(function(){ setSync('offline','● Local'); });
+  }
+  function load(){ try{ var s=localStorage.getItem(LKEY); if(s) return JSON.parse(s); }catch(e){} return []; }
+
+  /* ---- mover al inventario ---- */
+  function buildInvRow(table, rec, qtyForCell){
+    return table.columns.map(function(col, ci){
+      var c=stripAcc(col);
+      if(ci===table.valueCol){
+        if(c.indexOf("total")>=0) return num(rec.valor)*num(rec.cantidad||1);
+        return num(rec.valor);
+      }
+      if(c.indexOf("licencia")>=0 || c.indexOf("cantidad")>=0) return qtyForCell;
+      if(c.indexOf("unitario")>=0) return num(rec.valor);
+      if(c.indexOf("marca")>=0 || c.indexOf("software")>=0) return rec.marca||"";
+      if(c.indexOf("modelo")>=0 || c.indexOf("version")>=0) return rec.modelo||"";
+      if(c.indexOf("serial")>=0 || c.indexOf("serie")>=0 || c.indexOf("activo")>=0) return rec.serial||"";
+      if(c.indexOf("proveedor")>=0) return rec.proveedor||"";
+      return "";
+    });
+  }
+  function defaultTableFor(cat){
+    // esquema estándar para tablas de hardware que no existan aún (p.ej. Monitores)
+    return { title:cat.table, icon:cat.icon||"📦", columns:["Marca","Modelo","Serial","Valor (COP)"], valueCol:3, numCols:[3], rows:[] };
+  }
+  function moverAInventario(rec, done){
+    if(!window.storage){ toast("Sin conexión: no se pudo mover al inventario"); return; }
+    var cat=CATS.filter(function(x){return x.key===rec.categoria;})[0];
+    if(!cat){ toast("Elige una categoría válida antes de marcar Comprado"); return; }
+    window.storage.get(INV_KEY).then(function(raw){
+      var inv=readCloud(raw);
+      if(!Array.isArray(inv)) inv=[];
+      // buscar la tabla destino por título (sin acentos / mayúsculas)
+      var tIdx=-1;
+      for(var i=0;i<inv.length;i++){ if(stripAcc(inv[i].title)===stripAcc(cat.table)){ tIdx=i; break; } }
+      if(tIdx<0){ inv.push(defaultTableFor(cat)); tIdx=inv.length-1; }
+      var table=inv[tIdx];
+      if(!Array.isArray(table.rows)) table.rows=[];
+      var qty=Math.max(1, Math.round(num(rec.cantidad||1)));
+      var esSoftware = stripAcc(cat.key).indexOf("software")>=0 || stripAcc(cat.key).indexOf("licencia")>=0;
+      if(esSoftware){
+        table.rows.push(buildInvRow(table, rec, qty)); // una fila con N° licencias = qty
+      } else {
+        for(var q=0;q<qty;q++){ table.rows.push(buildInvRow(table, rec, 1)); }
+      }
+      window.storage.set(INV_KEY,{json:JSON.stringify(inv)}).then(function(){
+        done(cat, qty);
+      }).catch(function(){ toast("Error al guardar en el inventario"); });
+    }).catch(function(){ toast("No se pudo leer el inventario"); });
+  }
+
+  /* ---- render ---- */
+  function fieldInput(rec, field, cls){
+    var inp=document.createElement('input');
+    inp.type='text'; inp.value=(rec[field]==null?'':rec[field]); if(cls) inp.className=cls;
+    inp.addEventListener('input', function(){ rec[field]= (cls==='num') ? num(inp.value) : inp.value; recalc(); saveDebounced(); });
+    return inp;
+  }
+  var saveT=null;
+  function saveDebounced(){ clearTimeout(saveT); saveT=setTimeout(save, 300); }
+
+  function render(){
+    var tb=document.getElementById('tbody'); tb.innerHTML='';
+    document.getElementById('emptyMsg').style.display = data.length ? 'none' : 'block';
+    data.forEach(function(rec){
+      if(!rec.id) rec.id=newId();
+      var tr=document.createElement('tr');
+
+      // Categoría
+      var tdCat=document.createElement('td');
+      var selCat=document.createElement('select');
+      var optBlank=document.createElement('option'); optBlank.value=''; optBlank.textContent='— elegir —'; selCat.appendChild(optBlank);
+      CATS.forEach(function(c){ var o=document.createElement('option'); o.value=c.key; o.textContent=c.icon+' '+c.key; selCat.appendChild(o); });
+      selCat.value=rec.categoria||'';
+      selCat.addEventListener('change', function(){ rec.categoria=selCat.value; saveDebounced(); });
+      tdCat.appendChild(selCat); tr.appendChild(tdCat);
+
+      // campos de texto
+      ['marca','modelo','serial','proveedor','fecha'].forEach(function(f){
+        var td=document.createElement('td');
+        var inp=fieldInput(rec, f);
+        if(f==='fecha') inp.placeholder='AAAA-MM-DD';
+        td.appendChild(inp); tr.appendChild(td);
+      });
+
+      // cantidad
+      var tdCant=document.createElement('td');
+      var inpCant=document.createElement('input'); inpCant.type='text'; inpCant.className='num'; inpCant.value=(rec.cantidad==null?1:rec.cantidad);
+      inpCant.addEventListener('input', function(){ rec.cantidad=num(inpCant.value); recalc(); saveDebounced(); });
+      tdCant.appendChild(inpCant); tr.appendChild(tdCant);
+
+      // valor
+      var tdVal=document.createElement('td');
+      var inpVal=document.createElement('input'); inpVal.type='text'; inpVal.className='num'; inpVal.value=(rec.valor==null?'':rec.valor);
+      inpVal.addEventListener('input', function(){ rec.valor=num(inpVal.value); recalc(); saveDebounced(); });
+      tdVal.appendChild(inpVal); tr.appendChild(tdVal);
+
+      // estado
+      var tdEst=document.createElement('td');
+      var selEst=document.createElement('select');
+      ESTADOS.forEach(function(e){ var o=document.createElement('option'); o.value=e; o.textContent=e; selEst.appendChild(o); });
+      selEst.value=rec.estado||'En proceso';
+      selEst.className = (selEst.value==='Comprado') ? 'estado-ok' : 'estado-en';
+      selEst.addEventListener('change', function(){
+        if(selEst.value==='Comprado'){
+          if(!rec.categoria){ toast('Primero elige la categoría de esta compra'); selEst.value='En proceso'; return; }
+          if(!confirm('Marcar como COMPRADO y mover al inventario ('+rec.categoria+')?')){ selEst.value='En proceso'; return; }
+          rec.estado='Comprado';
+          moverAInventario(rec, function(cat, qty){
+            // quitar de compras
+            data=data.filter(function(x){ return x.id!==rec.id; });
+            save(); render();
+            toast('✅ Movido a «'+cat.table+'»'+(qty>1?(' ('+qty+' unidades)'):''));
+          });
+        } else {
+          rec.estado=selEst.value; saveDebounced();
+        }
+      });
+      tdEst.appendChild(selEst); tr.appendChild(tdEst);
+
+      // eliminar
+      var tdDel=document.createElement('td');
+      if(delMode){
+        var x=document.createElement('button'); x.className='del-x'; x.textContent='✕'; x.title='Eliminar esta compra';
+        x.addEventListener('click', function(){ data=data.filter(function(v){return v.id!==rec.id;}); save(); render(); toast('Compra eliminada'); });
+        tdDel.appendChild(x);
+      }
+      tr.appendChild(tdDel);
+
+      tb.appendChild(tr);
+    });
+    recalc();
+  }
+
+  function recalc(){
+    var total=data.reduce(function(a,r){ return a + num(r.valor)*Math.max(1,num(r.cantidad||1)); },0);
+    document.getElementById('totalProceso').textContent=fmt.format(total);
+    document.getElementById('countProceso').textContent=data.length;
+  }
+
+  /* ---- toolbar ---- */
+  document.getElementById('addRow').addEventListener('click', function(){
+    data.push({ id:newId(), categoria:'', marca:'', modelo:'', serial:'', proveedor:'', fecha:'', cantidad:1, valor:0, estado:'En proceso' });
+    save(); render();
+  });
+  document.getElementById('delToggle').addEventListener('click', function(){
+    delMode=!delMode;
+    this.classList.toggle('on', delMode);
+    this.textContent='🗑 Modo eliminar: '+(delMode?'ON':'OFF');
+    render();
+  });
+
+  /* ---- arranque ---- */
+  data=load(); render();
+  if(window.storage){ initCloud(); }
+  else { window.addEventListener('storage-ready', initCloud, {once:true}); setTimeout(initCloud, 5000); }
+})();
+</script>
+</body>
+</html>
