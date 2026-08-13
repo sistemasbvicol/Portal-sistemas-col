@@ -148,7 +148,7 @@
           <th class="col-usuario">Usuario</th>
           <th class="col-area">Área</th>
           <!-- device columns injected by JS -->
-          <th style="min-width:200px;">Observaciones</th>
+          <th style="min-width:160px;">Total del valor de equipos por persona</th><th style="min-width:200px;">Observaciones</th>
           <th>Estado</th>
           <th style="min-width:150px;">Acciones</th>
         </tr>
@@ -293,7 +293,7 @@ function buildHeadRow(){
   headRow.innerHTML =
     `<th class="col-usuario">Usuario</th><th class="col-area">Área</th>` +
     devTh +
-    `<th style="min-width:200px;">Observaciones</th><th>Estado</th><th style="min-width:150px;">Acciones</th>`;
+    `<th style="min-width:160px;">Total del valor de equipos por persona</th><th style="min-width:200px;">Observaciones</th><th>Estado</th><th style="min-width:150px;">Acciones</th>`;
 }
 
 function matchesFilter(u){
@@ -337,6 +337,7 @@ function render(){
       <td class="col-usuario"><input type="text" class="cell-input nombre-input" data-field="nombre" value="${(u.nombre||"").replace(/"/g,'&quot;')}"></td>
       <td class="col-area"><input type="text" class="cell-input" data-field="area" value="${(u.area||"").replace(/"/g,'&quot;')}"></td>
       ${devTds}
+      <td class="col-valor"><input type="text" class="cell-input valor-input" data-field="valorEquipos" value="${(u.valorEquipos||'').replace(/"/g,'&quot;')}" placeholder="$ total" style="text-align:right;"></td>
       <td><input type="text" class="cell-input obs-input" data-field="observaciones" value="${(u.observaciones||"").replace(/"/g,'&quot;')}" placeholder="Sin observaciones"></td>
       <td><span class="badge ${u.activo ? "activo" : "inactivo"}">${u.activo ? "Activo" : "Fuera de servicio"}</span></td>
       <td class="actions-col">
@@ -352,7 +353,7 @@ function render(){
 
   if (visibles.length === 0){
     const tr = document.createElement("tr");
-    const colspan = 2 + DEVICES.length + 3;
+    const colspan = 2 + DEVICES.length + 4;
     tr.innerHTML = `<td colspan="${colspan}" style="text-align:center; color:var(--muted); padding:24px;">No hay usuarios que coincidan con este filtro.</td>`;
     tbody.appendChild(tr);
   }
@@ -444,10 +445,10 @@ document.getElementById("btn-add").onclick = () => {
 document.getElementById("btn-print").onclick = () => window.print();
 
 document.getElementById("btn-export").onclick = () => {
-  const headers = ["Usuario","Área", ...DEVICES.map(d => d.label), "Observaciones", "Estado"];
+  const headers = ["Usuario","Área", ...DEVICES.map(d => d.label), "Total del valor de equipos por persona", "Observaciones", "Estado"];
   const lines = [headers.join(",")];
   users.forEach(u => {
-    const row = [u.nombre, u.area, ...DEVICES.map(d => u.dispositivos[d.id] || ""), (u.observaciones||"").replace(/,/g," "), u.activo ? "Activo" : "Fuera de servicio"];
+    const row = [u.nombre, u.area, ...DEVICES.map(d => u.dispositivos[d.id] || ""), (u.valorEquipos||""), (u.observaciones||"").replace(/,/g," "), u.activo ? "Activo" : "Fuera de servicio"];
     lines.push(row.map(v => `"${String(v).replace(/"/g,'""')}"`).join(","));
   });
   const blob = new Blob(["\uFEFF" + lines.join("\n")], {type:"text/csv;charset=utf-8;"});
