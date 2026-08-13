@@ -92,6 +92,7 @@
     <div class="toolbar">
       <button class="btn primary" id="addRow">＋ Agregar compra</button>
       <a class="btn" href="tabla_valores.html">🧮 Ver inventario</a>
+      <button class="btn" id="addCat">🏷️ Nueva categoría</button>
       <div class="spacer"></div>
       <span class="sync-pill offline" id="syncPill">● Iniciando…</span>
       <button class="btn danger-toggle" id="delToggle">🗑 Modo eliminar: OFF</button>
@@ -143,6 +144,9 @@
     { key:"Teléfonos", table:"Teléfonos", icon:"📱" },
     { key:"Monitores", table:"Monitores", icon:"🖥️" }
   ];
+  var CATS_KEY = "compras_categorias_v1";
+  var customCats = [];
+  function allCats(){ return CATS.concat(customCats); }
   var ESTADOS = ["En proceso", "Comprado"];
 
   var fmt = new Intl.NumberFormat('es-CO', { style:'currency', currency:'COP', maximumFractionDigits:0 });
@@ -219,7 +223,7 @@
   }
   function moverAInventario(rec, done){
     if(!window.storage){ toast("Sin conexión: no se pudo mover al inventario"); return; }
-    var cat=CATS.filter(function(x){return x.key===rec.categoria;})[0];
+    var cat=allCats().filter(function(x){return x.key===rec.categoria;})[0];
     if(!cat){ toast("Elige una categoría válida antes de marcar Comprado"); return; }
     window.storage.get(INV_KEY).then(function(raw){
       var inv=readCloud(raw);
@@ -264,7 +268,7 @@
       var tdCat=document.createElement('td');
       var selCat=document.createElement('select');
       var optBlank=document.createElement('option'); optBlank.value=''; optBlank.textContent='— elegir —'; selCat.appendChild(optBlank);
-      CATS.forEach(function(c){ var o=document.createElement('option'); o.value=c.key; o.textContent=c.icon+' '+c.key; selCat.appendChild(o); });
+      allCats().forEach(function(c){ var o=document.createElement('option'); o.value=c.key; o.textContent=c.icon+' '+c.key; selCat.appendChild(o); });
       selCat.value=rec.categoria||'';
       selCat.addEventListener('change', function(){ rec.categoria=selCat.value; saveDebounced(); });
       tdCat.appendChild(selCat); tr.appendChild(tdCat);
@@ -344,10 +348,28 @@
     render();
   });
 
+  /* ---- categorias personalizadas ---- */
+  function loadCats(){
+    if(!window.storage) return;
+    window.storage.ready.then(function(){ return window.storage.get(CATS_KEY); }).then(function(raw){
+      var v=readCloud(raw); if(Array.isArray(v)){ customCats=v; render(); }
+      try{ window.storage.watch(CATS_KEY, function(r){ var val=readCloud(r); if(Array.isArray(val)){ customCats=val; render(); } }); }catch(e){}
+    }).catch(function(){});
+  }
+  function saveCats(){ if(!window.storage) return; window.storage.ready.then(function(){ window.storage.set(CATS_KEY,{json:JSON.stringify(customCats)},true); }).catch(function(){}); }
+  var addCatBtn=document.getElementById('addCat');
+  if(addCatBtn){ addCatBtn.addEventListener("click", function(){
+    var nm=(prompt('Nombre de la nueva categoría (ej. Cámaras):')||'').trim();
+    if(!nm) return;
+    if(allCats().some(function(c){return c.key.toLowerCase()===nm.toLowerCase();})){ toast("Esa categoría ya existe"); return; }
+    customCats.push({key:nm, table:nm, icon:'📦'});
+    saveCats(); render(); toast("Categoría creada: "+nm);
+  }); }
+
   /* ---- arranque ---- */
   data=load(); render();
-  if(window.storage){ initCloud(); }
-  else { window.addEventListener('storage-ready', initCloud, {once:true}); setTimeout(initCloud, 5000); }
+  if(window.storage){ initCloud(); loadCats(); }
+  else { window.addEventListener('storage-ready', function(){ initCloud(); loadCats(); }, {once:true}); setTimeout(function(){ initCloud(); loadCats(); }, 5000); }
 })();
 </script>
 </body>
