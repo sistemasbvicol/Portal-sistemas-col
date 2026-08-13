@@ -1402,7 +1402,7 @@ class Dashboard {
     this.upsertChart('chart-asuntos', 'bar', {
       labels: topAsuntos.map(a => etiquetaAsunto[a[0]]),
       datasets: [{ label: 'Tickets', data: topAsuntos.map(a => a[1]), backgroundColor: COLORS[0], borderRadius: 4 }]
-    }, { indexAxis: 'y', plugins: { legend: { display: false }, ...porcentajeBarras('y').plugins }, scales: { x: { beginAtZero: true, ticks: { precision: 0 } } } });
+    }, { indexAxis: 'y', plugins: { legend: { display: false }, ...porcentajeBarras('y').plugins }, scales: { x: { beginAtZero: true, ticks: { precision: 0 } }, y: { ticks: { autoSkip: false, maxRotation: 0 } } } });
 
     // Priority distribution
     const porPrioridad = {};
