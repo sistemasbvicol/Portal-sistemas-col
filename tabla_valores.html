@@ -434,7 +434,7 @@ function openEditModal(ti){
   var _mh=document.querySelector('.modal-head'); if(_mh) _mh.textContent='Editar tabla — columnas y datos';
   var _mc=document.getElementById('mCreate'); if(_mc) _mc.textContent='Guardar cambios';
   document.getElementById('mTitle').value=t.title||'';
-  document.getElementById('mIcon').value=t.icon||📦';
+  document.getElementById('mIcon').value=t.icon||'📦';
   mCols.innerHTML='';
   t.columns.forEach((c,ci)=>{ mCols.appendChild(colRow(c, isNumericCol(t,ci), ci===t.valueCol, ci)); });
   overlay.classList.add('show');
@@ -458,7 +458,7 @@ document.getElementById('mCreate').addEventListener('click',()=>{
     if(r.querySelector('.cval').checked)valCol=idx;
     origs.push(r.dataset.orig!==undefined?parseInt(r.dataset.orig,10):-1);
   });
-  if(!cols.length){alert('Agrega al menor una columna.');return;}
+  if(!cols.length){alert('Agrega al menos una columna.');return;}
   if(valCol<0){ valCol = nums.length?nums[nums.length-1]:cols.length-1; if(!nums.includes(valCol))nums.push(valCol); }
   if(editIndex>=0){
     const te=data[editIndex]; const oldRows=te.rows||[];
