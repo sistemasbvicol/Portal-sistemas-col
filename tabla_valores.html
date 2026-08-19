@@ -8,6 +8,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;600;700&family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <style>
   :root{
     --bg-page:#f3f5f3; --bg-header:#0d3d24; --bg-card:#ffffff;
@@ -195,6 +196,11 @@
 
     <div class="analysis" id="analysis"></div>
 
+    <div class="analysis" id="chartCard">
+      <h2><span class="ico">📊</span> Distribución del valor por categoría</h2>
+      <div style="max-width:680px;margin:0 auto;height:320px;"><canvas id="chart-categorias"></canvas></div>
+    </div>
+
     <div id="tables"></div>
   </main>
 
@@ -301,6 +307,9 @@ function render(){
     const sub=document.createElement('div');sub.className='tcard-sub';sub.id='sub-'+ti;
     sub.innerHTML=`Subtotal: <b>${fmt.format(subtotal(t))}</b>`;
     head.appendChild(sub);
+    const editT=document.createElement('button');editT.className='del-table';editT.textContent='✏️';editT.title='Editar columnas de esta tabla';editT.style.marginRight='4px';
+    editT.addEventListener('click',()=>openEditModal(ti));
+    head.appendChild(editT);
     const delT=document.createElement('button');delT.className='del-table';delT.textContent='🗑';delT.title='Eliminar esta tabla';
     delT.addEventListener('click',()=>{if(confirm('¿Eliminar la tabla "'+t.title+'" completa?')){data.splice(ti,1);save();render();updateTotals();toast('Tabla eliminada');}});
     head.appendChild(delT);
@@ -373,14 +382,26 @@ function updateTotals(){
   document.getElementById('grandTotal').textContent=fmt.format(grand);
   document.getElementById('tableCount').textContent=data.length;
   renderAnalysis();
+  renderChart();
 }
 
 // Toolbar actions
+let _chartCat=null;
+function renderChart(){
+  var el=document.getElementById('chart-categorias'); if(!el||typeof Chart==='undefined') return;
+  var cats=data.map(t=>({label:t.title, val:subtotal(t)})).filter(c=>c.val>0).sort((a,b)=>b.val-a.val);
+  var labels=cats.map(c=>c.label), vals=cats.map(c=>c.val);
+  var palette=['#0d7a3f','#1f9d57','#145232','#3fae74','#0a6234','#66c28e','#12324b','#8ed3ab','#c98a1e','#c23b3b'];
+  var bg=labels.map((_,i)=>palette[i%palette.length]);
+  if(_chartCat){ _chartCat.data.labels=labels; _chartCat.data.datasets[0].data=vals; _chartCat.data.datasets[0].backgroundColor=bg; _chartCat.update(); return; }
+  _chartCat=new Chart(el.getContext('2d'), { type:'doughnut', data:{labels:labels, datasets:[{data:vals, backgroundColor:bg, borderColor:'#fff', borderWidth:2}]}, options:{responsive:true, maintainAspectRatio:false, plugins:{legend:{position:'right', labels:{font:{family:'Poppins',size:12}, boxWidth:14}}, tooltip:{callbacks:{label:function(c){return c.label+': '+fmt.format(c.parsed);}}}}} });
+}
 // ---- Modal: nueva tabla con columnas personalizadas ----
 const overlay=document.getElementById('modalOverlay');
 const mCols=document.getElementById('mCols');
-function colRow(name,isNum,isVal){
-  const div=document.createElement('div');div.className='col-row';
+let editIndex=-1;
+function colRow(name,isNum,isVal,origIdx){
+  const div=document.createElement('div');div.className='col-row';div.dataset.orig=(origIdx===undefined?-1:origIdx);
   const inp=document.createElement('input');inp.type='text';inp.className='cn';inp.placeholder='Nombre de la columna';inp.value=name||'';
   const numL=document.createElement('label');numL.className='mini';
   const num=document.createElement('input');num.type='checkbox';num.className='cnum';num.checked=!!isNum;
@@ -396,12 +417,26 @@ function colRow(name,isNum,isVal){
   return div;
 }
 function openTableModal(){
+  editIndex=-1;
+  var _mh=document.querySelector('.modal-head'); if(_mh) _mh.textContent='Nueva tabla — define los datos a solicitar';
+  var _mc=document.getElementById('mCreate'); if(_mc) _mc.textContent='Crear tabla';
   document.getElementById('mTitle').value='';
   document.getElementById('mIcon').value='📦';
   mCols.innerHTML='';
   mCols.appendChild(colRow('Descripción',false,false));
   mCols.appendChild(colRow('Detalle',false,false));
   mCols.appendChild(colRow('Valor (COP)',true,true));
+  overlay.classList.add('show');
+  setTimeout(()=>document.getElementById('mTitle').focus(),50);
+}
+function openEditModal(ti){
+  editIndex=ti; const t=data[ti];
+  var _mh=document.querySelector('.modal-head'); if(_mh) _mh.textContent='Editar tabla — columnas y datos';
+  var _mc=document.getElementById('mCreate'); if(_mc) _mc.textContent='Guardar cambios';
+  document.getElementById('mTitle').value=t.title||'';
+  document.getElementById('mIcon').value=t.icon||📦';
+  mCols.innerHTML='';
+  t.columns.forEach((c,ci)=>{ mCols.appendChild(colRow(c, isNumericCol(t,ci), ci===t.valueCol, ci)); });
   overlay.classList.add('show');
   setTimeout(()=>document.getElementById('mTitle').focus(),50);
 }
@@ -413,20 +448,29 @@ overlay.addEventListener('click',(e)=>{if(e.target===overlay)closeModal();});
 document.getElementById('mCreate').addEventListener('click',()=>{
   const title=document.getElementById('mTitle').value.trim()||'Nueva categoría';
   const icon=document.getElementById('mIcon').value.trim()||'📦';
-  const rows=[...mCols.querySelectorAll('.col-row')];
-  const cols=[], nums=[]; let valCol=-1;
-  rows.forEach((r)=>{
+  const rowDivs=[...mCols.querySelectorAll('.col-row')];
+  const cols=[], nums=[], origs=[]; let valCol=-1;
+  rowDivs.forEach((r)=>{
     const nm=r.querySelector('.cn').value.trim(); if(!nm)return;
     const idx=cols.length;
     cols.push(nm);
     if(r.querySelector('.cnum').checked)nums.push(idx);
     if(r.querySelector('.cval').checked)valCol=idx;
+    origs.push(r.dataset.orig!==undefined?parseInt(r.dataset.orig,10):-1);
   });
-  if(!cols.length){alert('Agrega al menos una columna.');return;}
+  if(!cols.length){alert('Agrega al menor una columna.');return;}
   if(valCol<0){ valCol = nums.length?nums[nums.length-1]:cols.length-1; if(!nums.includes(valCol))nums.push(valCol); }
-  const empty=cols.map((_,i)=>nums.includes(i)?0:'');
-  data.push({title,icon,columns:cols,valueCol:valCol,numCols:nums,rows:[empty]});
-  save();render();updateTotals();closeModal();toast('Tabla "'+title+'" creada');
+  if(editIndex>=0){
+    const te=data[editIndex]; const oldRows=te.rows||[];
+    te.rows=oldRows.map(or=>cols.map((_,i)=>{ const o=origs[i]; return (o>=0 && o<or.length)?or[o]:(nums.includes(i)?0:''); }));
+    te.title=title; te.icon=icon; te.columns=cols; te.valueCol=valCol; te.numCols=nums;
+    editIndex=-1;
+    save();render();updateTotals();closeModal();toast('Tabla actualizada');
+  } else {
+    const empty=cols.map((_,i)=>nums.includes(i)?0:'');
+    data.push({title,icon,columns:cols,valueCol:valCol,numCols:nums,rows:[empty]});
+    save();render();updateTotals();closeModal();toast('Tabla "'+title+'" creada');
+  }
 });
 document.getElementById('editToggle').addEventListener('click',(e)=>{
   editMode=!editMode;document.body.classList.toggle('editmode',editMode);
