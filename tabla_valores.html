@@ -394,7 +394,7 @@ function renderChart(){
   var palette=['#0d7a3f','#1f9d57','#145232','#3fae74','#0a6234','#66c28e','#12324b','#8ed3ab','#c98a1e','#c23b3b'];
   var bg=labels.map((_,i)=>palette[i%palette.length]);
   if(_chartCat){ _chartCat.data.labels=labels; _chartCat.data.datasets[0].data=vals; _chartCat.data.datasets[0].backgroundColor=bg; _chartCat.update(); return; }
-  _chartCat=new Chart(el.getContext('2d'), { type:'doughnut', data:{labels:labels, datasets:[{data:vals, backgroundColor:bg, borderColor:'#fff', borderWidth:2}]}, options:{responsive:true, maintainAspectRatio:false, plugins:{legend:{position:'right', labels:{font:{family:'Poppins',size:12}, boxWidth:14}}, tooltip:{callbacks:{label:function(c){return c.label+': '+fmt.format(c.parsed);}}}}} });
+  _chartCat=new Chart(el.getContext('2d'), { type:'doughnut', data:{labels:labels, datasets:[{data:vals, backgroundColor:bg, borderColor:'#fff', borderWidth:2}]}, options:{responsive:true, maintainAspectRatio:false, plugins:{legend:{position:'right', labels:{font:{family:'Poppins',size:12}, boxWidth:14, generateLabels:function(ch){var ds=ch.data.datasets[0].data;var tot=ds.reduce(function(a,b){return a+b;},0);return ch.data.labels.map(function(lab,i){var p=tot?(ds[i]/tot*100):0;return {text:lab+' — '+p.toFixed(1)+'%',fillStyle:ch.data.datasets[0].backgroundColor[i],strokeStyle:'#fff',lineWidth:2,index:i};});}}}, tooltip:{callbacks:{label:function(c){var ds=c.dataset.data;var tot=ds.reduce(function(a,b){return a+b;},0);var p=tot?(c.parsed/tot*100):0;return c.label+': '+fmt.format(c.parsed)+' ('+p.toFixed(1)+'%)';}}}}} });
 }
 // ---- Modal: nueva tabla con columnas personalizadas ----
 const overlay=document.getElementById('modalOverlay');
