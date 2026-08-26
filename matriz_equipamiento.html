@@ -174,6 +174,36 @@
 
 <script>
 const STORAGE_KEY = "matriz_equipamiento_sistematico_v1";
+const TABLAS_KEY = "tablas_valores_inventario_v1";
+
+// Total automático por usuario, calculado desde "Tablas de Valores".
+let valorPorUsuario = {};
+function normNom(s){ return String(s||"").trim().toLowerCase().replace(/\s+/g," "); }
+function numFrom(v){ if(typeof v==="number")return v; if(v==null)return 0; const n=parseFloat(String(v).replace(/[^0-9.-]/g,"")); return isNaN(n)?0:n; }
+const fmtCOP = new Intl.NumberFormat("es-CO",{style:"currency",currency:"COP",maximumFractionDigits:0});
+async function loadValoresPorUsuario(){
+  valorPorUsuario = {};
+  if(!window.storage) return;
+  try{
+    await window.storage.ready;
+    const raw = await window.storage.get(TABLAS_KEY);
+    let v = (raw && typeof raw==="object" && "value" in raw) ? raw.value : raw;
+    let arr = null;
+    if(v && typeof v==="object" && typeof v.json==="string"){ try{ arr=JSON.parse(v.json); }catch(e){} }
+    else if(Array.isArray(v)){ arr=v; }
+    if(!Array.isArray(arr)) return;
+    arr.forEach(function(t){
+      if(!t || !Array.isArray(t.rows)) return;
+      const vc = t.valueCol;
+      const asg = Array.isArray(t.assignees) ? t.assignees : [];
+      t.rows.forEach(function(row, ri){
+        const who = normNom(asg[ri]);
+        if(!who) return;
+        valorPorUsuario[who] = (valorPorUsuario[who] || 0) + numFrom(row && row[vc]);
+      });
+    });
+  }catch(e){ /* sin datos de tablas de valores todavía */ }
+}
 
 // Columnas de dispositivos, en el mismo orden que la matriz TC-FT-19 original.
 const DEVICES = [
@@ -337,7 +367,7 @@ function render(){
       <td class="col-usuario"><input type="text" class="cell-input nombre-input" data-field="nombre" value="${(u.nombre||"").replace(/"/g,'&quot;')}"></td>
       <td class="col-area"><input type="text" class="cell-input" data-field="area" value="${(u.area||"").replace(/"/g,'&quot;')}"></td>
       ${devTds}
-      <td class="col-valor"><input type="text" class="cell-input valor-input" data-field="valorEquipos" value="${(u.valorEquipos||'').replace(/"/g,'&quot;')}" placeholder="$ total" style="text-align:right;"></td>
+      <td class="col-valor col-valor-auto" title="Total calculado automáticamente según los equipos asignados a esta persona en Tablas de Valores" style="text-align:right;font-weight:bold;">${fmtCOP.format(valorPorUsuario[normNom(u.nombre)]||0)}</td>
       <td><input type="text" class="cell-input obs-input" data-field="observaciones" value="${(u.observaciones||"").replace(/"/g,'&quot;')}" placeholder="Sin observaciones"></td>
       <td><span class="badge ${u.activo ? "activo" : "inactivo"}">${u.activo ? "Activo" : "Fuera de servicio"}</span></td>
       <td class="actions-col">
@@ -448,7 +478,7 @@ document.getElementById("btn-export").onclick = () => {
   const headers = ["Usuario","Área", ...DEVICES.map(d => d.label), "Total del valor de equipos por persona", "Observaciones", "Estado"];
   const lines = [headers.join(",")];
   users.forEach(u => {
-    const row = [u.nombre, u.area, ...DEVICES.map(d => u.dispositivos[d.id] || ""), (u.valorEquipos||""), (u.observaciones||"").replace(/,/g," "), u.activo ? "Activo" : "Fuera de servicio"];
+    const row = [u.nombre, u.area, ...DEVICES.map(d => u.dispositivos[d.id] || ""), fmtCOP.format(valorPorUsuario[normNom(u.nombre)]||0), (u.observaciones||"").replace(/,/g," "), u.activo ? "Activo" : "Fuera de servicio"];
     lines.push(row.map(v => `"${String(v).replace(/"/g,'""')}"`).join(","));
   });
   const blob = new Blob(["\uFEFF" + lines.join("\n")], {type:"text/csv;charset=utf-8;"});
@@ -494,8 +524,12 @@ document.getElementById("file-import").onchange = (e) => {
 (async function start(){
   buildHeadRow();
   await loadState();
+  await loadValoresPorUsuario();
   render();
   listenCloudUpdates();
+  if (window.storage && typeof window.storage.watch === "function"){
+    try{ window.storage.watch(TABLAS_KEY, function(){ loadValoresPorUsuario().then(render); }); }catch(e){}
+  }
 })();
 </script>
 </body>
