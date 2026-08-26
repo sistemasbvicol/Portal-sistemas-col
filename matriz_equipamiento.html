@@ -178,7 +178,7 @@ const TABLAS_KEY = "tablas_valores_inventario_v1";
 
 // Total automático por usuario, calculado desde "Tablas de Valores".
 let valorPorUsuario = {};
-function normNom(s){ return String(s||"").trim().toLowerCase().replace(/\s+/g," "); }
+function normNom(s){ return String(s||"").trim().toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/\s+/g," "); }
 function numFrom(v){ if(typeof v==="number")return v; if(v==null)return 0; const n=parseFloat(String(v).replace(/[^0-9.-]/g,"")); return isNaN(n)?0:n; }
 const fmtCOP = new Intl.NumberFormat("es-CO",{style:"currency",currency:"COP",maximumFractionDigits:0});
 async function loadValoresPorUsuario(){
