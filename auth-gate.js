@@ -1,0 +1,282 @@
+/* auth-gate.js — Portal de Activos TI (Barron Vieyra)
+   Control de acceso por correo corporativo + contraseña.
+   NOTA: es una barrera de acceso del lado del cliente (sitio estático).
+   Mantiene fuera a usuarios casuales; no sustituye reglas de servidor. */
+(function () {
+  "use strict";
+  var USERS_KEY = "portal_usuarios_v1";
+  var SESSION_KEY = "portal_sesion_bvi";
+  var SESSION_HOURS = 12;
+
+  function normEmail(s){ return String(s || "").trim().toLowerCase(); }
+  async function sha256(str){
+    var buf = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(str));
+    return Array.from(new Uint8Array(buf)).map(function (b){ return b.toString(16).padStart(2, "0"); }).join("");
+  }
+  function loadScript(src){
+    return new Promise(function (res, rej){
+      var s = document.createElement("script"); s.src = src; s.onload = res; s.onerror = rej;
+      document.head.appendChild(s);
+    });
+  }
+  function sleep(ms){ return new Promise(function (r){ setTimeout(r, ms); }); }
+
+  async function ensureStorage(){
+    if (window.storage) return true;
+    for (var i = 0; i < 20 && !window.storage; i++) { await sleep(150); }
+    if (window.storage) return true;
+    try {
+      if (!window.firebase) {
+        await loadScript("https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js");
+        await loadScript("https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js");
+        await loadScript("https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js");
+      }
+      await loadScript("firebase-init.js");
+      for (var j = 0; j < 40 && !window.storage; j++) { await sleep(150); }
+    } catch (e) {}
+    return !!window.storage;
+  }
+
+  async function getUsers(){
+    var users = null;
+    if (window.storage) {
+      try {
+        await window.storage.ready;
+        var raw = await window.storage.get(USERS_KEY);
+        var v = (raw && typeof raw === "object" && "value" in raw) ? raw.value : raw;
+        if (typeof v === "string") users = JSON.parse(v);
+        else if (Array.isArray(v)) users = v;
+      } catch (e) {}
+    }
+    if (!Array.isArray(users)) {
+      try { var l = localStorage.getItem(USERS_KEY); if (l) users = JSON.parse(l); } catch (e) {}
+    }
+    return Array.isArray(users) ? users : null;
+  }
+  async function saveUsers(users){
+    try { localStorage.setItem(USERS_KEY, JSON.stringify(users)); } catch (e) {}
+    if (window.storage) { try { await window.storage.set(USERS_KEY, JSON.stringify(users)); } catch (e) {} }
+  }
+  async function ensureSeed(){
+    var users = await getUsers();
+    if (users && users.length) return users;
+    var h = await sha256("Bvicol2026*");
+    users = [{ email: "soporteti.bvicol@barronvieyra.com", nombre: "Administrador", rol: "admin", hash: h }];
+    await saveUsers(users);
+    return users;
+  }
+
+  function getSession(){
+    try { var s = JSON.parse(localStorage.getItem(SESSION_KEY) || "null"); if (s && s.exp > Date.now()) return s; } catch (e) {}
+    return null;
+  }
+  function setSession(u){
+    try { localStorage.setItem(SESSION_KEY, JSON.stringify({ email: u.email, nombre: u.nombre, rol: u.rol, exp: Date.now() + SESSION_HOURS * 3600000 })); } catch (e) {}
+  }
+  function clearSession(){ try { localStorage.removeItem(SESSION_KEY); } catch (e) {} }
+
+  /* ---------- estilos ---------- */
+  var CSS = ""
+    + "#ag-hide-body{}"
+    + ".ag-ov{position:fixed;inset:0;z-index:2147483646;display:flex;align-items:center;justify-content:center;padding:20px;"
+    + "background:#0a1526;background:radial-gradient(1200px 600px at 70% 20%,#12385f 0%,#0a1526 55%,#050b16 100%);"
+    + "font-family:'Poppins','Segoe UI',system-ui,sans-serif;overflow:auto;}"
+    + ".ag-card{width:100%;max-width:390px;background:linear-gradient(180deg,#fdfdfe,#eef1f5);border:1px solid #d7dee6;"
+    + "border-radius:18px;box-shadow:0 24px 60px rgba(0,0,0,.45);padding:30px 30px 34px;}"
+    + ".ag-logo{text-align:center;line-height:1;}"
+    + ".ag-logo .b1{font-weight:800;font-size:34px;letter-spacing:1px;color:#111;font-family:'Arial Black',Impact,sans-serif;}"
+    + ".ag-logo .b1 sup{font-size:13px;}"
+    + ".ag-logo .b2{margin:5px auto 0;background:#12933f;color:#fff;font-weight:700;letter-spacing:7px;font-size:13px;padding:3px 0;border-radius:2px;max-width:260px;}"
+    + ".ag-flag{width:52px;height:52px;border-radius:50%;margin:20px auto 6px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,.2);}"
+    + ".ag-flag i{display:block;}"
+    + ".ag-flag .y{height:50%;background:#fcd116;}.ag-flag .b{height:25%;background:#003893;}.ag-flag .r{height:25%;background:#ce1126;}"
+    + ".ag-sub{text-align:center;color:#6b7683;font-size:19px;font-weight:500;margin-bottom:22px;}"
+    + ".ag-field{position:relative;background:#eef2fb;border:1px solid #dbe3f0;border-radius:12px;padding:9px 12px;margin-bottom:16px;}"
+    + ".ag-field label{display:block;font-size:11px;color:#8b95a3;margin-bottom:2px;}"
+    + ".ag-field input{width:100%;border:0;background:transparent;outline:0;font-size:15px;color:#1c2530;font-family:inherit;}"
+    + ".ag-eye{position:absolute;right:6px;top:6px;bottom:6px;width:46px;background:#fff;border:1px solid #e2e8f0;border-radius:9px;cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center;}"
+    + ".ag-btn{width:100%;border:0;border-radius:12px;padding:14px;color:#fff;font-weight:700;font-size:15px;letter-spacing:1px;cursor:pointer;"
+    + "font-family:inherit;background:linear-gradient(90deg,#1f6fe5,#0b3fb0);box-shadow:0 8px 20px rgba(20,80,200,.35);}"
+    + ".ag-btn:disabled{opacity:.6;cursor:default;}"
+    + ".ag-err{color:#c0281f;font-size:13px;text-align:center;min-height:18px;margin:4px 0 8px;}"
+    + ".ag-note{color:#8b95a3;font-size:11px;text-align:center;margin-top:14px;line-height:1.4;}"
+    + ".ag-chip{position:fixed;top:10px;right:12px;z-index:2147483000;background:#0d2b4d;color:#fff;border-radius:22px;"
+    + "font:600 12px 'Poppins',sans-serif;display:flex;align-items:center;gap:8px;padding:6px 8px 6px 12px;box-shadow:0 3px 12px rgba(0,0,0,.25);}"
+    + ".ag-chip b{font-weight:600;max-width:190px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}"
+    + ".ag-chip button{border:0;border-radius:16px;padding:5px 10px;font:600 11px 'Poppins',sans-serif;cursor:pointer;color:#fff;background:rgba(255,255,255,.16);}"
+    + ".ag-chip button.out{background:#c0392b;}"
+    + ".ag-modal{position:fixed;inset:0;z-index:2147483647;background:rgba(4,10,22,.55);display:flex;align-items:center;justify-content:center;padding:16px;font-family:'Poppins',sans-serif;}"
+    + ".ag-mbox{width:100%;max-width:560px;max-height:88vh;overflow:auto;background:#fff;border-radius:16px;padding:22px;box-shadow:0 20px 60px rgba(0,0,0,.4);}"
+    + ".ag-mbox h3{margin:0 0 12px;color:#0d2b4d;}"
+    + ".ag-mbox table{width:100%;border-collapse:collapse;font-size:13px;margin-bottom:14px;}"
+    + ".ag-mbox th,.ag-mbox td{border-bottom:1px solid #eef1f5;padding:7px 6px;text-align:left;}"
+    + ".ag-mbox .del{color:#c0392b;cursor:pointer;border:0;background:none;font-size:15px;}"
+    + ".ag-mbox .key{color:#1f6fe5;cursor:pointer;border:0;background:none;font-size:13px;text-decoration:underline;}"
+    + ".ag-frm{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px;}"
+    + ".ag-frm input,.ag-frm select{padding:9px;border:1px solid #dbe3f0;border-radius:8px;font:14px 'Poppins',sans-serif;}"
+    + ".ag-frm .full{grid-column:1/3;}"
+    + ".ag-mbtns{display:flex;justify-content:flex-end;gap:8px;margin-top:14px;}"
+    + ".ag-mbtns button{border:0;border-radius:9px;padding:9px 16px;font:600 13px 'Poppins',sans-serif;cursor:pointer;}"
+    + ".ag-mbtns .ok{background:#12933f;color:#fff;}.ag-mbtns .cancel{background:#e6eaf0;color:#333;}";
+
+  function injectCSS(){
+    if (document.getElementById("ag-css")) return;
+    var st = document.createElement("style"); st.id = "ag-css"; st.textContent = CSS; document.head.appendChild(st);
+  }
+  function hideBody(){
+    if (document.getElementById("ag-hb")) return;
+    var st = document.createElement("style"); st.id = "ag-hb"; st.textContent = "body{visibility:hidden !important;}"; document.head.appendChild(st);
+  }
+  function showBody(){ var st = document.getElementById("ag-hb"); if (st) st.parentNode.removeChild(st); }
+
+  function esc(s){ return String(s || "").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;"); }
+
+  /* ---------- login ---------- */
+  function buildLogin(){
+    injectCSS();
+    var ov = document.createElement("div"); ov.className = "ag-ov"; ov.id = "ag-ov";
+    ov.innerHTML =
+      '<form class="ag-card" id="ag-form" autocomplete="on">'
+      + '<div class="ag-logo"><div class="b1">BARRON<br>VIEYRA<sup>&reg;</sup></div><div class="b2">INTERNATIONAL</div></div>'
+      + '<div class="ag-flag"><i class="y"></i><i class="b"></i><i class="r"></i></div>'
+      + '<div class="ag-sub">Portal de Activos TI</div>'
+      + '<div class="ag-field"><label>Correo Corporativo</label><input type="email" id="ag-email" autocomplete="username" placeholder="nombre@barronvieyra.com"></div>'
+      + '<div class="ag-field"><label>Contraseña</label><input type="password" id="ag-pass" autocomplete="current-password"><button type="button" class="ag-eye" id="ag-eye" title="Mostrar/ocultar">👁</button></div>'
+      + '<div class="ag-err" id="ag-err"></div>'
+      + '<button type="submit" class="ag-btn" id="ag-go">INICIAR SESIÓN</button>'
+      + '<div class="ag-note">Acceso restringido · Área de Sistemas TI · Barron Vieyra</div>'
+      + '</form>';
+    document.documentElement.appendChild(ov);
+    var eye = ov.querySelector("#ag-eye"), pass = ov.querySelector("#ag-pass");
+    eye.addEventListener("click", function(){ pass.type = pass.type === "password" ? "text" : "password"; });
+    var form = ov.querySelector("#ag-form"), err = ov.querySelector("#ag-err"), go = ov.querySelector("#ag-go");
+    form.addEventListener("submit", async function(e){
+      e.preventDefault();
+      err.textContent = ""; go.disabled = true; go.textContent = "Verificando…";
+      try {
+        var email = normEmail(ov.querySelector("#ag-email").value);
+        var pw = pass.value;
+        if (!email || !pw) { err.textContent = "Escribe tu correo y contraseña."; go.disabled = false; go.textContent = "INICIAR SESIÓN"; return; }
+        await ensureStorage();
+        var users = await ensureSeed();
+        var h = await sha256(pw);
+        var u = users.find(function (x){ return normEmail(x.email) === email && x.hash === h; });
+        if (!u) { err.textContent = "Correo o contraseña incorrectos."; go.disabled = false; go.textContent = "INICIAR SESIÓN"; return; }
+        setSession(u);
+        ov.parentNode.removeChild(ov);
+        showBody();
+        mountChip(u);
+      } catch (ex) {
+        err.textContent = "No se pudo verificar. Revisa tu conexión.";
+        go.disabled = false; go.textContent = "INICIAR SESIÓN";
+      }
+    });
+    setTimeout(function(){ var em = ov.querySelector("#ag-email"); if (em) em.focus(); }, 50);
+  }
+
+  /* ---------- chip de sesión ---------- */
+  function mountChip(sess){
+    if (document.getElementById("ag-chip")) return;
+    injectCSS();
+    var chip = document.createElement("div"); chip.className = "ag-chip"; chip.id = "ag-chip";
+    var admin = sess.rol === "admin";
+    chip.innerHTML = '<b title="' + esc(sess.email) + '">👤 ' + esc(sess.nombre || sess.email) + '</b>'
+      + (admin ? '<button class="usr">Usuarios</button>' : '')
+      + '<button class="pw">Clave</button>'
+      + '<button class="out">Salir</button>';
+    (document.body || document.documentElement).appendChild(chip);
+    if (admin) chip.querySelector(".usr").addEventListener("click", openAdmin);
+    chip.querySelector(".pw").addEventListener("click", function(){ changeOwnPassword(sess); });
+    chip.querySelector(".out").addEventListener("click", function(){ clearSession(); location.reload(); });
+  }
+
+  /* ---------- cambiar propia contraseña ---------- */
+  async function changeOwnPassword(sess){
+    var np = prompt("Nueva contraseña para " + sess.email + ":");
+    if (np == null) return;
+    np = np.trim();
+    if (np.length < 4) { alert("La contraseña debe tener al menos 4 caracteres."); return; }
+    await ensureStorage();
+    var users = await ensureSeed();
+    var u = users.find(function (x){ return normEmail(x.email) === normEmail(sess.email); });
+    if (!u) { alert("No se encontró el usuario."); return; }
+    u.hash = await sha256(np);
+    await saveUsers(users);
+    alert("Contraseña actualizada.");
+  }
+
+  /* ---------- admin: gestión de usuarios ---------- */
+  async function openAdmin(){
+    await ensureStorage();
+    var users = await ensureSeed();
+    injectCSS();
+    var m = document.createElement("div"); m.className = "ag-modal"; m.id = "ag-modal";
+    function rowsHtml(){
+      return users.map(function (u, i){
+        return '<tr><td>' + esc(u.email) + '</td><td>' + esc(u.nombre || "") + '</td><td>' + esc(u.rol || "usuario")
+          + '</td><td style="text-align:right;white-space:nowrap;"><button class="key" data-i="' + i + '">clave</button> '
+          + '<button class="del" data-i="' + i + '" title="Eliminar">🗑</button></td></tr>';
+      }).join("");
+    }
+    m.innerHTML = '<div class="ag-mbox">'
+      + '<h3>Usuarios de acceso</h3>'
+      + '<table><thead><tr><th>Correo</th><th>Nombre</th><th>Rol</th><th></th></tr></thead><tbody id="ag-urows">' + rowsHtml() + '</tbody></table>'
+      + '<div style="font-size:13px;color:#0d2b4d;font-weight:600;margin-top:6px;">Agregar usuario</div>'
+      + '<div class="ag-frm">'
+      + '<input class="full" id="ag-nemail" type="email" placeholder="Correo corporativo">'
+      + '<input id="ag-nnombre" type="text" placeholder="Nombre">'
+      + '<select id="ag-nrol"><option value="usuario">Usuario</option><option value="admin">Administrador</option></select>'
+      + '<input class="full" id="ag-npass" type="text" placeholder="Contraseña inicial">'
+      + '</div>'
+      + '<div class="ag-mbtns"><button class="cancel" id="ag-mc">Cerrar</button><button class="ok" id="ag-madd">Agregar</button></div>'
+      + '<div class="ag-note" style="text-align:left;margin-top:12px;">Nota: este control de acceso protege la vista del portal. Por ser un sitio público, no reemplaza la seguridad del servidor.</div>'
+      + '</div>';
+    document.body.appendChild(m);
+    function refresh(){ m.querySelector("#ag-urows").innerHTML = rowsHtml(); bind(); }
+    function bind(){
+      m.querySelectorAll(".del").forEach(function (b){
+        b.addEventListener("click", async function(){
+          var i = +b.getAttribute("data-i");
+          if (users.length <= 1) { alert("Debe quedar al menos un usuario."); return; }
+          if (!confirm('¿Eliminar el acceso de "' + users[i].email + '"?')) return;
+          users.splice(i, 1); await saveUsers(users); refresh();
+        });
+      });
+      m.querySelectorAll(".key").forEach(function (b){
+        b.addEventListener("click", async function(){
+          var i = +b.getAttribute("data-i");
+          var np = prompt("Nueva contraseña para " + users[i].email + ":");
+          if (np == null) return; np = np.trim();
+          if (np.length < 4) { alert("Mínimo 4 caracteres."); return; }
+          users[i].hash = await sha256(np); await saveUsers(users); alert("Contraseña actualizada.");
+        });
+      });
+    }
+    bind();
+    m.querySelector("#ag-mc").addEventListener("click", function(){ m.parentNode.removeChild(m); });
+    m.addEventListener("click", function(e){ if (e.target === m) m.parentNode.removeChild(m); });
+    m.querySelector("#ag-madd").addEventListener("click", async function(){
+      var email = normEmail(m.querySelector("#ag-nemail").value);
+      var nombre = m.querySelector("#ag-nnombre").value.trim();
+      var rol = m.querySelector("#ag-nrol").value;
+      var pw = m.querySelector("#ag-npass").value;
+      if (!email || !pw) { alert("Correo y contraseña son obligatorios."); return; }
+      if (pw.length < 4) { alert("La contraseña debe tener al menos 4 caracteres."); return; }
+      if (users.some(function (x){ return normEmail(x.email) === email; })) { alert("Ya existe un usuario con ese correo."); return; }
+      users.push({ email: email, nombre: nombre || email, rol: rol, hash: await sha256(pw) });
+      await saveUsers(users);
+      m.querySelector("#ag-nemail").value = ""; m.querySelector("#ag-nnombre").value = ""; m.querySelector("#ag-npass").value = "";
+      refresh();
+    });
+  }
+
+  /* ---------- arranque ---------- */
+  hideBody();
+  function boot(){
+    var sess = getSession();
+    if (sess) { showBody(); mountChip(sess); }
+    else { buildLogin(); }
+  }
+  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", boot);
+  else boot();
+})();
