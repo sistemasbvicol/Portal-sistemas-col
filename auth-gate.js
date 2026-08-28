@@ -180,14 +180,100 @@
     injectCSS();
     var chip = document.createElement("div"); chip.className = "ag-chip"; chip.id = "ag-chip";
     var admin = sess.rol === "admin";
-    chip.innerHTML = '<b title="' + esc(sess.email) + '">👤 ' + esc(sess.nombre || sess.email) + '</b>'
+    chip.innerHTML = '<b title="' + esc(sess.email) + '">👤 ' + esc(sess.nombre || sess.email) + (admin ? ' · Administrador' : ' · Usuario') + '</b>'
+      + '<button class="prof">Mi perfil</button>'
       + (admin ? '<button class="usr">Usuarios</button>' : '')
-      + '<button class="pw">Clave</button>'
       + '<button class="out">Salir</button>';
     (document.body || document.documentElement).appendChild(chip);
+    chip.querySelector(".prof").addEventListener("click", function(){ openProfile(sess); });
     if (admin) chip.querySelector(".usr").addEventListener("click", openAdmin);
-    chip.querySelector(".pw").addEventListener("click", function(){ changeOwnPassword(sess); });
     chip.querySelector(".out").addEventListener("click", function(){ clearSession(); location.reload(); });
+    if (!admin) enableReadOnly();
+  }
+
+  /* ---------- perfil del usuario ---------- */
+  async function openProfile(sess){
+    await ensureStorage();
+    var users = await ensureSeed();
+    var u = users.find(function (x){ return normEmail(x.email) === normEmail(sess.email); }) || { email: sess.email, nombre: sess.nombre, rol: sess.rol };
+    injectCSS();
+    var m = document.createElement("div"); m.className = "ag-modal"; m.id = "ag-prof";
+    var inicial = esc(String(u.nombre || u.email || "?").trim().charAt(0).toUpperCase());
+    var rolTxt = (u.rol === "admin") ? "Administrador" : "Usuario";
+    m.innerHTML = '<div class="ag-mbox" style="max-width:440px;">'
+      + '<h3>Mi perfil</h3>'
+      + '<div style="text-align:center;margin-bottom:16px;">'
+      + '<div style="width:66px;height:66px;border-radius:50%;margin:0 auto 8px;background:#0d2b4d;color:#fff;display:flex;align-items:center;justify-content:center;font:700 28px Poppins,sans-serif;">' + inicial + '</div>'
+      + '<div style="font-weight:600;color:#0d2b4d;">' + esc(u.nombre || u.email) + '</div>'
+      + '<div style="font-size:12px;color:#8b95a3;margin-top:2px;">' + esc(u.email) + ' · <b style="color:#12933f;">' + rolTxt + '</b></div>'
+      + '</div>'
+      + '<div style="display:grid;gap:12px;">'
+      + '<label style="font-size:12px;color:#0d2b4d;font-weight:600;">Nombre<input id="ag-pnombre" type="text" value="' + esc(u.nombre || "") + '" style="display:block;width:100%;margin-top:4px;padding:9px;border:1px solid #dbe3f0;border-radius:8px;font:14px Poppins,sans-serif;box-sizing:border-box;"></label>'
+      + '<label style="font-size:12px;color:#0d2b4d;font-weight:600;">Correo corporativo<input type="text" value="' + esc(u.email) + '" readonly style="display:block;width:100%;margin-top:4px;padding:9px;border:1px solid #eef1f5;border-radius:8px;background:#f5f7fa;color:#8b95a3;font:14px Poppins,sans-serif;box-sizing:border-box;"></label>'
+      + '<label style="font-size:12px;color:#0d2b4d;font-weight:600;">Nueva contraseña <span style="font-weight:400;color:#8b95a3;">(opcional)</span><input id="ag-ppass" type="password" placeholder="Dejar vacío para no cambiarla" style="display:block;width:100%;margin-top:4px;padding:9px;border:1px solid #dbe3f0;border-radius:8px;font:14px Poppins,sans-serif;box-sizing:border-box;"></label>'
+      + '</div>'
+      + '<div class="ag-mbtns"><button class="cancel" id="ag-pc">Cerrar</button><button class="ok" id="ag-ps">Guardar cambios</button></div>'
+      + '</div>';
+    document.body.appendChild(m);
+    m.querySelector("#ag-pc").addEventListener("click", function(){ m.parentNode.removeChild(m); });
+    m.addEventListener("click", function (e){ if (e.target === m) m.parentNode.removeChild(m); });
+    m.querySelector("#ag-ps").addEventListener("click", async function(){
+      var nombre = m.querySelector("#ag-pnombre").value.trim();
+      var pw = m.querySelector("#ag-ppass").value;
+      if (pw && pw.length < 4) { alert("La contraseña debe tener al menos 4 caracteres."); return; }
+      if (nombre) u.nombre = nombre;
+      if (pw) u.hash = await sha256(pw);
+      await saveUsers(users);
+      setSession(u);
+      m.parentNode.removeChild(m);
+      var c = document.getElementById("ag-chip"); if (c) c.parentNode.removeChild(c);
+      mountChip({ email: u.email, nombre: u.nombre, rol: u.rol });
+      alert("Perfil actualizado.");
+    });
+  }
+
+  /* ---------- modo solo lectura (rol usuario) ---------- */
+  var _roLocking = false, _roObserver = null;
+  function isAgEl(el){ return !!(el.closest && (el.closest(".ag-ov") || el.closest(".ag-modal") || el.closest(".ag-chip"))); }
+  function applyReadOnly(){
+    _roLocking = true;
+    try {
+      var inp = document.querySelectorAll("input, textarea");
+      for (var a = 0; a < inp.length; a++) {
+        var el = inp[a]; if (isAgEl(el)) continue;
+        var t = (el.type || "").toLowerCase();
+        if (t === "checkbox" || t === "radio" || t === "file" || t === "range" || t === "color") { if (!el.disabled) el.disabled = true; }
+        else if (!el.readOnly) { el.readOnly = true; }
+      }
+      var sel = document.querySelectorAll("select");
+      for (var b = 0; b < sel.length; b++) { if (!isAgEl(sel[b]) && !sel[b].disabled) sel[b].disabled = true; }
+      var btn = document.querySelectorAll("button");
+      for (var c = 0; c < btn.length; c++) { var bt = btn[c]; if (isAgEl(bt) || bt.disabled) continue; bt.disabled = true; bt.style.opacity = "0.45"; bt.style.cursor = "not-allowed"; bt.title = "Solo lectura — requiere permiso de administrador"; }
+      var ce = document.querySelectorAll('[contenteditable="true"],[contenteditable=""]');
+      for (var d = 0; d < ce.length; d++) { if (!isAgEl(ce[d])) ce[d].setAttribute("contenteditable", "false"); }
+    } catch (e) {}
+    _roLocking = false;
+  }
+  function roBadge(){
+    if (document.getElementById("ag-ro")) return;
+    injectCSS();
+    var s = document.createElement("style"); s.textContent = ".ag-ro{position:fixed;left:12px;bottom:12px;z-index:2147483000;background:#c98a1e;color:#fff;border-radius:20px;font:600 12px 'Poppins',sans-serif;padding:7px 14px;box-shadow:0 3px 12px rgba(0,0,0,.25);}"; document.head.appendChild(s);
+    var d = document.createElement("div"); d.className = "ag-ro"; d.id = "ag-ro"; d.textContent = "👁 Modo solo lectura"; (document.body || document.documentElement).appendChild(d);
+  }
+  function enableReadOnly(){
+    roBadge();
+    applyReadOnly();
+    // bloqueo de respaldo: cancela edición en fase de captura
+    document.addEventListener("input", function (e){ var el = e.target; if (!isAgEl(el) && (el.tagName === "INPUT" || el.tagName === "TEXTAREA")) { e.stopPropagation(); } }, true);
+    document.addEventListener("keydown", function (e){ var el = e.target; if (isAgEl(el)) return; if ((el.tagName === "INPUT" || el.tagName === "TEXTAREA") && el.readOnly) { if (e.key && e.key.length === 1) e.preventDefault(); } }, true);
+    // re-aplica cuando la página vuelve a dibujar sus tablas
+    if (window.MutationObserver && (document.body)) {
+      _roObserver = new MutationObserver(function (muts){ if (_roLocking) return; for (var i = 0; i < muts.length; i++) { if (muts[i].addedNodes && muts[i].addedNodes.length) { applyReadOnly(); return; } } });
+      _roObserver.observe(document.body, { childList: true, subtree: true });
+    }
+    // guarda una segunda pasada por si el contenido carga tarde
+    setTimeout(applyReadOnly, 800);
+    setTimeout(applyReadOnly, 2000);
   }
 
   /* ---------- cambiar propia contraseña ---------- */
