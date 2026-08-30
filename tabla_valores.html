@@ -340,8 +340,8 @@ function render(){
     const wrap=document.createElement('div');wrap.className='tbl-wrap';
     const tbl=document.createElement('table');
     const thead=document.createElement('thead');const htr=document.createElement('tr');
-    t.columns.forEach((c,ci)=>{const th=document.createElement('th');th.textContent=c;if(numeric[ci])th.className='num';htr.appendChild(th);});
     const thu=document.createElement('th');thu.textContent='Usuario';thu.className='user-col';htr.appendChild(thu);
+    t.columns.forEach((c,ci)=>{const th=document.createElement('th');th.textContent=c;if(numeric[ci])th.className='num';htr.appendChild(th);});
     const tha=document.createElement('th');tha.className='act';htr.appendChild(tha);
     thead.appendChild(htr);tbl.appendChild(thead);
     const tbody=document.createElement('tbody');
@@ -350,13 +350,13 @@ function render(){
     // foot
     const tfoot=document.createElement('tfoot');const ftr=document.createElement('tr');
     const valPos=t.valueCol;
+    const fu=document.createElement('td');ftr.appendChild(fu);
     for(let ci=0;ci<t.columns.length;ci++){
       const td=document.createElement('td');
       if(ci===0){td.className='lbl';td.textContent='Subtotal';}
       else if(ci===valPos){td.className='num';td.id='foot-'+ti;td.textContent=fmt.format(subtotal(t));}
       ftr.appendChild(td);
     }
-    const fu=document.createElement('td');ftr.appendChild(fu);
     const fa=document.createElement('td');fa.className='act';ftr.appendChild(fa);
     tfoot.appendChild(ftr);tbl.appendChild(tfoot);
     wrap.appendChild(tbl);card.appendChild(wrap);
@@ -372,6 +372,12 @@ function render(){
 
 function buildRow(t,ti,row,ri,numeric){
   const tr=document.createElement('tr');
+  const tdu=document.createElement('td');
+  const uinp=document.createElement('input');uinp.className='user-input';uinp.setAttribute('list','userNames');uinp.placeholder='— sin asignar —';
+  if(!Array.isArray(t.assignees))t.assignees=[];
+  uinp.value=t.assignees[ri]==null?'':t.assignees[ri];
+  uinp.addEventListener('input',()=>{t.assignees[ri]=uinp.value;save();});
+  tdu.appendChild(uinp);tr.appendChild(tdu);
   t.columns.forEach((c,ci)=>{
     const td=document.createElement('td');
     const inp=document.createElement('input');
@@ -387,12 +393,6 @@ function buildRow(t,ti,row,ri,numeric){
     inp.addEventListener('input',()=>{row[ci]=numeric[ci]?parseNum(inp.value):inp.value;save();updateTotals();});
     td.appendChild(inp);tr.appendChild(td);
   });
-  const tdu=document.createElement('td');
-  const uinp=document.createElement('input');uinp.className='user-input';uinp.setAttribute('list','userNames');uinp.placeholder='— sin asignar —';
-  if(!Array.isArray(t.assignees))t.assignees=[];
-  uinp.value=t.assignees[ri]==null?'':t.assignees[ri];
-  uinp.addEventListener('input',()=>{t.assignees[ri]=uinp.value;save();});
-  tdu.appendChild(uinp);tr.appendChild(tdu);
   const tda=document.createElement('td');tda.className='act';
   const del=document.createElement('button');del.className='del-row';del.textContent='🗑';del.title='Eliminar fila';
   del.addEventListener('click',()=>{t.rows.splice(ri,1);if(Array.isArray(t.assignees))t.assignees.splice(ri,1);save();render();updateTotals();});
