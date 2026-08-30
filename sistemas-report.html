@@ -70,7 +70,7 @@
 
   /* ---------- MAIN NAV ---------- */
   .maintabs{
-    max-width: 920px; margin: 0 auto;
+    max-width: none; margin: 0;
     display:flex; gap: .5rem;
     padding: 1.4rem 2rem 0;
   }
@@ -87,7 +87,7 @@
     background: var(--accent-dim); color: var(--accent); padding: .05rem .4rem; border-radius: 10px;
   }
 
-  main{ max-width: 920px; margin: 0 auto; padding: 0 2rem 2rem; }
+  main{ max-width: none; margin: 0; padding: 0 2rem 2rem; }
   .panel-page{
     border: 1px solid var(--panel-border);
     border-top: none;
@@ -225,7 +225,7 @@
   }
   select.btn-download.secondary option{ background: var(--panel); color: var(--text); }
 
-  footer{ max-width: 920px; margin: 1.5rem auto 0; padding: 1.2rem 2rem 0; font-size: .74rem; color: var(--muted); border-top: 1px solid var(--line); font-family: var(--mono); }
+  footer{ max-width: none; margin: 1.5rem 0 0; padding: 1.2rem 2rem 0; font-size: .74rem; color: var(--muted); border-top: 1px solid var(--line); font-family: var(--mono); }
 
   @media print{
     .statusbar, .maintabs, .month-picker .nav, .month-picker .today-link, .btn-download, .save-box, .toast-stack{ display:none; }
