@@ -1383,21 +1383,35 @@ class Dashboard {
       datasets: [{ label: 'Tickets', data: meses.map(m => porMes[m]), backgroundColor: COLORS[0] }]
     }, { plugins: { legend: { display: false } } });
 
-    // Top 15 asuntos más frecuentes (texto normalizado: minúsculas, espacios
-    // colapsados y sin tildes, para que "Falla Impresora" y "falla  impresora "
-    // cuenten como el mismo asunto)
+    // Top 15 asuntos más frecuentes. Texto normalizado (minúsculas, sin tildes,
+    // sin signos y sin palabras conectoras como "en/la/de") para que variantes del
+    // mismo asunto —p. ej. "falla impresora" y "Falla en la impresora"— cuenten como uno.
+    const STOP_ASUNTO = new Set(['en','la','el','de','del','los','las','un','una','y','o','a','al','con','para','por','se','su','sus','lo','le']);
     const normalizarAsunto = (s) => (s || '')
-      .trim()
       .toLowerCase()
       .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
-      .replace(/\s+/g, ' ');
+      .replace(/[^\p{L}\p{N}\s]/gu, ' ')
+      .replace(/\s+/g, ' ')
+      .trim()
+      .split(' ')
+      .filter(w => w && !STOP_ASUNTO.has(w))
+      .join(' ');
     const porAsunto = {};
-    const etiquetaAsunto = {};
+    const variantesAsunto = {};
     d.forEach(r => {
       const key = normalizarAsunto(r.asunto);
       if (!key) return;
       porAsunto[key] = (porAsunto[key] || 0) + 1;
-      if (!etiquetaAsunto[key]) etiquetaAsunto[key] = (r.asunto || '').trim();
+      const orig = (r.asunto || '').trim();
+      if (orig) {
+        if (!variantesAsunto[key]) variantesAsunto[key] = {};
+        variantesAsunto[key][orig] = (variantesAsunto[key][orig] || 0) + 1;
+      }
+    });
+    // Etiqueta a mostrar: la variante de texto más frecuente de cada grupo.
+    const etiquetaAsunto = {};
+    Object.keys(variantesAsunto).forEach(key => {
+      etiquetaAsunto[key] = Object.entries(variantesAsunto[key]).sort((a, b) => b[1] - a[1])[0][0];
     });
     const topAsuntos = Object.entries(porAsunto).sort((a, b) => b[1] - a[1]).slice(0, 15);
     this.upsertChart('chart-asuntos', 'bar', {
