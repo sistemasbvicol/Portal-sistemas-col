@@ -147,6 +147,7 @@
       <thead>
         <tr id="head-row">
           <th class="col-usuario">Usuario</th>
+          <th class="col-cargo">Cargo</th>
           <th class="col-area">Área</th>
           <!-- device columns injected by JS -->
           <th style="min-width:160px;">Total del valor de equipos por persona</th><th style="min-width:200px;">Observaciones</th>
@@ -344,7 +345,7 @@ function buildHeadRow(){
   const headRow = document.getElementById("head-row");
   const devTh = DEVICES.map(d => `<th class="col-dev">${d.label}</th>`).join("");
   headRow.innerHTML =
-    `<th class="col-usuario">Usuario</th><th class="col-area">Área</th>` +
+    `<th class="col-usuario">Usuario</th><th class="col-cargo">Cargo</th><th class="col-area">Área</th>` +
     devTh +
     `<th style="min-width:160px;">Total del valor de equipos por persona</th><th style="min-width:200px;">Observaciones</th><th>Estado</th><th style="min-width:150px;">Acciones</th>`;
 }
@@ -386,8 +387,10 @@ function render(){
       </td>
     `).join("");
 
+    const _cargo = (resolverEmpleado(u.nombre)||{}).c || "—";
     tr.innerHTML = `
       <td class="col-usuario"><input type="text" class="cell-input nombre-input" data-field="nombre" value="${(u.nombre||"").replace(/"/g,'&quot;')}"></td>
+      <td class="col-cargo" style="color:#6b6f6c;font-size:12.5px;white-space:nowrap;">${String(_cargo).replace(/</g,'&lt;')}</td>
       <td class="col-area"><input type="text" class="cell-input" data-field="area" value="${(u.area||"").replace(/"/g,'&quot;')}"></td>
       ${devTds}
       <td class="col-valor col-valor-auto" title="Total calculado automáticamente según los equipos asignados a esta persona en Tablas de Valores" style="text-align:right;font-weight:bold;">${fmtCOP.format(valorPorUsuario[keyNom(u.nombre)]||0)}</td>
@@ -406,7 +409,7 @@ function render(){
 
   if (visibles.length === 0){
     const tr = document.createElement("tr");
-    const colspan = 2 + DEVICES.length + 4;
+    const colspan = 3 + DEVICES.length + 4;
     tr.innerHTML = `<td colspan="${colspan}" style="text-align:center; color:var(--muted); padding:24px;">No hay usuarios que coincidan con este filtro.</td>`;
     tbody.appendChild(tr);
   }
@@ -498,10 +501,10 @@ document.getElementById("btn-add").onclick = () => {
 document.getElementById("btn-print").onclick = () => window.print();
 
 document.getElementById("btn-export").onclick = () => {
-  const headers = ["Usuario","Área", ...DEVICES.map(d => d.label), "Total del valor de equipos por persona", "Observaciones", "Estado"];
+  const headers = ["Usuario","Cargo","Área", ...DEVICES.map(d => d.label), "Total del valor de equipos por persona", "Observaciones", "Estado"];
   const lines = [headers.join(",")];
   users.forEach(u => {
-    const row = [u.nombre, u.area, ...DEVICES.map(d => u.dispositivos[d.id] || ""), fmtCOP.format(valorPorUsuario[keyNom(u.nombre)]||0), (u.observaciones||"").replace(/,/g," "), u.activo ? "Activo" : "Fuera de servicio"];
+    const row = [u.nombre, ((resolverEmpleado(u.nombre)||{}).c||""), u.area, ...DEVICES.map(d => u.dispositivos[d.id] || ""), fmtCOP.format(valorPorUsuario[keyNom(u.nombre)]||0), (u.observaciones||"").replace(/,/g," "), u.activo ? "Activo" : "Fuera de servicio"];
     lines.push(row.map(v => `"${String(v).replace(/"/g,'""')}"`).join(","));
   });
   const blob = new Blob(["\uFEFF" + lines.join("\n")], {type:"text/csv;charset=utf-8;"});
