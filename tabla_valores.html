@@ -611,14 +611,14 @@ document.getElementById('importFile').addEventListener('change',(e)=>{
   rd.onload=()=>{try{const d=JSON.parse(rd.result);if(Array.isArray(d)){data=d;save();render();updateTotals();toast('Backup importado');}else{alert('Archivo no válido.');}}catch(err){alert('No se pudo leer el archivo.');}};
   rd.readAsText(file);e.target.value='';
 });
+function metaFila(t,ri){ const nm=(Array.isArray(t.assignees)&&t.assignees[ri]!=null)?String(t.assignees[ri]):''; const e=resolverEmpleado(nm); return [nm, e?e.c:'', e?e.a:'']; }
 function exportCSV(){
   const rowsOut=[];
   data.forEach(t=>{
     rowsOut.push([t.title]);
-    rowsOut.push(t.columns.slice());
-    t.rows.forEach(r=>rowsOut.push(t.columns.map((_,ci)=>ci===t.valueCol?parseNum(r[ci]):(r[ci]==null?'':r[ci]))));
-    rowsOut.push(['SUBTOTAL','',...(t.columns.length>2?Array(t.columns.length-3).fill(''):[]) ]);
-    rowsOut[rowsOut.length-1]=t.columns.map((_,ci)=>ci===0?'SUBTOTAL':(ci===t.valueCol?subtotal(t):''));
+    rowsOut.push(['Usuario','Cargo','Área',...t.columns]);
+    t.rows.forEach((r,ri)=>rowsOut.push([...metaFila(t,ri),...t.columns.map((_,ci)=>ci===t.valueCol?parseNum(r[ci]):(r[ci]==null?'':r[ci]))]));
+    rowsOut.push(['SUBTOTAL','','',...t.columns.map((_,ci)=>ci===t.valueCol?subtotal(t):'')]);
     rowsOut.push([]);
   });
   rowsOut.push(['GRAN TOTAL',data.reduce((a,t)=>a+subtotal(t),0)]);
@@ -632,9 +632,9 @@ document.getElementById('exportXlsx').addEventListener('click',()=>{
   if(typeof XLSX==='undefined'){exportCSV();return;}
   const wb=XLSX.utils.book_new();
   data.forEach(t=>{
-    const aoa=[t.columns.slice()];
-    t.rows.forEach(r=>aoa.push(t.columns.map((_,ci)=>ci===t.valueCol?parseNum(r[ci]):(typeof r[ci]==='number'?r[ci]:(r[ci]||'')))));
-    aoa.push(t.columns.map((_,ci)=>ci===0?'SUBTOTAL':(ci===t.valueCol?subtotal(t):'')));
+    const aoa=[['Usuario','Cargo','Área',...t.columns]];
+    t.rows.forEach((r,ri)=>aoa.push([...metaFila(t,ri),...t.columns.map((_,ci)=>ci===t.valueCol?parseNum(r[ci]):(typeof r[ci]==='number'?r[ci]:(r[ci]||'')))]));
+    aoa.push(['SUBTOTAL','','',...t.columns.map((_,ci)=>ci===t.valueCol?subtotal(t):'')]);
     const ws=XLSX.utils.aoa_to_sheet(aoa);
     let name=(t.title||'Tabla').replace(/[\\\/\?\*\[\]:]/g,' ').slice(0,28);
     let base=name,k=1;const used=wb.SheetNames;while(used.includes(name)){name=base.slice(0,26)+' '+(++k);}
@@ -736,12 +736,17 @@ function exportPPTX(){
   const ROWS_PER=16;
   data.forEach(t=>{
     const numeric=t.columns.map((_,ci)=>isNumericCol(t,ci));
-    const header=t.columns.map(c=>({text:String(c),options:{fill:{color:'0d3d24'},color:'FFFFFF',bold:true,align:'left',fontFace:FF}}));
-    const body=t.rows.map(r=>t.columns.map((_,ci)=>{
-      const isN=numeric[ci];const v=isN?nf0.format(parseNum(r[ci])):(r[ci]==null?'':String(r[ci]));
-      return {text:v,options:{align:isN?'right':'left',fontFace:FF,color:DARK}};
-    }));
-    const foot=t.columns.map((_,ci)=>({text:ci===0?'SUBTOTAL':(ci===t.valueCol?fmt.format(subtotal(t)):''),options:{bold:true,fill:{color:'E6F4EC'},color:'067131',align:ci===t.valueCol?'right':'left',fontFace:FF}}));
+    const _mh=c=>({text:String(c),options:{fill:{color:'0d3d24'},color:'FFFFFF',bold:true,align:'left',fontFace:FF}});
+    const header=[_mh('Usuario'),_mh('Cargo'),_mh('Área'),...t.columns.map(_mh)];
+    const body=t.rows.map((r,ri)=>{
+      const mf=metaFila(t,ri).map(v=>({text:String(v||''),options:{align:'left',fontFace:FF,color:DARK}}));
+      return [...mf,...t.columns.map((_,ci)=>{
+        const isN=numeric[ci];const v=isN?nf0.format(parseNum(r[ci])):(r[ci]==null?'':String(r[ci]));
+        return {text:v,options:{align:isN?'right':'left',fontFace:FF,color:DARK}};
+      })];
+    });
+    const _fc=(txt,al)=>({text:txt,options:{bold:true,fill:{color:'E6F4EC'},color:'067131',align:al||'left',fontFace:FF}});
+    const foot=[_fc('SUBTOTAL'),_fc(''),_fc(''),...t.columns.map((_,ci)=>_fc(ci===t.valueCol?fmt.format(subtotal(t)):'',ci===t.valueCol?'right':'left'))];
     const groups=[];
     if(body.length){for(let i=0;i<body.length;i+=ROWS_PER)groups.push(body.slice(i,i+ROWS_PER));}else{groups.push([]);}
     groups.forEach((g,gi)=>{
