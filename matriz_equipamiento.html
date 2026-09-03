@@ -180,6 +180,28 @@ const TABLAS_KEY = "tablas_valores_inventario_v1";
 // Total automático por usuario, calculado desde "Tablas de Valores".
 let valorPorUsuario = {};
 function normNom(s){ return String(s||"").trim().toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/\s+/g," "); }
+/* Directorio de empleados para reconocer a la misma persona aunque el nombre est\u00e9
+   parcial o en otro orden (p. ej. "Jose Martinez" = "Martinez Colon Jose Antonio"). */
+const DIRECTORIO=[
+  {n:"Alves Ramirez Cristopher Alexander"},{n:"Aristizabal Salazar Jefrid Jhonatan"},{n:"Barrera Vasquez Diana Marcela"},
+  {n:"Barrios Jimenez Monica"},{n:"Cadena Forero Daniela"},{n:"Camargo Rosas Gabriel Alejandro"},
+  {n:"Cardenas Rojas Heydy Dayanna"},{n:"Casallas Martinez Liliana Rocio"},{n:"Contreras Torrado Yaret Lorena"},
+  {n:"Funez Sandoval Anderson Jamed"},{n:"Garz\u00f3n Pachon Ana Catherine"},{n:"Gongora Gonzalez Maria Daniela"},
+  {n:"Jaramillo Duarte Juli\u00e1n"},{n:"Lopez Cortes Nyni Johanna"},{n:"Marquez Arevalo Erika"},
+  {n:"Martinez Colon Jose Antonio"},{n:"Ospina Martinez Jorge Henry"},{n:"Paz Garcia Jennifer Steisy"},
+  {n:"Quintero Rojas Yurany Alejandra"},{n:"Rodriguez Rodriguez Diana Carolina"},{n:"Rodriguez Rodriguez Luis Eduardo"},
+  {n:"Romero Quiroga Jonattan Nicolas"},{n:"Sanchez Andrade Niyired"},{n:"Uyaban Alonso Carlos Andres"}
+];
+function _toks(s){ return normNom(s).replace(/[^a-z0-9\s]/g," ").replace(/\s+/g," ").trim().split(" ").filter(Boolean); }
+function resolverEmpleado(nombre){
+  const t=_toks(nombre); if(!t.length) return null;
+  for(const e of DIRECTORIO){ if(normNom(e.n)===normNom(nombre)) return e; }
+  let m=DIRECTORIO.filter(e=>{const d=_toks(e.n);return t.every(x=>d.includes(x));});
+  if(m.length===1) return m[0];
+  if(!m.length){ m=DIRECTORIO.filter(e=>{const d=_toks(e.n);return d.every(x=>t.includes(x));}); if(m.length===1) return m[0]; }
+  return null;
+}
+function keyNom(s){ const e=resolverEmpleado(s); const base=e?e.n:s; return _toks(base).slice().sort().join(" "); }
 function numFrom(v){ if(typeof v==="number")return v; if(v==null)return 0; const n=parseFloat(String(v).replace(/[^0-9.-]/g,"")); return isNaN(n)?0:n; }
 const fmtCOP = new Intl.NumberFormat("es-CO",{style:"currency",currency:"COP",maximumFractionDigits:0});
 async function loadValoresPorUsuario(){
@@ -198,7 +220,7 @@ async function loadValoresPorUsuario(){
       const vc = t.valueCol;
       const asg = Array.isArray(t.assignees) ? t.assignees : [];
       t.rows.forEach(function(row, ri){
-        const who = normNom(asg[ri]);
+        const who = keyNom(asg[ri]);
         if(!who) return;
         valorPorUsuario[who] = (valorPorUsuario[who] || 0) + numFrom(row && row[vc]);
       });
@@ -368,7 +390,7 @@ function render(){
       <td class="col-usuario"><input type="text" class="cell-input nombre-input" data-field="nombre" value="${(u.nombre||"").replace(/"/g,'&quot;')}"></td>
       <td class="col-area"><input type="text" class="cell-input" data-field="area" value="${(u.area||"").replace(/"/g,'&quot;')}"></td>
       ${devTds}
-      <td class="col-valor col-valor-auto" title="Total calculado automáticamente según los equipos asignados a esta persona en Tablas de Valores" style="text-align:right;font-weight:bold;">${fmtCOP.format(valorPorUsuario[normNom(u.nombre)]||0)}</td>
+      <td class="col-valor col-valor-auto" title="Total calculado automáticamente según los equipos asignados a esta persona en Tablas de Valores" style="text-align:right;font-weight:bold;">${fmtCOP.format(valorPorUsuario[keyNom(u.nombre)]||0)}</td>
       <td><input type="text" class="cell-input obs-input" data-field="observaciones" value="${(u.observaciones||"").replace(/"/g,'&quot;')}" placeholder="Sin observaciones"></td>
       <td><span class="badge ${u.activo ? "activo" : "inactivo"}">${u.activo ? "Activo" : "Fuera de servicio"}</span></td>
       <td class="actions-col">
@@ -479,7 +501,7 @@ document.getElementById("btn-export").onclick = () => {
   const headers = ["Usuario","Área", ...DEVICES.map(d => d.label), "Total del valor de equipos por persona", "Observaciones", "Estado"];
   const lines = [headers.join(",")];
   users.forEach(u => {
-    const row = [u.nombre, u.area, ...DEVICES.map(d => u.dispositivos[d.id] || ""), fmtCOP.format(valorPorUsuario[normNom(u.nombre)]||0), (u.observaciones||"").replace(/,/g," "), u.activo ? "Activo" : "Fuera de servicio"];
+    const row = [u.nombre, u.area, ...DEVICES.map(d => u.dispositivos[d.id] || ""), fmtCOP.format(valorPorUsuario[keyNom(u.nombre)]||0), (u.observaciones||"").replace(/,/g," "), u.activo ? "Activo" : "Fuera de servicio"];
     lines.push(row.map(v => `"${String(v).replace(/"/g,'""')}"`).join(","));
   });
   const blob = new Blob(["\uFEFF" + lines.join("\n")], {type:"text/csv;charset=utf-8;"});

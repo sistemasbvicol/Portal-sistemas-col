@@ -80,6 +80,7 @@
   tbody input:hover{border-color:var(--border);}
   tbody input:focus{outline:none;border-color:var(--accent);background:#fff;box-shadow:0 0 0 2px rgba(0,134,81,0.10);}
   tbody input.num{text-align:right;font-variant-numeric:tabular-nums;}
+  .meta-cell{display:inline-block;font-size:12px;color:var(--text-secondary);white-space:nowrap;padding:0 4px;}
   .del-row{color:var(--danger);background:transparent;border:none;cursor:pointer;font-size:14px;padding:4px 6px;border-radius:6px;visibility:hidden;}
   .del-row:hover{background:#fdece9;}
   body.editmode .del-row{visibility:visible;}
@@ -273,10 +274,52 @@ function onRemote(raw){
 }
 document.addEventListener('focusout',()=>{setTimeout(()=>{if(pendingRemote&&!isEditingNow()){const v=pendingRemote;pendingRemote=null;applyRemote(v);}},200);});
 const MATRIZ_KEY='matriz_equipamiento_sistematico_v1';
+/* ---- Directorio de empleados (nombre completo, cargo y área) ---- */
+const DIRECTORIO=[
+  {n:"Alves Ramirez Cristopher Alexander",c:"Supervisor de Producción",a:"Producción"},
+  {n:"Aristizabal Salazar Jefrid Jhonatan",c:"Desarrollador de negocios zona centro",a:"Comercial"},
+  {n:"Barrera Vasquez Diana Marcela",c:"Asistente Contable",a:"Administrativo"},
+  {n:"Barrios Jimenez Monica",c:"Desarrollador de negocios zona sur",a:"Comercial"},
+  {n:"Cadena Forero Daniela",c:"Asistente Contable",a:"Administrativo"},
+  {n:"Camargo Rosas Gabriel Alejandro",c:"Jefe Comercial",a:"Comercial"},
+  {n:"Cardenas Rojas Heydy Dayanna",c:"Coordinador de Calidad",a:"Calidad"},
+  {n:"Casallas Martinez Liliana Rocio",c:"Cordinador Logistico",a:"Logistica"},
+  {n:"Contreras Torrado Yaret Lorena",c:"Key Account Manager (KAM) Minas",a:"Comercial"},
+  {n:"Funez Sandoval Anderson Jamed",c:"Supervisor de Calidad",a:"Calidad"},
+  {n:"Garzón Pachon Ana Catherine",c:"Ejecutivo Comercial Senior",a:"Comercial"},
+  {n:"Gongora Gonzalez Maria Daniela",c:"Analista de Diseño y Marketing",a:"Comercial"},
+  {n:"Jaramillo Duarte Julián",c:"Gerente",a:"Administrativo"},
+  {n:"Lopez Cortes Nyni Johanna",c:"Jefe de Seguridad y Salud en el Trabajo",a:"Administrativo"},
+  {n:"Marquez Arevalo Erika",c:"Ejecutivo Comercial Senior",a:"Comercial"},
+  {n:"Martinez Colon Jose Antonio",c:"Tecnico de Soporte TI",a:"Administrativo"},
+  {n:"Ospina Martinez Jorge Henry",c:"Jefe de Mantenimiento",a:"Mantenimiento"},
+  {n:"Paz Garcia Jennifer Steisy",c:"Jefe Admistrativo y Gestión Humana",a:"Administrativo"},
+  {n:"Quintero Rojas Yurany Alejandra",c:"Auxiliar de compras e inventarios",a:"Compras"},
+  {n:"Rodriguez Rodriguez Diana Carolina",c:"Supervisor de Producción",a:"Producción"},
+  {n:"Rodriguez Rodriguez Luis Eduardo",c:"Supervisor de Despachos",a:"Logistica"},
+  {n:"Romero Quiroga Jonattan Nicolas",c:"Lider de Comex y Analisis de Datos",a:"Compras"},
+  {n:"Sanchez Andrade Niyired",c:"Jefe de Producción y Calidad",a:"Producción"},
+  {n:"Uyaban Alonso Carlos Andres",c:"Jefe Logístico",a:"Logistica"}
+];
+function _normNom(s){return String(s||'').normalize('NFD').replace(/[̀-ͯ]/g,'').toLowerCase().replace(/[^a-z0-9\s]/g,' ').replace(/\s+/g,' ').trim();}
+function _toks(s){return _normNom(s).split(' ').filter(Boolean);}
+function resolverEmpleado(nombre){
+  const t=_toks(nombre); if(!t.length)return null;
+  for(const e of DIRECTORIO){ if(_normNom(e.n)===_normNom(nombre)) return e; }
+  let m=DIRECTORIO.filter(e=>{const d=_toks(e.n);return t.every(x=>d.includes(x));});
+  if(m.length===1) return m[0];
+  if(!m.length){ m=DIRECTORIO.filter(e=>{const d=_toks(e.n);return d.every(x=>t.includes(x));}); if(m.length===1) return m[0]; }
+  return null;
+}
+function completarNombres(){
+  let ch=false;
+  data.forEach(t=>{ if(Array.isArray(t.assignees)) t.assignees.forEach((nm,i)=>{ if(nm){ const e=resolverEmpleado(nm); if(e&&e.n!==nm){ t.assignees[i]=e.n; ch=true; } } }); });
+  return ch;
+}
 function fillUserNames(names){
   let dl=document.getElementById('userNames');
   if(!dl){ dl=document.createElement('datalist'); dl.id='userNames'; document.body.appendChild(dl); }
-  const uniq=Array.from(new Set((names||[]).map(n=>String(n||'').trim()).filter(Boolean))).sort((a,b)=>a.localeCompare(b));
+  const uniq=Array.from(new Set([].concat(names||[], DIRECTORIO.map(function(e){return e.n;})).map(n=>String(n||'').trim()).filter(Boolean))).sort((a,b)=>a.localeCompare(b));
   dl.innerHTML=uniq.map(n=>'<option value="'+n.replace(/"/g,'&quot;')+'">').join('');
 }
 function loadUserNames(){
@@ -316,6 +359,7 @@ function normAssignees(){
 }
 function render(){
   normAssignees();
+  if(completarNombres()) save();
   const cont=document.getElementById('tables');cont.innerHTML='';
   data.forEach((t,ti)=>{
     const numeric=t.columns.map((_,ci)=>isNumericCol(t,ci));
@@ -341,6 +385,8 @@ function render(){
     const tbl=document.createElement('table');
     const thead=document.createElement('thead');const htr=document.createElement('tr');
     const thu=document.createElement('th');thu.textContent='Usuario';thu.className='user-col';htr.appendChild(thu);
+    const thc=document.createElement('th');thc.textContent='Cargo';thc.className='user-col';htr.appendChild(thc);
+    const thar=document.createElement('th');thar.textContent='Área';thar.className='user-col';htr.appendChild(thar);
     t.columns.forEach((c,ci)=>{const th=document.createElement('th');th.textContent=c;if(numeric[ci])th.className='num';htr.appendChild(th);});
     const tha=document.createElement('th');tha.className='act';htr.appendChild(tha);
     thead.appendChild(htr);tbl.appendChild(thead);
@@ -351,6 +397,8 @@ function render(){
     const tfoot=document.createElement('tfoot');const ftr=document.createElement('tr');
     const valPos=t.valueCol;
     const fu=document.createElement('td');ftr.appendChild(fu);
+    const fc=document.createElement('td');ftr.appendChild(fc);
+    const far=document.createElement('td');ftr.appendChild(far);
     for(let ci=0;ci<t.columns.length;ci++){
       const td=document.createElement('td');
       if(ci===0){td.className='lbl';td.textContent='Subtotal';}
@@ -376,8 +424,16 @@ function buildRow(t,ti,row,ri,numeric){
   const uinp=document.createElement('input');uinp.className='user-input';uinp.setAttribute('list','userNames');uinp.placeholder='— sin asignar —';
   if(!Array.isArray(t.assignees))t.assignees=[];
   uinp.value=t.assignees[ri]==null?'':t.assignees[ri];
-  uinp.addEventListener('input',()=>{t.assignees[ri]=uinp.value;save();});
   tdu.appendChild(uinp);tr.appendChild(tdu);
+  // Cargo y Área — automáticos según la persona asignada (solo lectura)
+  const tdc=document.createElement('td');const cargoSpan=document.createElement('span');cargoSpan.className='meta-cell';tdc.appendChild(cargoSpan);tr.appendChild(tdc);
+  const tdar=document.createElement('td');const areaSpan=document.createElement('span');areaSpan.className='meta-cell';tdar.appendChild(areaSpan);tr.appendChild(tdar);
+  const pintarMeta=(nm)=>{const e=resolverEmpleado(nm);cargoSpan.textContent=e?e.c:'—';areaSpan.textContent=e?e.a:'—';};
+  pintarMeta(uinp.value);
+  const snap=()=>{const e=resolverEmpleado(uinp.value);if(e&&e.n!==uinp.value){uinp.value=e.n;t.assignees[ri]=e.n;save();}pintarMeta(uinp.value);};
+  uinp.addEventListener('input',()=>{t.assignees[ri]=uinp.value;pintarMeta(uinp.value);save();});
+  uinp.addEventListener('change',snap);
+  uinp.addEventListener('blur',snap);
   t.columns.forEach((c,ci)=>{
     const td=document.createElement('td');
     const inp=document.createElement('input');
