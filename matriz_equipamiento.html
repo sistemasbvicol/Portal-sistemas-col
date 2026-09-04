@@ -73,6 +73,24 @@
   .badge.inactivo{background:var(--off-bg); color:var(--off-text);}
 
   .actions-col{display:flex; gap:6px; white-space:nowrap;}
+  .icon-btn.acta{color:#0d7a3f; border-color:#0d7a3f;}
+  .acta-ov{position:fixed; inset:0; background:rgba(0,0,0,.5); z-index:1000; display:flex; align-items:center; justify-content:center; padding:16px;}
+  .acta-card{background:#fff; border-radius:14px; width:100%; max-width:760px; max-height:92vh; overflow:auto; padding:22px 24px; box-shadow:0 20px 60px rgba(0,0,0,.35); font-family:'Poppins',sans-serif;}
+  .acta-title{margin:0 0 12px; font-family:'Oswald',sans-serif; color:#0d3d24; font-size:20px;}
+  .acta-resumen{background:#f3f7f4; border:1px solid #e0e5e2; border-radius:10px; padding:12px 14px; font-size:13.5px; line-height:1.6; margin-bottom:14px;}
+  .acta-lbl{display:block; font-size:12.5px; font-weight:600; color:#3a4a41; margin:6px 0 4px;}
+  .acta-input{width:100%; padding:9px 12px; border:1px solid #cfd8d2; border-radius:8px; font-family:inherit; font-size:14px; margin-bottom:14px; box-sizing:border-box;}
+  .acta-firmas{display:grid; grid-template-columns:1fr 1fr; gap:16px;}
+  @media(max-width:640px){.acta-firmas{grid-template-columns:1fr;}}
+  .acta-firma-box{border:1px dashed #b9c6bd; border-radius:10px; padding:8px;}
+  .acta-firma-cap{font-size:12px; font-weight:600; color:#3a4a41; margin-bottom:6px;}
+  .acta-canvas{width:100%; height:150px; background:#fbfdfb; border:1px solid #e0e5e2; border-radius:6px; touch-action:none; cursor:crosshair; display:block;}
+  .acta-clear{margin-top:6px; font-size:12px; background:#fff; border:1px solid #cfd8d2; border-radius:6px; padding:4px 10px; cursor:pointer; color:#555;}
+  .acta-actions{display:flex; justify-content:flex-end; gap:10px; margin-top:18px;}
+  .acta-btn{font-family:inherit; font-size:14px; padding:10px 16px; border-radius:8px; cursor:pointer; border:1px solid #cfd8d2; background:#fff;}
+  .acta-btn.ok{background:#0d7a3f; color:#fff; border-color:#0d7a3f; font-weight:600;}
+  .acta-btn.ok:hover{background:#0a6234;}
+  .acta-btn.cancel:hover{background:#f2f4f2;}
   .icon-btn{
     border:1px solid var(--border); background:#fff; border-radius:6px; padding:5px 9px; font-size:12px; cursor:pointer;
   }
@@ -104,6 +122,7 @@
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 <script src="firebase-init.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;600;700&family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="bvi-theme.css">
@@ -184,14 +203,14 @@ function normNom(s){ return String(s||"").trim().toLowerCase().normalize("NFD").
 /* Directorio de empleados para reconocer a la misma persona aunque el nombre est\u00e9
    parcial o en otro orden (p. ej. "Jose Martinez" = "Martinez Colon Jose Antonio"). */
 const DIRECTORIO=[
-  {n:"Alves Ramirez Cristopher Alexander"},{n:"Aristizabal Salazar Jefrid Jhonatan"},{n:"Barrera Vasquez Diana Marcela"},
-  {n:"Barrios Jimenez Monica"},{n:"Cadena Forero Daniela"},{n:"Camargo Rosas Gabriel Alejandro"},
-  {n:"Cardenas Rojas Heydy Dayanna"},{n:"Casallas Martinez Liliana Rocio"},{n:"Contreras Torrado Yaret Lorena"},
-  {n:"Funez Sandoval Anderson Jamed"},{n:"Garz\u00f3n Pachon Ana Catherine"},{n:"Gongora Gonzalez Maria Daniela"},
-  {n:"Jaramillo Duarte Juli\u00e1n"},{n:"Lopez Cortes Nyni Johanna"},{n:"Marquez Arevalo Erika"},
-  {n:"Martinez Colon Jose Antonio"},{n:"Ospina Martinez Jorge Henry"},{n:"Paz Garcia Jennifer Steisy"},
-  {n:"Quintero Rojas Yurany Alejandra"},{n:"Rodriguez Rodriguez Diana Carolina"},{n:"Rodriguez Rodriguez Luis Eduardo"},
-  {n:"Romero Quiroga Jonattan Nicolas"},{n:"Sanchez Andrade Niyired"},{n:"Uyaban Alonso Carlos Andres"}
+  {n:"Alves Ramirez Cristopher Alexander",c:"Supervisor de Producci\u00f3n"},{n:"Aristizabal Salazar Jefrid Jhonatan",c:"Desarrollador de negocios zona centro"},{n:"Barrera Vasquez Diana Marcela",c:"Asistente Contable"},
+  {n:"Barrios Jimenez Monica",c:"Desarrollador de negocios zona sur"},{n:"Cadena Forero Daniela",c:"Asistente Contable"},{n:"Camargo Rosas Gabriel Alejandro",c:"Jefe Comercial"},
+  {n:"Cardenas Rojas Heydy Dayanna",c:"Coordinador de Calidad"},{n:"Casallas Martinez Liliana Rocio",c:"Cordinador Logistico"},{n:"Contreras Torrado Yaret Lorena",c:"Key Account Manager (KAM) Minas"},
+  {n:"Funez Sandoval Anderson Jamed",c:"Supervisor de Calidad"},{n:"Garz\u00f3n Pachon Ana Catherine",c:"Ejecutivo Comercial Senior"},{n:"Gongora Gonzalez Maria Daniela",c:"Analista de Dise\u00f1o y Marketing"},
+  {n:"Jaramillo Duarte Juli\u00e1n",c:"Gerente"},{n:"Lopez Cortes Nyni Johanna",c:"Jefe de Seguridad y Salud en el Trabajo"},{n:"Marquez Arevalo Erika",c:"Ejecutivo Comercial Senior"},
+  {n:"Martinez Colon Jose Antonio",c:"Tecnico de Soporte TI"},{n:"Ospina Martinez Jorge Henry",c:"Jefe de Mantenimiento"},{n:"Paz Garcia Jennifer Steisy",c:"Jefe Admistrativo y Gesti\u00f3n Humana"},
+  {n:"Quintero Rojas Yurany Alejandra",c:"Auxiliar de compras e inventarios"},{n:"Rodriguez Rodriguez Diana Carolina",c:"Supervisor de Producci\u00f3n"},{n:"Rodriguez Rodriguez Luis Eduardo",c:"Supervisor de Despachos"},
+  {n:"Romero Quiroga Jonattan Nicolas",c:"Lider de Comex y Analisis de Datos"},{n:"Sanchez Andrade Niyired",c:"Jefe de Producci\u00f3n y Calidad"},{n:"Uyaban Alonso Carlos Andres",c:"Jefe Log\u00edstico"}
 ];
 function _toks(s){ return normNom(s).replace(/[^a-z0-9\s]/g," ").replace(/\s+/g," ").trim().split(" ").filter(Boolean); }
 function resolverEmpleado(nombre){
@@ -407,8 +426,8 @@ function render(){
       <td><span class="badge ${u.activo ? "activo" : "inactivo"}">${u.activo ? "Activo" : "Fuera de servicio"}</span></td>
       <td class="actions-col">
         ${u.activo
-          ? `<button class="icon-btn dar-de-baja" data-action="baja" title="Marcar como fuera de servicio">Dar de baja</button>`
-          : `<button class="icon-btn reactivar" data-action="reactivar" title="Reactivar usuario">Reactivar</button>`
+          ? `<button class="icon-btn dar-de-baja" data-action="baja" title="Dar de baja con acta firmada">Dar de baja</button>`
+          : `<button class="icon-btn reactivar" data-action="reactivar" title="Reactivar usuario">Reactivar</button>${u.acta ? `<button class="icon-btn acta" data-action="acta" title="Descargar acta de baja firmada (PDF)">📄 Acta</button>` : ``}`
         }
         <button class="icon-btn eliminar" data-action="eliminar" title="Eliminar definitivamente">🗑</button>
       </td>
@@ -444,10 +463,15 @@ function render(){
       const tr = btn.closest("tr");
       const u = users.find(x => x.id === tr.dataset.id);
       if (!u) return;
-      if (!confirm(`¿Marcar a "${u.nombre}" como fuera de servicio? Su historial de equipos se conserva.`)) return;
-      u.activo = false;
-      saveState();
-      render();
+      abrirModalBaja(u);
+    };
+  });
+  tbody.querySelectorAll('[data-action="acta"]').forEach(btn => {
+    btn.onclick = () => {
+      const tr = btn.closest("tr");
+      const u = users.find(x => x.id === tr.dataset.id);
+      if (!u || !u.acta) return;
+      descargarActa(u);
     };
   });
   tbody.querySelectorAll('[data-action="reactivar"]').forEach(btn => {
@@ -555,6 +579,122 @@ document.getElementById("file-import").onchange = (e) => {
   };
   reader.readAsText(file);
 };
+
+/* ================== Acta de baja con doble firma (PDF) ================== */
+function escHtml(s){ return String(s==null?"":s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c])); }
+function fmtFechaLarga(iso){ try{ return new Date(iso).toLocaleDateString("es-CO",{year:"numeric",month:"long",day:"numeric"}); }catch(e){ return iso||""; } }
+function equiposAsignados(u){
+  const out=[];
+  DEVICES.forEach(d=>{ const v=String((u.dispositivos&&u.dispositivos[d.id])||"").trim(); if(v) out.push({label:d.label, val:v}); });
+  return out;
+}
+function crearFirmaPad(canvas){
+  const ctx=canvas.getContext("2d");
+  ctx.lineWidth=2; ctx.lineCap="round"; ctx.lineJoin="round"; ctx.strokeStyle="#101c14";
+  let drawing=false, dirty=false, last=null;
+  function pos(e){ const r=canvas.getBoundingClientRect(); const t=(e.touches&&e.touches[0])||e; return {x:(t.clientX-r.left)*(canvas.width/r.width), y:(t.clientY-r.top)*(canvas.height/r.height)}; }
+  function down(e){ e.preventDefault(); drawing=true; last=pos(e); }
+  function move(e){ if(!drawing)return; e.preventDefault(); const p=pos(e); ctx.beginPath(); ctx.moveTo(last.x,last.y); ctx.lineTo(p.x,p.y); ctx.stroke(); last=p; dirty=true; }
+  function up(){ drawing=false; }
+  canvas.addEventListener("mousedown",down); canvas.addEventListener("mousemove",move); window.addEventListener("mouseup",up);
+  canvas.addEventListener("touchstart",down,{passive:false}); canvas.addEventListener("touchmove",move,{passive:false}); canvas.addEventListener("touchend",up);
+  return { clear(){ ctx.clearRect(0,0,canvas.width,canvas.height); dirty=false; }, isEmpty(){ return !dirty; }, toDataURL(){ return canvas.toDataURL("image/png"); } };
+}
+let _bajaModal=null,_padU=null,_padA=null,_bajaUser=null;
+function ensureBajaModal(){
+  if(_bajaModal) return _bajaModal;
+  const ov=document.createElement("div"); ov.className="acta-ov"; ov.id="baja-modal"; ov.style.display="none";
+  ov.innerHTML=`
+    <div class="acta-card">
+      <h3 class="acta-title">Acta de baja y devolución de equipos</h3>
+      <div id="acta-resumen" class="acta-resumen"></div>
+      <label class="acta-lbl">Administrador del área (responsable)</label>
+      <input type="text" id="acta-responsable" class="acta-input" placeholder="Nombre del administrador del área">
+      <div class="acta-firmas">
+        <div class="acta-firma-box">
+          <div class="acta-firma-cap">Firma del usuario</div>
+          <canvas id="firma-usuario" class="acta-canvas" width="460" height="150"></canvas>
+          <button type="button" class="acta-clear" data-clear="u">Limpiar</button>
+        </div>
+        <div class="acta-firma-box">
+          <div class="acta-firma-cap">Firma del administrador del área</div>
+          <canvas id="firma-admin" class="acta-canvas" width="460" height="150"></canvas>
+          <button type="button" class="acta-clear" data-clear="a">Limpiar</button>
+        </div>
+      </div>
+      <div class="acta-actions">
+        <button type="button" class="acta-btn cancel" id="acta-cancel">Cancelar</button>
+        <button type="button" class="acta-btn ok" id="acta-ok">Generar acta y dar de baja</button>
+      </div>
+    </div>`;
+  document.body.appendChild(ov);
+  _padU=crearFirmaPad(ov.querySelector("#firma-usuario"));
+  _padA=crearFirmaPad(ov.querySelector("#firma-admin"));
+  ov.querySelector('[data-clear="u"]').onclick=()=>_padU.clear();
+  ov.querySelector('[data-clear="a"]').onclick=()=>_padA.clear();
+  ov.querySelector("#acta-cancel").onclick=()=>{ ov.style.display="none"; };
+  ov.addEventListener("mousedown",e=>{ if(e.target===ov) ov.style.display="none"; });
+  ov.querySelector("#acta-ok").onclick=()=>{
+    const u=_bajaUser; if(!u) return;
+    const resp=(ov.querySelector("#acta-responsable").value||"").trim();
+    if(!resp){ alert("Escribe el nombre del administrador del área (responsable)."); return; }
+    if(_padU.isEmpty()){ alert("Falta la firma del usuario."); return; }
+    if(_padA.isEmpty()){ alert("Falta la firma del administrador del área."); return; }
+    const acta={ fecha:new Date().toISOString(), nombre:u.nombre, area:u.area||"", cargo:(resolverEmpleado(u.nombre)||{}).c||"", responsable:resp, equipos:equiposAsignados(u), valor:valorPorUsuario[keyNom(u.nombre)]||0, observaciones:u.observaciones||"", firmaUsuario:_padU.toDataURL(), firmaAdmin:_padA.toDataURL() };
+    u.acta=acta; u.activo=false; u.fechaBaja=acta.fecha;
+    saveState();
+    try{ descargarActa(u); }catch(e){ console.error(e); alert("Se dio de baja, pero no se pudo generar el PDF ahora. Usa el botón 📄 Acta para descargarlo."); }
+    ov.style.display="none";
+    render();
+  };
+  _bajaModal=ov; return ov;
+}
+function abrirModalBaja(u){
+  if(!(window.jspdf&&window.jspdf.jsPDF)){ if(!confirm("El generador de PDF no está disponible (revisa tu conexión). ¿Deseas continuar sin acta firmada?")) return; u.activo=false; saveState(); render(); return; }
+  const ov=ensureBajaModal(); _bajaUser=u;
+  const eq=equiposAsignados(u); const cargo=(resolverEmpleado(u.nombre)||{}).c||"—";
+  ov.querySelector("#acta-resumen").innerHTML=
+    `<div><b>Colaborador:</b> ${escHtml(u.nombre)}</div>`+
+    `<div><b>Cargo:</b> ${escHtml(cargo)} &nbsp;·&nbsp; <b>Área:</b> ${escHtml(u.area||"—")}</div>`+
+    `<div><b>Equipos a devolver:</b> ${eq.length?escHtml(eq.map(e=>e.label+" ("+e.val+")").join(", ")):"Ninguno registrado"}</div>`;
+  ov.querySelector("#acta-responsable").value=""; _padU.clear(); _padA.clear();
+  ov.style.display="flex";
+}
+function logoDataUrl(){ const img=document.querySelector(".brand-logo img, .header-brand img, img[src*='bvi-logo']"); return (img&&img.complete&&img.naturalWidth)?img.src:null; }
+function generarActaDoc(u, acta){
+  const jsPDFLib=window.jspdf&&window.jspdf.jsPDF; if(!jsPDFLib) throw new Error("jsPDF no disponible");
+  const doc=new jsPDFLib({orientation:"portrait",unit:"mm",format:"a4"});
+  const PW=doc.internal.pageSize.getWidth(), PH=doc.internal.pageSize.getHeight(), M=18; let y=16;
+  const VERDE=[13,61,36], GRIS=[107,111,108], TX=[28,28,26];
+  const logo=logoDataUrl();
+  if(logo){ try{ doc.setFillColor(255,255,255); doc.roundedRect(M-2,y-3,34,15,1.5,1.5,"F"); doc.addImage(logo,"PNG",M,y-1,32,11); }catch(e){} }
+  doc.setTextColor(...VERDE); doc.setFont("helvetica","bold"); doc.setFontSize(9);
+  doc.text("BARRON VIEYRA INTERNATIONAL · ÁREA DE SISTEMAS", PW-M, y, {align:"right"}); y+=16;
+  doc.setFontSize(17); doc.setTextColor(...VERDE); doc.text("Acta de baja y devolución de equipos", M, y); y+=9;
+  doc.setFont("helvetica","normal"); doc.setFontSize(10); doc.setTextColor(...GRIS); doc.text("Fecha: "+fmtFechaLarga(acta.fecha), M, y); y+=6;
+  doc.setDrawColor(210,214,210); doc.line(M,y,PW-M,y); y+=9;
+  doc.setTextColor(...TX); doc.setFontSize(11);
+  const rowKV=(k,v)=>{ doc.setFont("helvetica","bold"); doc.text(k,M,y); doc.setFont("helvetica","normal"); doc.text(String(v||"—"),M+38,y,{maxWidth:PW-M-38-M}); y+=7; };
+  rowKV("Colaborador:",acta.nombre); rowKV("Cargo:",acta.cargo||"—"); rowKV("Área:",acta.area||"—"); y+=2;
+  doc.setFont("helvetica","normal"); doc.setFontSize(10);
+  doc.text("Se deja constancia de la baja del colaborador y de la devolución de los siguientes equipos que le fueron asignados:",M,y,{maxWidth:PW-2*M}); y+=11;
+  doc.setFillColor(13,61,36); doc.setTextColor(255,255,255); doc.setFont("helvetica","bold"); doc.setFontSize(10);
+  doc.rect(M,y-5,PW-2*M,8,"F"); doc.text("Equipo",M+3,y); doc.text("Detalle / Serial",M+70,y); y+=6;
+  doc.setTextColor(...TX); doc.setFont("helvetica","normal");
+  if(acta.equipos&&acta.equipos.length){ acta.equipos.forEach((e,i)=>{ if(i%2){ doc.setFillColor(243,245,243); doc.rect(M,y-4.5,PW-2*M,7,"F"); } doc.text(String(e.label),M+3,y); doc.text(String(e.val),M+70,y,{maxWidth:PW-M-70-3}); y+=7; }); }
+  else { doc.setTextColor(...GRIS); doc.text("No hay equipos registrados a nombre del colaborador.",M+3,y); doc.setTextColor(...TX); y+=7; }
+  y+=4;
+  if(acta.observaciones){ doc.setFont("helvetica","bold"); doc.setFontSize(10); doc.text("Observaciones:",M,y); y+=5; doc.setFont("helvetica","normal"); doc.text(String(acta.observaciones),M,y,{maxWidth:PW-2*M}); y+=8; }
+  y=Math.max(y,PH-70);
+  const colW=(PW-2*M-16)/2;
+  const drawFirma=(x,img,l1,l2)=>{ if(img){ try{ doc.addImage(img,"PNG",x,y,colW,26); }catch(e){} } doc.setDrawColor(60,60,60); doc.line(x,y+28,x+colW,y+28); doc.setTextColor(...TX); doc.setFont("helvetica","bold"); doc.setFontSize(10); doc.text(l1,x,y+33); doc.setFont("helvetica","normal"); doc.setTextColor(...GRIS); doc.setFontSize(9); doc.text(String(l2||""),x,y+38,{maxWidth:colW}); };
+  drawFirma(M,acta.firmaUsuario,"Firma del usuario",acta.nombre);
+  drawFirma(M+colW+16,acta.firmaAdmin,"Firma del administrador del área",acta.responsable);
+  doc.setTextColor(150,153,150); doc.setFontSize(8);
+  doc.text("Documento generado por el Portal de Activos TI · Barron Vieyra International",M,PH-8);
+  return doc;
+}
+function descargarActa(u){ const doc=generarActaDoc(u,u.acta); const safe=(u.nombre||"usuario").normalize("NFD").replace(/[̀-ͯ]/g,"").replace(/[^\w ]/g,"").trim().replace(/\s+/g,"_"); doc.save("Acta_baja_"+safe+".pdf"); }
 
 (async function start(){
   buildHeadRow();
