@@ -80,7 +80,7 @@
   .acta-resumen{background:#f3f7f4; border:1px solid #e0e5e2; border-radius:10px; padding:12px 14px; font-size:13.5px; line-height:1.6; margin-bottom:14px;}
   .acta-lbl{display:block; font-size:12.5px; font-weight:600; color:#3a4a41; margin:6px 0 4px;}
   .acta-input{width:100%; padding:9px 12px; border:1px solid #cfd8d2; border-radius:8px; font-family:inherit; font-size:14px; margin-bottom:14px; box-sizing:border-box;}
-  .acta-firmas{display:grid; grid-template-columns:1fr 1fr; gap:16px;}
+  .acta-firmas{display:grid; grid-template-columns:1fr; gap:16px;}
   @media(max-width:640px){.acta-firmas{grid-template-columns:1fr;}}
   .acta-firma-box{border:1px dashed #b9c6bd; border-radius:10px; padding:8px;}
   .acta-firma-cap{font-size:12px; font-weight:600; color:#3a4a41; margin-bottom:6px;}
@@ -600,7 +600,7 @@ function crearFirmaPad(canvas){
   canvas.addEventListener("touchstart",down,{passive:false}); canvas.addEventListener("touchmove",move,{passive:false}); canvas.addEventListener("touchend",up);
   return { clear(){ ctx.clearRect(0,0,canvas.width,canvas.height); dirty=false; }, isEmpty(){ return !dirty; }, toDataURL(){ return canvas.toDataURL("image/png"); } };
 }
-let _bajaModal=null,_padU=null,_padA=null,_bajaUser=null;
+let _bajaModal=null,_padA=null,_bajaUser=null;
 function ensureBajaModal(){
   if(_bajaModal) return _bajaModal;
   const ov=document.createElement("div"); ov.className="acta-ov"; ov.id="baja-modal"; ov.style.display="none";
@@ -611,11 +611,6 @@ function ensureBajaModal(){
       <label class="acta-lbl">Administrador del área (responsable)</label>
       <input type="text" id="acta-responsable" class="acta-input" placeholder="Nombre del administrador del área">
       <div class="acta-firmas">
-        <div class="acta-firma-box">
-          <div class="acta-firma-cap">Firma del usuario</div>
-          <canvas id="firma-usuario" class="acta-canvas" width="460" height="150"></canvas>
-          <button type="button" class="acta-clear" data-clear="u">Limpiar</button>
-        </div>
         <div class="acta-firma-box">
           <div class="acta-firma-cap">Firma del administrador del área</div>
           <canvas id="firma-admin" class="acta-canvas" width="460" height="150"></canvas>
@@ -628,9 +623,7 @@ function ensureBajaModal(){
       </div>
     </div>`;
   document.body.appendChild(ov);
-  _padU=crearFirmaPad(ov.querySelector("#firma-usuario"));
   _padA=crearFirmaPad(ov.querySelector("#firma-admin"));
-  ov.querySelector('[data-clear="u"]').onclick=()=>_padU.clear();
   ov.querySelector('[data-clear="a"]').onclick=()=>_padA.clear();
   ov.querySelector("#acta-cancel").onclick=()=>{ ov.style.display="none"; };
   ov.addEventListener("mousedown",e=>{ if(e.target===ov) ov.style.display="none"; });
@@ -638,9 +631,8 @@ function ensureBajaModal(){
     const u=_bajaUser; if(!u) return;
     const resp=(ov.querySelector("#acta-responsable").value||"").trim();
     if(!resp){ alert("Escribe el nombre del administrador del área (responsable)."); return; }
-    if(_padU.isEmpty()){ alert("Falta la firma del usuario."); return; }
     if(_padA.isEmpty()){ alert("Falta la firma del administrador del área."); return; }
-    const acta={ fecha:new Date().toISOString(), nombre:u.nombre, area:u.area||"", cargo:(resolverEmpleado(u.nombre)||{}).c||"", responsable:resp, equipos:equiposAsignados(u), valor:valorPorUsuario[keyNom(u.nombre)]||0, observaciones:u.observaciones||"", firmaUsuario:_padU.toDataURL(), firmaAdmin:_padA.toDataURL() };
+    const acta={ fecha:new Date().toISOString(), nombre:u.nombre, area:u.area||"", cargo:(resolverEmpleado(u.nombre)||{}).c||"", responsable:resp, equipos:equiposAsignados(u), valor:valorPorUsuario[keyNom(u.nombre)]||0, observaciones:u.observaciones||"", firmaAdmin:_padA.toDataURL() };
     u.acta=acta; u.activo=false; u.fechaBaja=acta.fecha;
     saveState();
     try{ descargarActa(u); }catch(e){ console.error(e); alert("Se dio de baja, pero no se pudo generar el PDF ahora. Usa el botón 📄 Acta para descargarlo."); }
@@ -657,7 +649,7 @@ function abrirModalBaja(u){
     `<div><b>Colaborador:</b> ${escHtml(u.nombre)}</div>`+
     `<div><b>Cargo:</b> ${escHtml(cargo)} &nbsp;·&nbsp; <b>Área:</b> ${escHtml(u.area||"—")}</div>`+
     `<div><b>Equipos a devolver:</b> ${eq.length?escHtml(eq.map(e=>e.label+" ("+e.val+")").join(", ")):"Ninguno registrado"}</div>`;
-  ov.querySelector("#acta-responsable").value=""; _padU.clear(); _padA.clear();
+  ov.querySelector("#acta-responsable").value=""; _padA.clear();
   ov.style.display="flex";
 }
 function logoDataUrl(){ const img=document.querySelector(".brand-logo img, .header-brand img, img[src*='bvi-logo']"); return (img&&img.complete&&img.naturalWidth)?img.src:null; }
@@ -686,10 +678,9 @@ function generarActaDoc(u, acta){
   y+=4;
   if(acta.observaciones){ doc.setFont("helvetica","bold"); doc.setFontSize(10); doc.text("Observaciones:",M,y); y+=5; doc.setFont("helvetica","normal"); doc.text(String(acta.observaciones),M,y,{maxWidth:PW-2*M}); y+=8; }
   y=Math.max(y,PH-70);
-  const colW=(PW-2*M-16)/2;
+  const colW=(PW-2*M)*0.62;
   const drawFirma=(x,img,l1,l2)=>{ if(img){ try{ doc.addImage(img,"PNG",x,y,colW,26); }catch(e){} } doc.setDrawColor(60,60,60); doc.line(x,y+28,x+colW,y+28); doc.setTextColor(...TX); doc.setFont("helvetica","bold"); doc.setFontSize(10); doc.text(l1,x,y+33); doc.setFont("helvetica","normal"); doc.setTextColor(...GRIS); doc.setFontSize(9); doc.text(String(l2||""),x,y+38,{maxWidth:colW}); };
-  drawFirma(M,acta.firmaUsuario,"Firma del usuario",acta.nombre);
-  drawFirma(M+colW+16,acta.firmaAdmin,"Firma del administrador del área",acta.responsable);
+  drawFirma(M,acta.firmaAdmin,"Firma del administrador del área",acta.responsable);
   doc.setTextColor(150,153,150); doc.setFontSize(8);
   doc.text("Documento generado por el Portal de Activos TI · Barron Vieyra International",M,PH-8);
   return doc;
