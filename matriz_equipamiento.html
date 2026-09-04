@@ -203,6 +203,14 @@ function resolverEmpleado(nombre){
   return null;
 }
 function keyNom(s){ const e=resolverEmpleado(s); const base=e?e.n:s; return _toks(base).slice().sort().join(" "); }
+/* Completa el nombre de cada persona a su forma COMPLETA del directorio
+   (p. ej. "Jose Martinez" -> "Martinez Colon Jose Antonio"). Solo cambia
+   cuando el reconocimiento es inequívoco; deja igual lo que no reconoce. */
+function completarNombresUsuarios(){
+  let ch=false;
+  users.forEach(u=>{ if(u && u.nombre){ const e=resolverEmpleado(u.nombre); if(e && e.n!==u.nombre){ u.nombre=e.n; ch=true; } } });
+  return ch;
+}
 function numFrom(v){ if(typeof v==="number")return v; if(v==null)return 0; const n=parseFloat(String(v).replace(/[^0-9.-]/g,"")); return isNaN(n)?0:n; }
 const fmtCOP = new Intl.NumberFormat("es-CO",{style:"currency",currency:"COP",maximumFractionDigits:0});
 async function loadValoresPorUsuario(){
@@ -361,6 +369,7 @@ function matchesFilter(u){
 }
 
 function render(){
+  if (completarNombresUsuarios()) saveState();
   const tbody = document.getElementById("tbody");
   tbody.innerHTML = "";
 
