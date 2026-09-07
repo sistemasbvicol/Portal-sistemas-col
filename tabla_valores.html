@@ -43,6 +43,16 @@
   .summary-top .lbl{font-size:12px;letter-spacing:1.2px;text-transform:uppercase;color:#7fd9a8;font-weight:600;}
   .grand{font-family:'Oswald',sans-serif;font-size:34px;font-weight:700;line-height:1;}
   .chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:16px;}
+  .trm-row{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:16px;padding-top:14px;border-top:1px solid rgba(255,255,255,.16);}
+  .trm-row label{font:600 13px 'Poppins',sans-serif;color:#fff;}
+  .trm-row input{width:130px;padding:8px 11px;border-radius:9px;border:1px solid #cfd8d2;background:#fff;color:#0d3d24;font:700 15px 'Poppins',sans-serif;text-align:right;}
+  .trm-row input:focus{outline:2px solid #7fd9a8;outline-offset:1px;}
+  .trm-note{font:500 12px 'Poppins',sans-serif;color:#cdefda;}
+  .trm-note b{color:#fff;}
+  thead th.usd-col{color:var(--accent,#0d7a3f);}
+  tbody td.usd-col{text-align:right;}
+  .usd-val{font-variant-numeric:tabular-nums;font-weight:600;color:#0b6b39;white-space:nowrap;}
+  tfoot td.usd-col{text-align:right;font-family:'Oswald',sans-serif;font-size:15px;color:#0b6b39;}
   .chip{background:rgba(255,255,255,0.10);border:1px solid rgba(255,255,255,0.18);border-radius:20px;padding:6px 12px;font-size:12px;display:flex;gap:8px;align-items:center;}
   .chip b{font-weight:600;}
   .chip .cv{color:#a8e9c5;font-weight:600;}
@@ -169,11 +179,17 @@
         <div>
           <div class="lbl">Gran total del inventario</div>
           <div class="grand" id="grandTotal">$0</div>
+          <div class="lbl" style="margin-top:4px;">≈ <b id="grandTotalUsd">$0.00</b> USD</div>
         </div>
         <div style="text-align:right;">
           <div class="lbl">Categorías</div>
           <div class="grand" id="tableCount" style="font-size:22px;">0</div>
         </div>
+      </div>
+      <div class="trm-row">
+        <label for="trmInput">💱 TRM (COP por 1 USD)</label>
+        <input id="trmInput" type="text" inputmode="decimal" autocomplete="off" value="4.000">
+        <span class="trm-note">La columna <b>Valor (USD)</b> se calcula sola: <b>COP ÷ TRM</b>. Cambia la tasa y todo se recalcula.</span>
       </div>
       <div class="chips" id="chips"></div>
     </div>
@@ -229,10 +245,40 @@
   </div>
 
 <script>
-const DEFAULT_DATA = [{"title": "Equipos de cómputo (portátiles y PC)", "icon": "💻", "columns": ["Marca", "Modelo", "Serial / Activo Fijo", "Procesador", "RAM", "Almacenamiento", "Valor (COP)", "Valor (USD)"], "valueCol": 6, "rows": [["Lenovo", "83ER", "PF5F7HZW", "I5-12450H", "16 GB", "500GB", 1830122.0], ["Lenovo", "83ER", "pf5f90hp", "I5-12450H", "16 GB", "500GB", 1830122.0], ["Lenovo", "Ideacentre A340-22IWL", "MP2G2P3K", "I5-12450H", "8 GB", "500GB", 1700000.0], ["Lenovo", "X390", "PC1AD932", "I5-8265U", "8GB", "256GB", 1633885.0], ["Lenovo", "T14 Gen 1", "PC1G0V1W", "i7-8565u", "16 GB", "256GB", 1633885.0], ["Lenovo", "T14 Gen 1", "PF2MRX5V", "i5-10210u", "16 GB", "256GB", 1633885.0], ["Lenovo", "T14 Gen 1", "PF2PPKP3", "i5-10210ui", "16 GB", "256GB", 1851737.0], ["Lenovo", "T14 Gen 1", "PF2PPAAK", "i5-1021u", "16 GB", "512GB", 1960662.0], ["ACER", "Aspire a315-51", "145B7600", "i5-7200u", "12GB", "1T", 1749000.0], ["Lenovo", "Ideacentre A340-22IWL", "MP1RHGQH", "I3-10110U", "4GB", "1T", 1700000.0], ["Lenovo", "X390", "PC1AX5H6", "I5-8265U", "8GB", "265 GB", 1633885.0], ["Lenovo", "T14 Gen 1", "PF2PPJRA", "I5- 10210U", "16 GB", "256GB", 1633885.0], ["HP", "HP ProDesk 400 G6", "8CC1124476", "I5-10500T", "8GB", "512GB", 1119000.0], ["Lenovo", "L390", "R90Y12YP", "I5-8365U", "16 GB", "512GB", 1710133.0], ["Lenovo", "82TS", "PF4WGY8E", "i7-1255u", "16GB", "512GB", 3690000.0], ["ACER", "V1.17", "NXMZCAL015635062927600", "n3710@", "8GB", "500GB", 1049000.0], ["Lenovo", "X390", "PC1AX5KB", "i5-8265u", "8GB", "256GB", 1633885.0], ["Lenovo", "ThinkCentre neo 50a 24 Gen 5", "MP2GDZQE", "i7-13620h", "16gb", "512gb", 1633885.0], ["HP", "Hewlett-Packard  1.00", "3CR5260645", "I3-4160T", "8GB", "1T", 1299000.0], ["Lenovo", "T14 Gen 1", "PW0B0LE2", "i5-1345u", "16gb", "512gb", 1633885.0], ["Lenovo", "83A0", "PF544ARP", "I7-1355U", "16gb", "930GB", 2240000.0], ["Lenovo", "E14", "PF5ETRG4", "I5-1335U", "16gb", "512gb", 4049901.0], ["Lenovo", "83ER", "PF52ARB8", "I5-12450H", "16gb", "512gb", 1830122.0], ["Lenovo", "T14 Gen 1", "PW0B0LHP", "I5-1345U", "16gb", "512gb", 1633885.0], ["Lenovo", "83ER", "PF5F8W3C", "I5-12450H", "16gb", "512gb", 1830122.0], ["Lenovo", "L14", "PW-0EKZ2S", "I7-1365U", "32GB", "512gb", 4129999.0], ["Lenovo", "L14", "PW-0EKZ2D", "I7-1365U", "32GB", "512gb", 4129999.0], ["Lenovo", "G410", "3328384800146", "I5-4200M", "4GB", "237GB", 720.0], ["Toshiba", "C645D", "ZB313649Q", "", "", "", 200590.0], ["Lenovo", "L14", "PW0HVE47", "ULTRA 5 135U", "32GB", "512GB", 5062184.0], ["Lenovo", "83A1", "PF5BM5NF", "I5-1342h", "16GB", "512GB", 2200000.0]]}, {"title": "Impresoras", "icon": "🖨️", "columns": ["Marca", "Modelo", "Número de Serie", "Valor (COP)"], "valueCol": 3, "rows": [["BROTHER", "MFC-T920DW", "U66056D3H975080", 2151260.0], ["HP", "Thank 580", "1F3Y280003", 455303.0], ["BROTHER", "MFC-T920DW", "U66056D3H975126", 2151260.0], ["EPSON", "L375", "WBGK140763", 679000.0], ["HP", "Tank 520", "1f3w28003", 671428.57], ["EPSON", "L355", "S3YK505306", 440000.0], ["HP", "Laser MFP 137fnw", "CNB3N3J16F", 699000.0]]}, {"title": "Software y licencias", "icon": "🧩", "columns": ["Software", "Versión", "N° Licencias", "Valor unitario (COP)", "Valor total (COP)"], "valueCol": 4, "rows": [["OFICCE", "2021", "13", 380000.0, 4940000.0], ["Siigo", "9.1", "25", 330939.0, 3971275.0], ["WINDOWS 11", "PRO", "24", 369500.0, 8868000.0]]}, {"title": "Equipos de red", "icon": "🌐", "columns": ["Marca", "Modelo", "Serial", "Valor (COP)"], "valueCol": 3, "rows": [["ETB", "G-2425G-A", "ALCLB2938E65", 109900.0], ["ETB", "G-240W-F", "ALCLB3CF8849", 309000.0], ["Jhua", "DHI-XVR5232AN-S2", "8A0464APAZ2FDF6", 1100000.0], ["Jhua", "DHI-NVR4232-16P-4KS2/L", "9E0E371PAZ10A79", 2700000.0], ["Juniper", "SRX300", "", 309000.0], ["Panasonic", "KX-T824", "", 0], ["Ubitiqui", "USW-242POE", "", 1500000.0], ["Ubitiqui", "USW-242POE", "", 1500000.0], ["Ubitiqui", "U6-LR WIFI AX3000", "", 1500000.0], ["Ubitiqui", "U6-LR WIFI AX3000", "", 1500000.0], ["Ubitiqui", "U6-LR WIFI AX3000", "", 1500000.0]]}, {"title": "Servidores", "icon": "🖥️", "columns": ["Marca", "Modelo", "Serial", "Valor (COP)"], "valueCol": 3, "rows": [["HPE ProLiant", "ML110 Gen11", "2M235200S9", 11680000.0], ["HPE ProLiant", "ML310e Gen8", "BRC3243E0K", 3207000.0]]}, {"title": "Teléfonos", "icon": "📱", "columns": ["Marca", "Modelo", "Serial", "Valor (COP)"], "valueCol": 3, "rows": [["Motorola", "E13", "", 339900.0], ["Motorola", "E13", "", 339900.0], ["Motorola", "E13", "", 329900.0], ["Redmi", "9A", "", 391226.0], ["", "", "", 339900.0], ["Motorola", "E13", "", 659800.0], ["Motorola", "E13", "", 339900.0], ["Motorola", "G04S", "", 339900.0], ["Motorola", "E13", "", 339900.0], ["Si Aplica", "", "", 339900.0], ["Motorola", "E13", "", 339900.0], ["Galaxy", "S22 Ultra", "", 4873866.0], ["Motorola", "E(7I) ULTRA", "", 339900.0], ["Motorola", "E(7I) ULTRA", "", 339900.0], ["Motorola", "G06", "ZY32MFM5BT", 419050.0], ["Motorola", "G06", "ZY32M9R4J6", 419050.0], ["Motorola", "G06", "ZY32M9R46P", 419050.0], ["Motorola", "G06", "ZY32M9R4X6", 419050.0], ["Motorola", "G06", "ZY32MFMVHL", 419050.0], ["Motorola", "G06", "ZY32MFMT49", 419050.0], ["Motorola", "G06", "ZY32MFM2TL", 419050.0]]}, {"title": "Monitores", "icon": "🖥️", "columns": ["Marca", "Modelo", "Serial", "Valor (COP)"], "valueCol": 3, "numCols": [3], "rows": []}];
+const DEFAULT_DATA = [{"title": "Equipos de cómputo (portátiles y PC)", "icon": "💻", "columns": ["Marca", "Modelo", "Serial / Activo Fijo", "Procesador", "RAM", "Almacenamiento", "Valor (COP)"], "valueCol": 6, "rows": [["Lenovo", "83ER", "PF5F7HZW", "I5-12450H", "16 GB", "500GB", 1830122.0], ["Lenovo", "83ER", "pf5f90hp", "I5-12450H", "16 GB", "500GB", 1830122.0], ["Lenovo", "Ideacentre A340-22IWL", "MP2G2P3K", "I5-12450H", "8 GB", "500GB", 1700000.0], ["Lenovo", "X390", "PC1AD932", "I5-8265U", "8GB", "256GB", 1633885.0], ["Lenovo", "T14 Gen 1", "PC1G0V1W", "i7-8565u", "16 GB", "256GB", 1633885.0], ["Lenovo", "T14 Gen 1", "PF2MRX5V", "i5-10210u", "16 GB", "256GB", 1633885.0], ["Lenovo", "T14 Gen 1", "PF2PPKP3", "i5-10210ui", "16 GB", "256GB", 1851737.0], ["Lenovo", "T14 Gen 1", "PF2PPAAK", "i5-1021u", "16 GB", "512GB", 1960662.0], ["ACER", "Aspire a315-51", "145B7600", "i5-7200u", "12GB", "1T", 1749000.0], ["Lenovo", "Ideacentre A340-22IWL", "MP1RHGQH", "I3-10110U", "4GB", "1T", 1700000.0], ["Lenovo", "X390", "PC1AX5H6", "I5-8265U", "8GB", "265 GB", 1633885.0], ["Lenovo", "T14 Gen 1", "PF2PPJRA", "I5- 10210U", "16 GB", "256GB", 1633885.0], ["HP", "HP ProDesk 400 G6", "8CC1124476", "I5-10500T", "8GB", "512GB", 1119000.0], ["Lenovo", "L390", "R90Y12YP", "I5-8365U", "16 GB", "512GB", 1710133.0], ["Lenovo", "82TS", "PF4WGY8E", "i7-1255u", "16GB", "512GB", 3690000.0], ["ACER", "V1.17", "NXMZCAL015635062927600", "n3710@", "8GB", "500GB", 1049000.0], ["Lenovo", "X390", "PC1AX5KB", "i5-8265u", "8GB", "256GB", 1633885.0], ["Lenovo", "ThinkCentre neo 50a 24 Gen 5", "MP2GDZQE", "i7-13620h", "16gb", "512gb", 1633885.0], ["HP", "Hewlett-Packard  1.00", "3CR5260645", "I3-4160T", "8GB", "1T", 1299000.0], ["Lenovo", "T14 Gen 1", "PW0B0LE2", "i5-1345u", "16gb", "512gb", 1633885.0], ["Lenovo", "83A0", "PF544ARP", "I7-1355U", "16gb", "930GB", 2240000.0], ["Lenovo", "E14", "PF5ETRG4", "I5-1335U", "16gb", "512gb", 4049901.0], ["Lenovo", "83ER", "PF52ARB8", "I5-12450H", "16gb", "512gb", 1830122.0], ["Lenovo", "T14 Gen 1", "PW0B0LHP", "I5-1345U", "16gb", "512gb", 1633885.0], ["Lenovo", "83ER", "PF5F8W3C", "I5-12450H", "16gb", "512gb", 1830122.0], ["Lenovo", "L14", "PW-0EKZ2S", "I7-1365U", "32GB", "512gb", 4129999.0], ["Lenovo", "L14", "PW-0EKZ2D", "I7-1365U", "32GB", "512gb", 4129999.0], ["Lenovo", "G410", "3328384800146", "I5-4200M", "4GB", "237GB", 720.0], ["Toshiba", "C645D", "ZB313649Q", "", "", "", 200590.0], ["Lenovo", "L14", "PW0HVE47", "ULTRA 5 135U", "32GB", "512GB", 5062184.0], ["Lenovo", "83A1", "PF5BM5NF", "I5-1342h", "16GB", "512GB", 2200000.0]]}, {"title": "Impresoras", "icon": "🖨️", "columns": ["Marca", "Modelo", "Número de Serie", "Valor (COP)"], "valueCol": 3, "rows": [["BROTHER", "MFC-T920DW", "U66056D3H975080", 2151260.0], ["HP", "Thank 580", "1F3Y280003", 455303.0], ["BROTHER", "MFC-T920DW", "U66056D3H975126", 2151260.0], ["EPSON", "L375", "WBGK140763", 679000.0], ["HP", "Tank 520", "1f3w28003", 671428.57], ["EPSON", "L355", "S3YK505306", 440000.0], ["HP", "Laser MFP 137fnw", "CNB3N3J16F", 699000.0]]}, {"title": "Software y licencias", "icon": "🧩", "columns": ["Software", "Versión", "N° Licencias", "Valor unitario (COP)", "Valor total (COP)"], "valueCol": 4, "rows": [["OFICCE", "2021", "13", 380000.0, 4940000.0], ["Siigo", "9.1", "25", 330939.0, 3971275.0], ["WINDOWS 11", "PRO", "24", 369500.0, 8868000.0]]}, {"title": "Equipos de red", "icon": "🌐", "columns": ["Marca", "Modelo", "Serial", "Valor (COP)"], "valueCol": 3, "rows": [["ETB", "G-2425G-A", "ALCLB2938E65", 109900.0], ["ETB", "G-240W-F", "ALCLB3CF8849", 309000.0], ["Jhua", "DHI-XVR5232AN-S2", "8A0464APAZ2FDF6", 1100000.0], ["Jhua", "DHI-NVR4232-16P-4KS2/L", "9E0E371PAZ10A79", 2700000.0], ["Juniper", "SRX300", "", 309000.0], ["Panasonic", "KX-T824", "", 0], ["Ubitiqui", "USW-242POE", "", 1500000.0], ["Ubitiqui", "USW-242POE", "", 1500000.0], ["Ubitiqui", "U6-LR WIFI AX3000", "", 1500000.0], ["Ubitiqui", "U6-LR WIFI AX3000", "", 1500000.0], ["Ubitiqui", "U6-LR WIFI AX3000", "", 1500000.0]]}, {"title": "Servidores", "icon": "🖥️", "columns": ["Marca", "Modelo", "Serial", "Valor (COP)"], "valueCol": 3, "rows": [["HPE ProLiant", "ML110 Gen11", "2M235200S9", 11680000.0], ["HPE ProLiant", "ML310e Gen8", "BRC3243E0K", 3207000.0]]}, {"title": "Teléfonos", "icon": "📱", "columns": ["Marca", "Modelo", "Serial", "Valor (COP)"], "valueCol": 3, "rows": [["Motorola", "E13", "", 339900.0], ["Motorola", "E13", "", 339900.0], ["Motorola", "E13", "", 329900.0], ["Redmi", "9A", "", 391226.0], ["", "", "", 339900.0], ["Motorola", "E13", "", 659800.0], ["Motorola", "E13", "", 339900.0], ["Motorola", "G04S", "", 339900.0], ["Motorola", "E13", "", 339900.0], ["Si Aplica", "", "", 339900.0], ["Motorola", "E13", "", 339900.0], ["Galaxy", "S22 Ultra", "", 4873866.0], ["Motorola", "E(7I) ULTRA", "", 339900.0], ["Motorola", "E(7I) ULTRA", "", 339900.0], ["Motorola", "G06", "ZY32MFM5BT", 419050.0], ["Motorola", "G06", "ZY32M9R4J6", 419050.0], ["Motorola", "G06", "ZY32M9R46P", 419050.0], ["Motorola", "G06", "ZY32M9R4X6", 419050.0], ["Motorola", "G06", "ZY32MFMVHL", 419050.0], ["Motorola", "G06", "ZY32MFMT49", 419050.0], ["Motorola", "G06", "ZY32MFM2TL", 419050.0]]}, {"title": "Monitores", "icon": "🖥️", "columns": ["Marca", "Modelo", "Serial", "Valor (COP)"], "valueCol": 3, "numCols": [3], "rows": []}];
 const KEY = 'bvicol_tablas_valores_v1';
 const fmt = new Intl.NumberFormat('es-CO',{style:'currency',currency:'COP',maximumFractionDigits:0});
+const fmtUsd = new Intl.NumberFormat('en-US',{style:'currency',currency:'USD',maximumFractionDigits:2});
 let data, editMode=false;
+
+/* ---- Tasa de cambio (TRM: COP por 1 USD) — editable y sincronizada ---- */
+const TRM_KEY='bvicol_trm_usd_cop_v1';
+const TRM_FKEY='trm_usd_cop_v1';
+let TRM=loadTRM();
+function loadTRM(){ try{const s=localStorage.getItem(TRM_KEY);const n=parseFloat(s);if(n>0)return n;}catch(e){} return 4000; }
+function fmtTRM(n){ return new Intl.NumberFormat('es-CO',{maximumFractionDigits:2}).format(n); }
+function copToUsd(cop){ const c=parseNum(cop); return (TRM>0)?(c/TRM):0; }
+function setTRM(v){
+  const n=parseFloat(String(v).replace(/\./g,'').replace(/,/g,'.').replace(/[^0-9.]/g,''));
+  if(!(n>0)){ const el=document.getElementById('trmInput'); if(el)el.value=fmtTRM(TRM); return; }
+  if(n===TRM){ const el=document.getElementById('trmInput'); if(el&&document.activeElement!==el)el.value=fmtTRM(TRM); return; }
+  TRM=n;
+  try{localStorage.setItem(TRM_KEY,String(n));}catch(e){}
+  if(cloudReady&&window.storage){ try{window.storage.set(TRM_FKEY,{trm:n});}catch(e){} }
+  const el=document.getElementById('trmInput'); if(el&&document.activeElement!==el)el.value=fmtTRM(n);
+  render(); updateTotals();
+}
+function _extractTrm(raw){
+  let v=(raw&&typeof raw==='object'&&'value' in raw)?raw.value:raw;
+  if(v&&typeof v==='object'){ if(typeof v.trm==='number')return v.trm; if(typeof v.json==='string'){try{const j=JSON.parse(v.json);if(j&&j.trm>0)return j.trm;}catch(e){}} }
+  if(typeof v==='number')return v;
+  if(typeof v==='string'){const p=parseFloat(v);if(p>0)return p;}
+  return null;
+}
+function applyTrmRemote(raw){
+  const n=_extractTrm(raw);
+  if(n>0&&n!==TRM){ TRM=n; try{localStorage.setItem(TRM_KEY,String(n));}catch(e){} const el=document.getElementById('trmInput'); if(el&&document.activeElement!==el)el.value=fmtTRM(n); render(); updateTotals(); }
+}
 
 function load(){
   try{const s=localStorage.getItem(KEY);if(s){return JSON.parse(s);}}catch(e){}
@@ -337,6 +383,7 @@ function initCloud(){
   if(!window.storage){ setSync('offline','● Local (sin conexión)'); loadUserNames(); return; }
   cloudReady=true; setSync('saving','● Conectando…');
   loadUserNames();
+  try{ window.storage.get(TRM_FKEY).then(applyTrmRemote).catch(()=>{}); window.storage.watch(TRM_FKEY,applyTrmRemote); }catch(e){}
   window.storage.get(FKEY).then(raw=>{
     const val=readCloud(raw);
     if(Array.isArray(val)&&val.length){ data=val; localSave(); render(); updateTotals(); setSync('online','● En línea'); }
@@ -351,6 +398,24 @@ function isNumericCol(t,ci){
   return t.rows.some(r=>typeof r[ci]==='number');
 }
 function subtotal(t){return t.rows.reduce((a,r)=>a+parseNum(r[t.valueCol]),0);}
+// La columna "Valor (USD)" es CALCULADA (COP ÷ TRM); no se guarda en los datos.
+// Si alguna versión previa la dejó almacenada, la quitamos para no duplicarla.
+function stripUsdCols(){
+  let ch=false;
+  (data||[]).forEach(t=>{
+    if(!t||!Array.isArray(t.columns))return;
+    for(let i=t.columns.length-1;i>=0;i--){
+      if(/valor\s*\(?\s*usd\s*\)?/i.test(String(t.columns[i]))){
+        t.columns.splice(i,1);
+        if(Array.isArray(t.rows))t.rows.forEach(r=>{ if(Array.isArray(r)&&r.length>i)r.splice(i,1); });
+        if(typeof t.valueCol==='number'&&t.valueCol>i)t.valueCol--;
+        if(Array.isArray(t.numCols))t.numCols=t.numCols.map(x=>x>i?x-1:x).filter(x=>x!==i);
+        ch=true;
+      }
+    }
+  });
+  return ch;
+}
 
 function toast(msg){const el=document.getElementById('toast');el.textContent=msg;el.classList.add('show');clearTimeout(el._t);el._t=setTimeout(()=>el.classList.remove('show'),2200);}
 
@@ -358,6 +423,7 @@ function normAssignees(){
   data.forEach(t=>{ if(!Array.isArray(t.assignees))t.assignees=[]; while(t.assignees.length<t.rows.length)t.assignees.push(''); if(t.assignees.length>t.rows.length)t.assignees.length=t.rows.length; });
 }
 function render(){
+  if(stripUsdCols()) save();
   normAssignees();
   if(completarNombres()) save();
   const cont=document.getElementById('tables');cont.innerHTML='';
@@ -387,7 +453,8 @@ function render(){
     const thu=document.createElement('th');thu.textContent='Usuario';thu.className='user-col';htr.appendChild(thu);
     const thc=document.createElement('th');thc.textContent='Cargo';thc.className='user-col';htr.appendChild(thc);
     const thar=document.createElement('th');thar.textContent='Área';thar.className='user-col';htr.appendChild(thar);
-    t.columns.forEach((c,ci)=>{const th=document.createElement('th');th.textContent=c;if(numeric[ci])th.className='num';htr.appendChild(th);});
+    t.columns.forEach((c,ci)=>{const th=document.createElement('th');th.textContent=c;if(numeric[ci])th.className='num';htr.appendChild(th);
+      if(ci===t.valueCol){const thUsd=document.createElement('th');thUsd.textContent='Valor (USD)';thUsd.className='num usd-col';htr.appendChild(thUsd);}});
     const tha=document.createElement('th');tha.className='act';htr.appendChild(tha);
     thead.appendChild(htr);tbl.appendChild(thead);
     const tbody=document.createElement('tbody');
@@ -404,6 +471,7 @@ function render(){
       if(ci===0){td.className='lbl';td.textContent='Subtotal';}
       else if(ci===valPos){td.className='num';td.id='foot-'+ti;td.textContent=fmt.format(subtotal(t));}
       ftr.appendChild(td);
+      if(ci===valPos){const tdU=document.createElement('td');tdU.className='num usd-col';tdU.id='footusd-'+ti;tdU.textContent=fmtUsd.format(copToUsd(subtotal(t)));ftr.appendChild(tdU);}
     }
     const fa=document.createElement('td');fa.className='act';ftr.appendChild(fa);
     tfoot.appendChild(ftr);tbl.appendChild(tfoot);
@@ -437,6 +505,7 @@ function buildRow(t,ti,row,ri,numeric){
   t.columns.forEach((c,ci)=>{
     const td=document.createElement('td');
     const inp=document.createElement('input');
+    let refreshUsd=null;
     if(numeric[ci]){
       inp.className='num';inp.inputMode='numeric';
       const nf=new Intl.NumberFormat('es-CO',{maximumFractionDigits:0});
@@ -446,8 +515,15 @@ function buildRow(t,ti,row,ri,numeric){
       inp.addEventListener('blur',showFmt);
     }
     else{inp.value=row[ci]==null?'':row[ci];}
-    inp.addEventListener('input',()=>{row[ci]=numeric[ci]?parseNum(inp.value):inp.value;save();updateTotals();});
+    inp.addEventListener('input',()=>{row[ci]=numeric[ci]?parseNum(inp.value):inp.value;save();updateTotals();if(refreshUsd)refreshUsd();});
     td.appendChild(inp);tr.appendChild(td);
+    if(ci===t.valueCol){
+      const tdUsd=document.createElement('td');tdUsd.className='num usd-col';tdUsd.title='Calculado: COP ÷ TRM';
+      const sp=document.createElement('span');sp.className='usd-val';tdUsd.appendChild(sp);
+      refreshUsd=()=>{sp.textContent=fmtUsd.format(copToUsd(row[ci]));};
+      refreshUsd();
+      tr.appendChild(tdUsd);
+    }
   });
   const tda=document.createElement('td');tda.className='act';
   const del=document.createElement('button');del.className='del-row';del.textContent='🗑';del.title='Eliminar fila';
@@ -461,12 +537,14 @@ function updateTotals(){
   data.forEach((t,ti)=>{
     const st=subtotal(t);grand+=st;
     const f=document.getElementById('foot-'+ti);if(f)f.textContent=fmt.format(st);
+    const fu=document.getElementById('footusd-'+ti);if(fu)fu.textContent=fmtUsd.format(copToUsd(st));
     const s=document.getElementById('sub-'+ti);if(s)s.innerHTML=`Subtotal: <b>${fmt.format(st)}</b>`;
     const chip=document.createElement('div');chip.className='chip';
     chip.innerHTML=`<span>${t.icon||'📦'} <b>${t.title}</b></span><span class="cv">${fmt.format(st)}</span>`;
     chips.appendChild(chip);
   });
   document.getElementById('grandTotal').textContent=fmt.format(grand);
+  const gu=document.getElementById('grandTotalUsd');if(gu)gu.textContent=fmtUsd.format(copToUsd(grand));
   document.getElementById('tableCount').textContent=data.length;
   renderAnalysis();
   renderChart();
@@ -616,12 +694,14 @@ function exportCSV(){
   const rowsOut=[];
   data.forEach(t=>{
     rowsOut.push([t.title]);
-    rowsOut.push(['Usuario','Cargo','Área',...t.columns]);
-    t.rows.forEach((r,ri)=>rowsOut.push([...metaFila(t,ri),...t.columns.map((_,ci)=>ci===t.valueCol?parseNum(r[ci]):(r[ci]==null?'':r[ci]))]));
-    rowsOut.push(['SUBTOTAL','','',...t.columns.map((_,ci)=>ci===t.valueCol?subtotal(t):'')]);
+    rowsOut.push(['Usuario','Cargo','Área',...t.columns,'Valor (USD)']);
+    t.rows.forEach((r,ri)=>rowsOut.push([...metaFila(t,ri),...t.columns.map((_,ci)=>ci===t.valueCol?parseNum(r[ci]):(r[ci]==null?'':r[ci])),Math.round(copToUsd(r[t.valueCol])*100)/100]));
+    rowsOut.push(['SUBTOTAL','','',...t.columns.map((_,ci)=>ci===t.valueCol?subtotal(t):''),Math.round(copToUsd(subtotal(t))*100)/100]);
     rowsOut.push([]);
   });
-  rowsOut.push(['GRAN TOTAL',data.reduce((a,t)=>a+subtotal(t),0)]);
+  const _g=data.reduce((a,t)=>a+subtotal(t),0);
+  rowsOut.push(['TRM aplicada (COP por USD)',TRM]);
+  rowsOut.push(['GRAN TOTAL',_g,'','USD',Math.round(copToUsd(_g)*100)/100]);
   const esc=v=>{v=(v==null?'':String(v));return /[",;\n]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v;};
   const csv='﻿'+rowsOut.map(r=>r.map(esc).join(';')).join('\n');
   const blob=new Blob([csv],{type:'text/csv;charset=utf-8;'});
@@ -632,16 +712,16 @@ document.getElementById('exportXlsx').addEventListener('click',()=>{
   if(typeof XLSX==='undefined'){exportCSV();return;}
   const wb=XLSX.utils.book_new();
   data.forEach(t=>{
-    const aoa=[['Usuario','Cargo','Área',...t.columns]];
-    t.rows.forEach((r,ri)=>aoa.push([...metaFila(t,ri),...t.columns.map((_,ci)=>ci===t.valueCol?parseNum(r[ci]):(typeof r[ci]==='number'?r[ci]:(r[ci]||'')))]));
-    aoa.push(['SUBTOTAL','','',...t.columns.map((_,ci)=>ci===t.valueCol?subtotal(t):'')]);
+    const aoa=[['Usuario','Cargo','Área',...t.columns,'Valor (USD)']];
+    t.rows.forEach((r,ri)=>aoa.push([...metaFila(t,ri),...t.columns.map((_,ci)=>ci===t.valueCol?parseNum(r[ci]):(typeof r[ci]==='number'?r[ci]:(r[ci]||''))),Math.round(copToUsd(r[t.valueCol])*100)/100]));
+    aoa.push(['SUBTOTAL','','',...t.columns.map((_,ci)=>ci===t.valueCol?subtotal(t):''),Math.round(copToUsd(subtotal(t))*100)/100]);
     const ws=XLSX.utils.aoa_to_sheet(aoa);
     let name=(t.title||'Tabla').replace(/[\\\/\?\*\[\]:]/g,' ').slice(0,28);
     let base=name,k=1;const used=wb.SheetNames;while(used.includes(name)){name=base.slice(0,26)+' '+(++k);}
     XLSX.utils.book_append_sheet(wb,ws,name||'Tabla');
   });
   const g=data.reduce((a,t)=>a+subtotal(t),0);
-  const res=XLSX.utils.aoa_to_sheet([['Categoría','Subtotal (COP)'],...data.map(t=>[t.title,subtotal(t)]),['GRAN TOTAL',g]]);
+  const res=XLSX.utils.aoa_to_sheet([['TRM (COP por USD)',TRM],[],['Categoría','Subtotal (COP)','Subtotal (USD)'],...data.map(t=>[t.title,subtotal(t),Math.round(copToUsd(subtotal(t))*100)/100]),['GRAN TOTAL',g,Math.round(copToUsd(g)*100)/100]]);
   XLSX.utils.book_append_sheet(wb,res,'Resumen');
   XLSX.writeFile(wb,'tablas_valores.xlsx');toast('Excel exportado');
 });
@@ -737,16 +817,16 @@ function exportPPTX(){
   data.forEach(t=>{
     const numeric=t.columns.map((_,ci)=>isNumericCol(t,ci));
     const _mh=c=>({text:String(c),options:{fill:{color:'0d3d24'},color:'FFFFFF',bold:true,align:'left',fontFace:FF}});
-    const header=[_mh('Usuario'),_mh('Cargo'),_mh('Área'),...t.columns.map(_mh)];
+    const header=[_mh('Usuario'),_mh('Cargo'),_mh('Área'),...t.columns.map(_mh),_mh('Valor (USD)')];
     const body=t.rows.map((r,ri)=>{
       const mf=metaFila(t,ri).map(v=>({text:String(v||''),options:{align:'left',fontFace:FF,color:DARK}}));
       return [...mf,...t.columns.map((_,ci)=>{
         const isN=numeric[ci];const v=isN?nf0.format(parseNum(r[ci])):(r[ci]==null?'':String(r[ci]));
         return {text:v,options:{align:isN?'right':'left',fontFace:FF,color:DARK}};
-      })];
+      }),{text:fmtUsd.format(copToUsd(r[t.valueCol])),options:{align:'right',fontFace:FF,color:'0B6B39'}}];
     });
     const _fc=(txt,al)=>({text:txt,options:{bold:true,fill:{color:'E6F4EC'},color:'067131',align:al||'left',fontFace:FF}});
-    const foot=[_fc('SUBTOTAL'),_fc(''),_fc(''),...t.columns.map((_,ci)=>_fc(ci===t.valueCol?fmt.format(subtotal(t)):'',ci===t.valueCol?'right':'left'))];
+    const foot=[_fc('SUBTOTAL'),_fc(''),_fc(''),...t.columns.map((_,ci)=>_fc(ci===t.valueCol?fmt.format(subtotal(t)):'',ci===t.valueCol?'right':'left')),_fc(fmtUsd.format(copToUsd(subtotal(t))),'right')];
     const groups=[];
     if(body.length){for(let i=0;i<body.length;i+=ROWS_PER)groups.push(body.slice(i,i+ROWS_PER));}else{groups.push([]);}
     groups.forEach((g,gi)=>{
@@ -773,6 +853,14 @@ function exportPPTX(){
 document.getElementById('exportPptx').addEventListener('click',exportPPTX);
 
 data=load();render();updateTotals();
+// Campo TRM editable: aplica al cambiar (Enter o salir del campo)
+(function initTRM(){
+  const inp=document.getElementById('trmInput'); if(!inp)return;
+  inp.value=fmtTRM(TRM);
+  inp.addEventListener('change',()=>setTRM(inp.value));
+  inp.addEventListener('keydown',e=>{ if(e.key==='Enter'){ e.preventDefault(); inp.blur(); } });
+  inp.addEventListener('blur',()=>{ if(document.activeElement!==inp)inp.value=fmtTRM(TRM); });
+})();
 // Conectar a la nube (Firestore compartido) cuando esté lista
 if(window.storage){ initCloud(); }
 else { window.addEventListener('storage-ready',initCloud,{once:true}); setTimeout(initCloud,5000); }
