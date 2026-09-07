@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Equipos dados de baja — Área de Sistemas</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;600;700&family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg-page:#f3f5f3; --bg-header:#0d3d24; --bg-card:#ffffff;
+    --text-primary:#1c1c1a; --text-secondary:#6b6f6c; --text-on-dark:#f4f6f4;
+    --accent:#0d7a3f; --accent-dark:#0d3d24; --radius:16px; --border:#e3e6e2;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--bg-page);color:var(--text-primary);font-family:'Poppins',sans-serif;}
+  .topbar{background:linear-gradient(135deg,var(--bg-header),#145232);color:#fff;padding:22px 20px;}
+  .topwrap{max-width:1200px;margin:0 auto;display:flex;align-items:center;gap:16px;flex-wrap:wrap;}
+  .brand-logo img{height:44px;display:block;}
+  .brand-text .eyebrow{margin:0;font-size:12px;letter-spacing:2px;text-transform:uppercase;color:#7fd9a8;font-weight:600;}
+  .brand-text h1{margin:2px 0 0;font-family:'Oswald',sans-serif;font-size:26px;font-weight:700;}
+  .back-link{margin-left:auto;color:#d9ead9;text-decoration:none;font-size:13px;font-weight:600;border:1px solid rgba(255,255,255,.35);padding:8px 14px;border-radius:10px;}
+  .back-link:hover{background:rgba(255,255,255,.12);}
+  main{max-width:1200px;margin:0 auto;padding:22px 20px 60px;}
+  .desc{color:var(--text-secondary);font-size:14px;margin:0 0 18px;}
+  .kpis{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:20px;}
+  @media(max-width:640px){.kpis{grid-template-columns:1fr;}}
+  .kpi{background:var(--bg-card);border:1px solid var(--border);border-radius:14px;padding:16px 18px;}
+  .kpi .k{font-size:11px;letter-spacing:1px;text-transform:uppercase;color:var(--text-secondary);font-weight:600;}
+  .kpi .v{font-family:'Oswald',sans-serif;font-size:30px;font-weight:700;color:var(--accent-dark);line-height:1.1;margin-top:4px;}
+  .kpi .v.usd{color:#0b6b39;font-size:22px;}
+  .toolbar{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:16px;}
+  .btn{cursor:pointer;border:1px solid var(--border);background:#fff;color:var(--text-primary);padding:9px 14px;border-radius:10px;font:600 13px 'Poppins',sans-serif;}
+  .btn:hover{background:#f0f4f1;}
+  .btn.primary{background:var(--accent);color:#fff;border-color:var(--accent);}
+  .spacer{flex:1;}
+  .sync-pill{font-size:12px;font-weight:600;padding:6px 12px;border-radius:20px;background:#eef0ee;color:#6b6f6c;}
+  .sync-pill.online{background:#e6f4ec;color:#0d7a3f;}
+  .sync-pill.offline{background:#fdecef;color:#c0392b;}
+  .cat{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);margin-bottom:18px;overflow:hidden;}
+  .cat-head{display:flex;align-items:center;gap:10px;padding:14px 18px;background:#faf7f2;border-bottom:1px solid var(--border);}
+  .cat-head .ic{font-size:20px;}
+  .cat-head h2{margin:0;font-size:16px;font-weight:700;}
+  .cat-head .n{margin-left:auto;font-size:13px;font-weight:600;color:#b06a00;background:#fff3e0;padding:4px 12px;border-radius:20px;}
+  .tbl-wrap{overflow-x:auto;}
+  table{border-collapse:collapse;width:100%;font-size:13px;}
+  th,td{padding:9px 12px;text-align:left;border-bottom:1px solid #eef1ee;white-space:nowrap;}
+  thead th{background:#0d3d24;color:#fff;font-weight:600;font-size:12px;position:sticky;top:0;}
+  th.num,td.num{text-align:right;font-variant-numeric:tabular-nums;}
+  td.usd{color:#0b6b39;font-weight:600;}
+  tbody tr:nth-child(even){background:#fafcfa;}
+  .fecha{color:var(--text-secondary);}
+  .react-btn{cursor:pointer;border:none;background:#e6f4ec;color:#0d7a3f;font:600 12px 'Poppins',sans-serif;padding:5px 10px;border-radius:8px;}
+  .react-btn:hover{background:#d3ecdc;}
+  .empty{background:var(--bg-card);border:1px dashed var(--border);border-radius:var(--radius);padding:44px 20px;text-align:center;color:var(--text-secondary);}
+  .empty .big{font-size:40px;margin-bottom:8px;}
+  footer{max-width:1200px;margin:0 auto;padding:10px 20px 30px;color:var(--text-secondary);font-size:12px;}
+  .toast{position:fixed;left:50%;bottom:26px;transform:translateX(-50%) translateY(20px);background:#101c14;color:#fff;padding:11px 18px;border-radius:10px;font-size:13px;opacity:0;pointer-events:none;transition:.25s;z-index:60;}
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+</style>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<script src="firebase-init.js"></script>
+<script src="auth-gate.js"></script>
+</head>
+<body>
+  <div class="topbar">
+    <div class="topwrap">
+      <a class="brand-logo" href="index.html" title="Volver al portal"><img src="bvi-logo-white.png" alt="Barron Vieyra International"></a>
+      <div class="brand-text">
+        <p class="eyebrow">Área de Sistemas</p>
+        <h1>Equipos dados de baja</h1>
+      </div>
+      <a class="back-link" href="index.html">← Volver al portal</a>
+    </div>
+  </div>
+
+  <main>
+    <p class="desc">Archivo de los equipos retirados del inventario. Cuando marcas un dispositivo como “de baja” en las Tablas de valores, aparece aquí con su categoría, datos, valor y fecha de baja. Puedes reactivarlo si fue un error; el cambio se sincroniza con el inventario para todos.</p>
+
+    <div class="kpis">
+      <div class="kpi"><div class="k">Equipos dados de baja</div><div class="v" id="kTotal">0</div></div>
+      <div class="kpi"><div class="k">Valor de baja (COP)</div><div class="v" id="kCop">$0</div></div>
+      <div class="kpi"><div class="k">Valor de baja (USD)</div><div class="v usd" id="kUsd">$0.00</div></div>
+    </div>
+
+    <div class="toolbar">
+      <button class="btn" id="exportBtn">⬇ Exportar (CSV)</button>
+      <div class="spacer"></div>
+      <span class="sync-pill offline" id="syncPill">● Iniciando…</span>
+    </div>
+
+    <div id="cats"></div>
+  </main>
+
+  <footer>Portal interno · Área de Sistemas · Equipos dados de baja</footer>
+  <div class="toast" id="toast"></div>
+
+<script>
+const FKEY='tablas_valores_inventario_v1';
+const TRM_KEY='bvicol_trm_usd_cop_v1';
+const TRM_FKEY='trm_usd_cop_v1';
+let TRM=loadTRM(), data=[], cloudReady=false;
+const fmt=new Intl.NumberFormat('es-CO',{style:'currency',currency:'COP',maximumFractionDigits:0});
+const fmtUsd=new Intl.NumberFormat('en-US',{style:'currency',currency:'USD',maximumFractionDigits:2});
+function loadTRM(){ try{const s=localStorage.getItem(TRM_KEY);const n=parseFloat(s);if(n>0)return n;}catch(e){} return 3126.08; }
+function parseNum(v){if(typeof v==='number')return v;if(v==null)return 0;const n=parseFloat(String(v).replace(/[^0-9.-]/g,''));return isNaN(n)?0:n;}
+function copToUsd(cop){ const c=parseNum(cop); return (TRM>0)?(c/TRM):0; }
+function esc(s){return String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));}
+function fmtFecha(iso){ try{ return new Date(iso).toLocaleDateString('es-CO',{year:'numeric',month:'short',day:'numeric'}); }catch(e){ return (iso||'').slice(0,10); } }
+function setSync(state,msg){const p=document.getElementById('syncPill');if(!p)return;p.className='sync-pill '+state;p.textContent=msg;}
+function toast(m){const el=document.getElementById('toast');el.textContent=m;el.classList.add('show');clearTimeout(el._t);el._t=setTimeout(()=>el.classList.remove('show'),2200);}
+function readCloud(raw){
+  let v=(raw&&typeof raw==='object'&&'value' in raw)?raw.value:raw;
+  if(v&&typeof v==='object'&&typeof v.json==='string'){ try{ return JSON.parse(v.json); }catch(e){ return null; } }
+  return Array.isArray(v)?v:null;
+}
+function isBaja(t,ri){ return !!(Array.isArray(t.bajas)&&t.bajas[ri]&&t.bajas[ri].fecha); }
+function usuarioDe(t,ri){ return (Array.isArray(t.assignees)&&t.assignees[ri]!=null)?String(t.assignees[ri]):''; }
+
+// Lista plana de bajas para exportar/contar
+function listaBajas(){
+  const out=[];
+  (data||[]).forEach(t=>{
+    if(!t||!Array.isArray(t.rows))return;
+    t.rows.forEach((r,ri)=>{
+      if(isBaja(t,ri)){
+        const cop=parseNum(r[t.valueCol]);
+        out.push({t, ti:data.indexOf(t), ri, cat:t.title, icon:t.icon||'📦', row:r, cop, usuario:usuarioDe(t,ri), fecha:t.bajas[ri].fecha});
+      }
+    });
+  });
+  return out;
+}
+
+function render(){
+  const cont=document.getElementById('cats'); cont.innerHTML='';
+  const bajas=listaBajas();
+  const totalCop=bajas.reduce((a,b)=>a+b.cop,0);
+  document.getElementById('kTotal').textContent=bajas.length;
+  document.getElementById('kCop').textContent=fmt.format(totalCop);
+  document.getElementById('kUsd').textContent=fmtUsd.format(copToUsd(totalCop));
+
+  if(!bajas.length){
+    cont.innerHTML='<div class="empty"><div class="big">✅</div>No hay equipos dados de baja por ahora.<br>Cuando marques un dispositivo como “de baja” en las Tablas de valores, aparecerá aquí.</div>';
+    return;
+  }
+  // agrupar por categoría (índice de tabla)
+  const groups={};
+  bajas.forEach(b=>{ (groups[b.ti]=groups[b.ti]||[]).push(b); });
+  Object.keys(groups).forEach(ti=>{
+    const g=groups[ti]; const t=g[0].t;
+    const card=document.createElement('div'); card.className='cat';
+    const head=document.createElement('div'); head.className='cat-head';
+    head.innerHTML=`<span class="ic">${esc(t.icon||'📦')}</span><h2>${esc(t.title)}</h2><span class="n">${g.length} de baja</span>`;
+    card.appendChild(head);
+    const wrap=document.createElement('div'); wrap.className='tbl-wrap';
+    const tbl=document.createElement('table');
+    const cols=t.columns||[];
+    let th='<thead><tr><th>Usuario</th>'+cols.map((c,ci)=>`<th class="${ci===t.valueCol?'num':''}">${esc(c)}</th>`).join('')+'<th class="num">Valor (USD)</th><th>Fecha de baja</th><th></th></tr></thead>';
+    let body='<tbody>';
+    g.forEach(b=>{
+      body+='<tr>';
+      body+=`<td>${esc(b.usuario||'—')}</td>`;
+      cols.forEach((c,ci)=>{
+        const val=ci===t.valueCol?fmt.format(parseNum(b.row[ci])):esc(b.row[ci]==null?'':b.row[ci]);
+        body+=`<td class="${ci===t.valueCol?'num':''}">${val}</td>`;
+      });
+      body+=`<td class="num usd">${fmtUsd.format(copToUsd(b.cop))}</td>`;
+      body+=`<td class="fecha">${esc(fmtFecha(b.fecha))}</td>`;
+      body+=`<td><button class="react-btn" data-ti="${b.ti}" data-ri="${b.ri}">↩ Reactivar</button></td>`;
+      body+='</tr>';
+    });
+    body+='</tbody>';
+    tbl.innerHTML=th+body;
+    wrap.appendChild(tbl); card.appendChild(wrap); cont.appendChild(card);
+  });
+  cont.querySelectorAll('.react-btn').forEach(btn=>{
+    btn.addEventListener('click',()=>{
+      const ti=+btn.dataset.ti, ri=+btn.dataset.ri;
+      const t=data[ti]; if(!t||!Array.isArray(t.bajas))return;
+      t.bajas[ri]=null; saveCloud(); render(); toast('Equipo reactivado (vuelve al inventario)');
+    });
+  });
+}
+
+function saveCloud(){
+  try{ localStorage.setItem('bvicol_tablas_valores_v1',JSON.stringify(data)); }catch(e){}
+  if(cloudReady&&window.storage){ setSync('online','● Guardando…'); window.storage.set(FKEY,{json:JSON.stringify(data)}).then(()=>setSync('online','● En línea')).catch(()=>setSync('offline','● Error al guardar')); }
+}
+
+function exportCSV(){
+  const bajas=listaBajas();
+  const rows=[['Categoría','Usuario','Datos del equipo','Valor (COP)','Valor (USD)','Fecha de baja']];
+  bajas.forEach(b=>{
+    const datos=(b.t.columns||[]).map((c,ci)=>ci===b.t.valueCol?'':String(b.row[ci]==null?'':b.row[ci])).filter(Boolean).join(' / ');
+    rows.push([b.cat, b.usuario, datos, parseNum(b.cop), Math.round(copToUsd(b.cop)*100)/100, fmtFecha(b.fecha)]);
+  });
+  const totalCop=bajas.reduce((a,b)=>a+b.cop,0);
+  rows.push([]); rows.push(['TOTAL', bajas.length+' equipos','', totalCop,'TRM '+TRM, Math.round(copToUsd(totalCop)*100)/100]);
+  const esc2=v=>{v=(v==null?'':String(v));return /[",;\n]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v;};
+  const csv='﻿'+rows.map(r=>r.map(esc2).join(';')).join('\n');
+  const blob=new Blob([csv],{type:'text/csv;charset=utf-8;'});
+  const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='equipos_dados_de_baja.csv'; a.click();
+  toast('Exportado a CSV');
+}
+document.getElementById('exportBtn').addEventListener('click',exportCSV);
+
+function applyRemote(raw){
+  const val=readCloud(raw); if(!Array.isArray(val))return;
+  data=val; render();
+  setSync('online','● En línea');
+}
+function loadTrmCloud(){
+  if(!window.storage)return;
+  try{ window.storage.get(TRM_FKEY).then(raw=>{ let v=(raw&&typeof raw==='object'&&'value' in raw)?raw.value:raw; let n=null; if(v&&typeof v==='object'&&typeof v.trm==='number')n=v.trm; else if(typeof v==='number')n=v; else if(typeof v==='string'){const p=parseFloat(v);if(p>0)n=p;} if(n>0){TRM=n;render();} }).catch(()=>{}); window.storage.watch(TRM_FKEY,raw=>{ let v=(raw&&typeof raw==='object'&&'value' in raw)?raw.value:raw; let n=(v&&typeof v==='object'&&typeof v.trm==='number')?v.trm:(typeof v==='number'?v:null); if(n>0){TRM=n;render();} }); }catch(e){}
+}
+function initCloud(){
+  if(cloudReady)return;
+  if(!window.storage){ setSync('offline','● Local (sin conexión)'); try{const l=localStorage.getItem('bvicol_tablas_valores_v1');if(l){data=JSON.parse(l);render();}}catch(e){} return; }
+  cloudReady=true; setSync('saving','● Conectando…');
+  loadTrmCloud();
+  window.storage.get(FKEY).then(raw=>{
+    const val=readCloud(raw);
+    if(Array.isArray(val)){ data=val; render(); setSync('online','● En línea'); }
+    else { setSync('online','● En línea'); render(); }
+    try{ window.storage.watch(FKEY,applyRemote); }catch(e){}
+  }).catch(()=>{ setSync('offline','● Local'); });
+}
+render();
+if(window.storage){ initCloud(); }
+else { window.addEventListener('storage-ready',initCloud,{once:true}); setTimeout(initCloud,5000); }
+</script>
+</body>
+</html>

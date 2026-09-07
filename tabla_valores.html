@@ -53,6 +53,16 @@
   tbody td.usd-col{text-align:right;}
   .usd-val{font-variant-numeric:tabular-nums;font-weight:600;color:#0b6b39;white-space:nowrap;}
   tfoot td.usd-col{text-align:right;font-family:'Oswald',sans-serif;font-size:15px;color:#0b6b39;}
+  tr.row-baja{opacity:.55;}
+  tr.row-baja input{text-decoration:line-through;color:#9aa19c;}
+  tr.row-baja .usd-val{text-decoration:line-through;color:#9aa19c;}
+  .baja-row{cursor:pointer;border:none;background:transparent;font-size:15px;padding:2px 5px;border-radius:6px;color:#b06a00;margin-right:2px;}
+  .baja-row:hover{background:#fff3e0;}
+  .baja-row.is-baja{color:#0d7a3f;}
+  .baja-row.is-baja:hover{background:#e6f4ec;}
+  .tcount{color:var(--accent,#0d7a3f);font-weight:600;}
+  .tbaja{color:#b06a00;font-weight:600;}
+  .chip-n{opacity:.7;font-weight:600;margin-left:2px;}
   .chip{background:rgba(255,255,255,0.10);border:1px solid rgba(255,255,255,0.18);border-radius:20px;padding:6px 12px;font-size:12px;display:flex;gap:8px;align-items:center;}
   .chip b{font-weight:600;}
   .chip .cv{color:#a8e9c5;font-weight:600;}
@@ -183,6 +193,8 @@
         <div style="text-align:right;">
           <div class="lbl">Categorías</div>
           <div class="grand" id="tableCount" style="font-size:22px;">0</div>
+          <div class="lbl" style="margin-top:8px;">Dispositivos activos</div>
+          <div class="grand" id="deviceCount" style="font-size:22px;">0</div>
         </div>
       </div>
       <div class="trm-row">
@@ -396,7 +408,13 @@ function isNumericCol(t,ci){
   if(Array.isArray(t.numCols)&&t.numCols.includes(ci))return true;
   return t.rows.some(r=>typeof r[ci]==='number');
 }
-function subtotal(t){return t.rows.reduce((a,r)=>a+parseNum(r[t.valueCol]),0);}
+// Baja de equipos: cada fila puede marcarse "de baja" (se atenúa y NO suma al total ni al conteo).
+function isBaja(t,ri){ return !!(Array.isArray(t.bajas)&&t.bajas[ri]&&t.bajas[ri].fecha); }
+function subtotal(t){return t.rows.reduce((a,r,ri)=>a+(isBaja(t,ri)?0:parseNum(r[t.valueCol])),0);}
+function activeCount(t){ return t.rows.reduce((a,r,ri)=>a+(isBaja(t,ri)?0:1),0); }
+function bajaCount(t){ return t.rows.reduce((a,r,ri)=>a+(isBaja(t,ri)?1:0),0); }
+function subHtml(t){ const bc=bajaCount(t); return `<span class="tcount">${activeCount(t)} equipos</span>${bc?` · <span class="tbaja">${bc} de baja</span>`:''} · Subtotal: <b>${fmt.format(subtotal(t))}</b>`; }
+function normBajas(){ data.forEach(t=>{ if(!Array.isArray(t.bajas))t.bajas=[]; while(t.bajas.length<t.rows.length)t.bajas.push(null); if(t.bajas.length>t.rows.length)t.bajas.length=t.rows.length; }); }
 // La columna "Valor (USD)" es CALCULADA (COP ÷ TRM); no se guarda en los datos.
 // Si alguna versión previa la dejó almacenada, la quitamos para no duplicarla.
 function stripUsdCols(){
@@ -424,6 +442,7 @@ function normAssignees(){
 function render(){
   if(stripUsdCols()) save();
   normAssignees();
+  normBajas();
   if(completarNombres()) save();
   const cont=document.getElementById('tables');cont.innerHTML='';
   data.forEach((t,ti)=>{
@@ -436,7 +455,7 @@ function render(){
     title.addEventListener('input',()=>{t.title=title.value;save();});
     head.appendChild(title);
     const sub=document.createElement('div');sub.className='tcard-sub';sub.id='sub-'+ti;
-    sub.innerHTML=`Subtotal: <b>${fmt.format(subtotal(t))}</b>`;
+    sub.innerHTML=subHtml(t);
     head.appendChild(sub);
     const editT=document.createElement('button');editT.className='del-table';editT.textContent='✏️';editT.title='Editar columnas de esta tabla';editT.style.marginRight='4px';
     editT.addEventListener('click',()=>openEditModal(ti));
@@ -477,7 +496,7 @@ function render(){
     wrap.appendChild(tbl);card.appendChild(wrap);
     // add row btn
     const addBtn=document.createElement('button');addBtn.className='btn add-row';addBtn.textContent='＋ Agregar dispositivo';
-    addBtn.addEventListener('click',()=>{const nr=t.columns.map((_,ci)=>numeric[ci]?0:'');t.rows.push(nr);if(!Array.isArray(t.assignees))t.assignees=[];t.assignees.push('');save();render();updateTotals();});
+    addBtn.addEventListener('click',()=>{const nr=t.columns.map((_,ci)=>numeric[ci]?0:'');t.rows.push(nr);if(!Array.isArray(t.assignees))t.assignees=[];t.assignees.push('');if(!Array.isArray(t.bajas))t.bajas=[];t.bajas.push(null);save();render();updateTotals();});
     card.appendChild(addBtn);
     cont.appendChild(card);
   });
@@ -487,6 +506,7 @@ function render(){
 
 function buildRow(t,ti,row,ri,numeric){
   const tr=document.createElement('tr');
+  if(isBaja(t,ri)) tr.className='row-baja';
   const tdu=document.createElement('td');
   const uinp=document.createElement('input');uinp.className='user-input';uinp.setAttribute('list','userNames');uinp.placeholder='— sin asignar —';
   if(!Array.isArray(t.assignees))t.assignees=[];
@@ -525,8 +545,18 @@ function buildRow(t,ti,row,ri,numeric){
     }
   });
   const tda=document.createElement('td');tda.className='act';
+  const baja=document.createElement('button');baja.className='baja-row';
+  if(isBaja(t,ri)){ baja.textContent='↩'; baja.title='Reactivar (quitar de baja)'; baja.classList.add('is-baja'); }
+  else { baja.textContent='⬇'; baja.title='Dar de baja este equipo'; }
+  baja.addEventListener('click',()=>{
+    if(!Array.isArray(t.bajas))t.bajas=[];
+    if(isBaja(t,ri)){ t.bajas[ri]=null; toast('Equipo reactivado'); }
+    else { t.bajas[ri]={fecha:new Date().toISOString()}; toast('Equipo dado de baja'); }
+    save();render();updateTotals();
+  });
+  tda.appendChild(baja);
   const del=document.createElement('button');del.className='del-row';del.textContent='🗑';del.title='Eliminar fila';
-  del.addEventListener('click',()=>{t.rows.splice(ri,1);if(Array.isArray(t.assignees))t.assignees.splice(ri,1);save();render();updateTotals();});
+  del.addEventListener('click',()=>{t.rows.splice(ri,1);if(Array.isArray(t.assignees))t.assignees.splice(ri,1);if(Array.isArray(t.bajas))t.bajas.splice(ri,1);save();render();updateTotals();});
   tda.appendChild(del);tr.appendChild(tda);
   return tr;
 }
@@ -537,13 +567,14 @@ function updateTotals(){
     const st=subtotal(t);grand+=st;
     const f=document.getElementById('foot-'+ti);if(f)f.textContent=fmt.format(st);
     const fu=document.getElementById('footusd-'+ti);if(fu)fu.textContent=fmtUsd.format(copToUsd(st));
-    const s=document.getElementById('sub-'+ti);if(s)s.innerHTML=`Subtotal: <b>${fmt.format(st)}</b>`;
+    const s=document.getElementById('sub-'+ti);if(s)s.innerHTML=subHtml(t);
     const chip=document.createElement('div');chip.className='chip';
-    chip.innerHTML=`<span>${t.icon||'📦'} <b>${t.title}</b></span><span class="cv">${fmt.format(st)}</span>`;
+    chip.innerHTML=`<span>${t.icon||'📦'} <b>${t.title}</b> <small class="chip-n">${activeCount(t)} disp.</small></span><span class="cv">${fmt.format(st)}</span>`;
     chips.appendChild(chip);
   });
   document.getElementById('grandTotal').textContent=fmt.format(grand);
   const gu=document.getElementById('grandTotalUsd');if(gu)gu.textContent=fmtUsd.format(copToUsd(grand));
+  const dc=document.getElementById('deviceCount');if(dc)dc.textContent=data.reduce((a,t)=>a+activeCount(t),0);
   document.getElementById('tableCount').textContent=data.length;
   renderAnalysis();
   renderChart();
@@ -693,9 +724,9 @@ function exportCSV(){
   const rowsOut=[];
   data.forEach(t=>{
     rowsOut.push([t.title]);
-    rowsOut.push(['Usuario','Cargo','Área',...t.columns,'Valor (USD)']);
-    t.rows.forEach((r,ri)=>rowsOut.push([...metaFila(t,ri),...t.columns.map((_,ci)=>ci===t.valueCol?parseNum(r[ci]):(r[ci]==null?'':r[ci])),Math.round(copToUsd(r[t.valueCol])*100)/100]));
-    rowsOut.push(['SUBTOTAL','','',...t.columns.map((_,ci)=>ci===t.valueCol?subtotal(t):''),Math.round(copToUsd(subtotal(t))*100)/100]);
+    rowsOut.push(['Usuario','Cargo','Área',...t.columns,'Valor (USD)','Estado']);
+    t.rows.forEach((r,ri)=>rowsOut.push([...metaFila(t,ri),...t.columns.map((_,ci)=>ci===t.valueCol?parseNum(r[ci]):(r[ci]==null?'':r[ci])),Math.round(copToUsd(r[t.valueCol])*100)/100,isBaja(t,ri)?('De baja '+(t.bajas[ri].fecha||'').slice(0,10)):'Activo']));
+    rowsOut.push(['SUBTOTAL (activos)','','',...t.columns.map((_,ci)=>ci===t.valueCol?subtotal(t):''),Math.round(copToUsd(subtotal(t))*100)/100,activeCount(t)+' activos / '+bajaCount(t)+' baja']);
     rowsOut.push([]);
   });
   const _g=data.reduce((a,t)=>a+subtotal(t),0);
@@ -711,9 +742,9 @@ document.getElementById('exportXlsx').addEventListener('click',()=>{
   if(typeof XLSX==='undefined'){exportCSV();return;}
   const wb=XLSX.utils.book_new();
   data.forEach(t=>{
-    const aoa=[['Usuario','Cargo','Área',...t.columns,'Valor (USD)']];
-    t.rows.forEach((r,ri)=>aoa.push([...metaFila(t,ri),...t.columns.map((_,ci)=>ci===t.valueCol?parseNum(r[ci]):(typeof r[ci]==='number'?r[ci]:(r[ci]||''))),Math.round(copToUsd(r[t.valueCol])*100)/100]));
-    aoa.push(['SUBTOTAL','','',...t.columns.map((_,ci)=>ci===t.valueCol?subtotal(t):''),Math.round(copToUsd(subtotal(t))*100)/100]);
+    const aoa=[['Usuario','Cargo','Área',...t.columns,'Valor (USD)','Estado']];
+    t.rows.forEach((r,ri)=>aoa.push([...metaFila(t,ri),...t.columns.map((_,ci)=>ci===t.valueCol?parseNum(r[ci]):(typeof r[ci]==='number'?r[ci]:(r[ci]||''))),Math.round(copToUsd(r[t.valueCol])*100)/100,isBaja(t,ri)?('De baja '+(t.bajas[ri].fecha||'').slice(0,10)):'Activo']));
+    aoa.push(['SUBTOTAL (activos)','','',...t.columns.map((_,ci)=>ci===t.valueCol?subtotal(t):''),Math.round(copToUsd(subtotal(t))*100)/100,activeCount(t)+' activos / '+bajaCount(t)+' baja']);
     const ws=XLSX.utils.aoa_to_sheet(aoa);
     let name=(t.title||'Tabla').replace(/[\\\/\?\*\[\]:]/g,' ').slice(0,28);
     let base=name,k=1;const used=wb.SheetNames;while(used.includes(name)){name=base.slice(0,26)+' '+(++k);}
@@ -733,13 +764,13 @@ function itemLabel(t,r){
   return (l+extra).slice(0,42);
 }
 function analytics(){
-  const cats=data.map(t=>({title:t.title,icon:t.icon||'📦',sub:subtotal(t),items:t.rows.length}));
+  const cats=data.map(t=>({title:t.title,icon:t.icon||'📦',sub:subtotal(t),items:activeCount(t)}));
   const grand=cats.reduce((a,c)=>a+c.sub,0);
   const totalItems=cats.reduce((a,c)=>a+c.items,0);
   const byVal=[...cats].sort((a,b)=>b.sub-a.sub);
   const byItems=[...cats].sort((a,b)=>b.items-a.items);
   const items=[];
-  data.forEach(t=>t.rows.forEach(r=>items.push({label:itemLabel(t,r),cat:t.title,val:parseNum(r[t.valueCol])})));
+  data.forEach(t=>t.rows.forEach((r,ri)=>{ if(!isBaja(t,ri)) items.push({label:itemLabel(t,r),cat:t.title,val:parseNum(r[t.valueCol])}); }));
   items.sort((a,b)=>b.val-a.val);
   return {cats,grand,totalItems,byVal,byItems,top:byVal[0],low:byVal[byVal.length-1],mostItems:byItems[0],
     topItems:items.filter(i=>i.val>0).slice(0,5),avg: totalItems?grand/totalItems:0};
