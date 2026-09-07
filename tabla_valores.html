@@ -66,6 +66,19 @@
   .chip{background:rgba(255,255,255,0.10);border:1px solid rgba(255,255,255,0.18);border-radius:20px;padding:6px 12px;font-size:12px;display:flex;gap:8px;align-items:center;}
   .chip b{font-weight:600;}
   .chip .cv{color:#a8e9c5;font-weight:600;}
+  .chip{cursor:pointer;transition:all .15s ease;}
+  .chip:hover{background:rgba(255,255,255,0.18);border-color:rgba(255,255,255,0.35);}
+  .chip.active{background:#a8e9c5;color:#0d3d24;border-color:#a8e9c5;}
+  .chip.active b,.chip.active .cv,.chip.active .chip-n{color:#0d3d24;}
+  .bc-list{display:flex;flex-direction:column;gap:6px;margin-top:8px;}
+  .bc-row{display:flex;align-items:center;gap:10px;padding:8px 10px;border:1px solid var(--border);border-radius:9px;cursor:pointer;font-size:13px;}
+  .bc-row:hover{background:#f7faf8;}
+  .bc-row input{width:17px;height:17px;accent-color:#b06a00;cursor:pointer;flex:none;}
+  .bc-lbl{flex:1;font-weight:600;color:var(--text-primary);}
+  .bc-val{font-variant-numeric:tabular-nums;color:var(--text-secondary);}
+  .bc-baja{font-size:11px;font-weight:700;color:#b06a00;background:#fff3e0;padding:2px 8px;border-radius:20px;}
+  .bc-act{font-size:11px;font-weight:700;color:#0d7a3f;background:#e6f4ec;padding:2px 8px;border-radius:20px;}
+  .bc-empty{color:var(--text-secondary);font-size:13px;padding:10px 4px;}
 
   /* Toolbar */
   .toolbar{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:22px;align-items:center;}
@@ -495,7 +508,7 @@ function render(){
     card.appendChild(addBtn);
     cont.appendChild(card);
   });
-  document.getElementById('tableCount').textContent=data.length;
+  {const _tc=document.getElementById('tableCount');if(_tc)_tc.textContent=data.length;}
   applyCatFilter();
 }
 
@@ -563,14 +576,16 @@ function updateTotals(){
     const f=document.getElementById('foot-'+ti);if(f)f.textContent=fmt.format(st);
     const fu=document.getElementById('footusd-'+ti);if(fu)fu.textContent=fmtUsd.format(copToUsd(st));
     const s=document.getElementById('sub-'+ti);if(s)s.innerHTML=subHtml(t);
-    const chip=document.createElement('div');chip.className='chip';
+    const chip=document.createElement('div');chip.className='chip'+(_catFilter===t.title?' active':'');
     chip.innerHTML=`<span>${t.icon||'📦'} <b>${t.title}</b> <small class="chip-n">${activeCount(t)} disp.</small></span><span class="cv">${fmt.format(st)}</span>`;
+    chip.title='Clic para filtrar esta categoría y dar de baja';
+    chip.addEventListener('click',()=>{ _catFilter=(_catFilter===t.title)?null:t.title; applyCatFilter(); updateTotals(); if(_catFilter){const b=document.getElementById('catFilterBanner');if(b)b.scrollIntoView({behavior:'smooth',block:'center'});} });
     chips.appendChild(chip);
   });
   document.getElementById('grandTotal').textContent=fmt.format(grand);
   const gu=document.getElementById('grandTotalUsd');if(gu)gu.textContent=fmtUsd.format(copToUsd(grand));
   const dc=document.getElementById('deviceCount');if(dc)dc.textContent=data.reduce((a,t)=>a+activeCount(t),0);
-  document.getElementById('tableCount').textContent=data.length;
+  {const _tc=document.getElementById('tableCount');if(_tc)_tc.textContent=data.length;}
   renderAnalysis();
   renderChart();
 }
@@ -587,16 +602,55 @@ function applyCatFilter(){
       var cc=document.getElementById('chartCard'); if(cc&&cc.parentNode){ cc.parentNode.insertBefore(banner, cc.nextSibling); } else { cont.parentNode.insertBefore(banner, cont); }
     }
     banner.innerHTML='';
-    var span=document.createElement('span'); span.textContent='🔎 Filtro por categoría: '+_catFilter;
+    var _ct=data.find(function(x){return x.title===_catFilter;});
+    var _cnt=_ct?activeCount(_ct):0, _bc=_ct?bajaCount(_ct):0;
+    var span=document.createElement('span'); span.textContent='🔎 '+_catFilter+' — '+_cnt+' dispositivos'+(_bc?(' · '+_bc+' de baja'):'');
+    var bajaBtn=document.createElement('button'); bajaBtn.type='button'; bajaBtn.textContent='⬇ Dar de baja equipos';
+    bajaBtn.style.cssText='cursor:pointer;border:none;background:#b06a00;color:#fff;padding:5px 12px;border-radius:8px;font:600 12px Poppins,sans-serif;';
+    bajaBtn.addEventListener('click',function(){ openBajaCat(_catFilter); });
     var btn=document.createElement('button'); btn.type='button'; btn.textContent='✕ Quitar filtro';
     btn.style.cssText='cursor:pointer;border:none;background:#0d7a3f;color:#fff;padding:5px 12px;border-radius:8px;font:600 12px Poppins,sans-serif;';
-    btn.addEventListener('click',function(){ _catFilter=null; applyCatFilter(); });
-    banner.appendChild(span); banner.appendChild(btn); banner.style.display='flex';
+    btn.addEventListener('click',function(){ _catFilter=null; applyCatFilter(); updateTotals(); });
+    banner.appendChild(span); banner.appendChild(bajaBtn); banner.appendChild(btn); banner.style.display='flex';
     Array.prototype.forEach.call(cont.children,function(card,i){ card.style.display=(data[i]&&data[i].title===_catFilter)?'':'none'; });
   } else {
     if(banner) banner.style.display='none';
     Array.prototype.forEach.call(cont.children,function(card){ card.style.display=''; });
   }
+}
+function _escH(s){return String(s==null?'':s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];});}
+// Panel de baja por categoría: lista los equipos de la categoría con casillas (marcado = de baja).
+let _bcOverlay=null;
+function openBajaCat(catTitle){
+  const t=data.find(x=>x.title===catTitle); if(!t) return;
+  if(!_bcOverlay){ _bcOverlay=document.createElement('div'); _bcOverlay.className='overlay'; document.body.appendChild(_bcOverlay);
+    _bcOverlay.addEventListener('mousedown',e=>{ if(e.target===_bcOverlay) _bcOverlay.classList.remove('show'); }); }
+  if(!Array.isArray(t.bajas)) t.bajas=[];
+  const rowsHtml=t.rows.map((r,ri)=>{
+    const lbl=itemLabel(t,r)||('Fila '+(ri+1));
+    const val=fmt.format(parseNum(r[t.valueCol]));
+    const baja=isBaja(t,ri);
+    const est=baja?'<span class="bc-baja">de baja</span>':'<span class="bc-act">activo</span>';
+    return `<label class="bc-row"><input type="checkbox" data-ri="${ri}" ${baja?'checked':''}><span class="bc-lbl">${_escH(lbl)}</span><span class="bc-val">${val}</span>${est}</label>`;
+  }).join('');
+  _bcOverlay.innerHTML=`<div class="modal"><div class="modal-head">Dar de baja — ${_escH((t.icon||'')+' '+t.title)}</div>`+
+    `<div class="modal-body"><p class="modal-note">Marca los equipos que quieres <b>dar de baja</b> (casilla activada = de baja). Desmarca para reactivar. La fecha se registra sola.</p>`+
+    `<div class="bc-list">${rowsHtml||'<div class="bc-empty">No hay equipos en esta categoría.</div>'}</div></div>`+
+    `<div class="modal-foot"><button class="btn" id="bcCancel">Cancelar</button><button class="btn primary" id="bcSave">Guardar cambios</button></div></div>`;
+  _bcOverlay.classList.add('show');
+  _bcOverlay.querySelector('#bcCancel').onclick=()=>_bcOverlay.classList.remove('show');
+  _bcOverlay.querySelector('#bcSave').onclick=()=>{
+    if(!Array.isArray(t.bajas)) t.bajas=[];
+    let ch=0;
+    _bcOverlay.querySelectorAll('input[type=checkbox]').forEach(cb=>{
+      const ri=+cb.dataset.ri, want=cb.checked, now=isBaja(t,ri);
+      if(want&&!now){ t.bajas[ri]={fecha:new Date().toISOString()}; ch++; }
+      else if(!want&&now){ t.bajas[ri]=null; ch++; }
+    });
+    save(); render(); updateTotals();
+    _bcOverlay.classList.remove('show');
+    toast(ch?('Actualizado: '+ch+' cambio(s)'):'Sin cambios');
+  };
 }
 function renderChart(){
   var el=document.getElementById('chart-categorias'); if(!el||typeof Chart==='undefined') return;
