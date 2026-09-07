@@ -188,7 +188,7 @@
       </div>
       <div class="trm-row">
         <label for="trmInput">💱 TRM (COP por 1 USD)</label>
-        <input id="trmInput" type="text" inputmode="decimal" autocomplete="off" value="4.000">
+        <input id="trmInput" type="text" inputmode="decimal" autocomplete="off" value="3.126,08">
         <span class="trm-note">La columna <b>Valor (USD)</b> se calcula sola: <b>COP ÷ TRM</b>. Cambia la tasa y todo se recalcula.</span>
       </div>
       <div class="chips" id="chips"></div>
@@ -255,7 +255,7 @@ let data, editMode=false;
 const TRM_KEY='bvicol_trm_usd_cop_v1';
 const TRM_FKEY='trm_usd_cop_v1';
 let TRM=loadTRM();
-function loadTRM(){ try{const s=localStorage.getItem(TRM_KEY);const n=parseFloat(s);if(n>0)return n;}catch(e){} return 4000; }
+function loadTRM(){ try{const s=localStorage.getItem(TRM_KEY);const n=parseFloat(s);if(n>0)return n;}catch(e){} return 3126.08; }
 function fmtTRM(n){ return new Intl.NumberFormat('es-CO',{maximumFractionDigits:2}).format(n); }
 function copToUsd(cop){ const c=parseNum(cop); return (TRM>0)?(c/TRM):0; }
 function setTRM(v){
