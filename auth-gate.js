@@ -7,6 +7,7 @@
   var USERS_KEY = "portal_usuarios_v1";
   var SESSION_KEY = "portal_sesion_bvi";
   var SESSION_HOURS = 12;
+  var IDLE_MS = 5 * 60 * 1000; // cierre de sesión por inactividad (5 minutos)
 
   function normEmail(s){ return String(s || "").trim().toLowerCase(); }
   async function sha256(str){
@@ -71,9 +72,34 @@
     return null;
   }
   function setSession(u){
-    try { localStorage.setItem(SESSION_KEY, JSON.stringify({ email: u.email, nombre: u.nombre, rol: u.rol, exp: Date.now() + SESSION_HOURS * 3600000 })); } catch (e) {}
+    try { localStorage.setItem(SESSION_KEY, JSON.stringify({ email: u.email, nombre: u.nombre, rol: u.rol, exp: Date.now() + IDLE_MS })); } catch (e) {}
   }
   function clearSession(){ try { localStorage.removeItem(SESSION_KEY); } catch (e) {} }
+
+  /* ---------- cierre de sesión por inactividad (5 min) ---------- */
+  var _idleTimer = null, _idleStarted = false, _lastRefresh = 0;
+  function refreshSessionExp(){
+    try { var s = JSON.parse(localStorage.getItem(SESSION_KEY) || "null"); if (s) { s.exp = Date.now() + IDLE_MS; localStorage.setItem(SESSION_KEY, JSON.stringify(s)); } } catch (e) {}
+  }
+  function logoutIdle(){
+    clearSession();
+    try { alert("Tu sesión se cerró por inactividad (5 minutos). Vuelve a iniciar sesión."); } catch (e) {}
+    location.reload();
+  }
+  function onActivity(){
+    if (_idleTimer) clearTimeout(_idleTimer);
+    _idleTimer = setTimeout(logoutIdle, IDLE_MS);
+    var now = Date.now();
+    if (now - _lastRefresh > 20000) { _lastRefresh = now; refreshSessionExp(); }
+  }
+  function startIdleTimer(){
+    if (_idleStarted) return; _idleStarted = true;
+    ["mousemove","mousedown","keydown","scroll","touchstart","click","wheel"].forEach(function (ev){
+      window.addEventListener(ev, onActivity, { passive: true });
+    });
+    document.addEventListener("visibilitychange", function(){ if (!document.hidden) onActivity(); });
+    onActivity();
+  }
 
   /* ---------- estilos ---------- */
   var CSS = ""
@@ -178,6 +204,7 @@
   /* ---------- chip de sesión ---------- */
   function mountChip(sess){
     if (document.getElementById("ag-chip")) return;
+    startIdleTimer();
     injectCSS();
     var chip = document.createElement("div"); chip.className = "ag-chip"; chip.id = "ag-chip";
     var admin = sess.rol === "admin";
