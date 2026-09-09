@@ -114,6 +114,8 @@
   tbody input:focus{outline:none;border-color:var(--accent);background:#fff;box-shadow:0 0 0 2px rgba(0,134,81,0.10);}
   tbody input.num{text-align:right;font-variant-numeric:tabular-nums;}
   .meta-cell{display:inline-block;font-size:12px;color:var(--text-secondary);white-space:nowrap;padding:0 4px;}
+  tbody input.fecha-input{font-size:12px;color:var(--text-secondary);min-width:120px;}
+  tbody input.fecha-input:focus{color:var(--text-primary);}
   .del-row{color:var(--danger);background:transparent;border:none;cursor:pointer;font-size:14px;padding:4px 6px;border-radius:6px;visibility:hidden;}
   .del-row:hover{background:#fdece9;}
   body.editmode .del-row{visibility:visible;}
@@ -235,6 +237,11 @@
     <div class="analysis" id="chartCard">
       <h2><span class="ico">📊</span> Distribución del valor por categoría</h2>
       <div style="max-width:680px;margin:0 auto;height:320px;"><canvas id="chart-categorias"></canvas></div>
+    </div>
+
+    <div class="analysis" id="comprasCard">
+      <h2><span class="ico">🛒</span> Compras por mes <span id="comprasSub" style="font-weight:400;font-size:13px;color:var(--text-secondary);"></span></h2>
+      <div style="height:340px;"><canvas id="chart-compras-mes"></canvas></div>
     </div>
 
     <div id="tables"></div>
@@ -423,6 +430,12 @@ function activeCount(t){ return t.rows.reduce((a,r,ri)=>a+(isBaja(t,ri)?0:1),0);
 function bajaCount(t){ return t.rows.reduce((a,r,ri)=>a+(isBaja(t,ri)?1:0),0); }
 function subHtml(t){ const bc=bajaCount(t); return `<span class="tcount">${activeCount(t)} equipos</span>${bc?` · <span class="tbaja">${bc} de baja</span>`:''} · Subtotal: <b>${fmt.format(subtotal(t))}</b>`; }
 function normBajas(){ data.forEach(t=>{ if(!Array.isArray(t.bajas))t.bajas=[]; while(t.bajas.length<t.rows.length)t.bajas.push(null); if(t.bajas.length>t.rows.length)t.bajas.length=t.rows.length; }); }
+// ---- Fecha de compra por equipo (columna editable, arreglo paralelo t.fechas) ----
+// Mapa serial -> fecha de compra (YYYY-MM-DD) tomado del inventario tecnológico oficial.
+const FECHAS_COMPRA={"145B7600":"2025-03-25","25293524701778":"2026-01-30","605NTHMKF593":"2026-09-01","8CC1124476":"2023-11-15","A06B4AAE5DC5113":"2026-03-12","A06B4AB86833293":"2026-04-24","A06B4ABA6BE2983":"2026-04-26","A7002957":"2026-03-27","A7002959":"2026-03-27","BLR01916302500631":"2026-09-01","D5N251601244":"2026-01-30","D5N251601284":"2026-01-30","MP2G2P3K":"2024-12-15","PC1AD932":"2020-01-15","PC1AX5H6":"2025-03-26","PC1G0V1W":"2020-05-15","PF2MRX5V":"2021-07-01","PF2PPAAK":"2025-11-17","PF2PPJRA":"2024-09-10","PF2PPKP3":"2021-04-24","PF52ARB8":"2025-04-21","PF5BM5NF":"2026-01-19","PF5F90HP":"2024-11-01","PF5P0FPJ":"2026-09-01","PW-0EKZ2D":"2025-11-14","PW-0EKZ2S":"2025-11-14","SNPF61JFF7":"2026-08-31","XAGZH10572":"2026-02-20","XAGZH10663":"2026-02-20","ZY32M73X2V":"2026-08-27","ZY32M9R46P":"2026-02-05","ZY32MFM2TL":"2026-02-06","ZY32MFM5BT":"2026-02-04","ZY32MFMT49":"2025-02-04","ZY32MFPZTM":"2026-02-26"};
+function serialCol(t){ if(!Array.isArray(t.columns))return -1; for(let i=0;i<t.columns.length;i++){ if(/serial|serie/i.test(String(t.columns[i])))return i; } return -1; }
+function normFechas(){ data.forEach(t=>{ if(!Array.isArray(t.fechas))t.fechas=[]; while(t.fechas.length<t.rows.length)t.fechas.push(''); if(t.fechas.length>t.rows.length)t.fechas.length=t.rows.length; }); }
+function autoFillFechas(){ let ch=false; data.forEach(t=>{ const si=serialCol(t); if(si<0)return; if(!Array.isArray(t.fechas))t.fechas=[]; t.rows.forEach((r,ri)=>{ if(t.fechas[ri])return; const s=String(r[si]||'').trim().toUpperCase(); if(s&&FECHAS_COMPRA[s]){ t.fechas[ri]=FECHAS_COMPRA[s]; ch=true; } }); }); return ch; }
 // La columna "Valor (USD)" es CALCULADA (COP ÷ TRM); no se guarda en los datos.
 // Si alguna versión previa la dejó almacenada, la quitamos para no duplicarla.
 function stripUsdCols(){
@@ -451,6 +464,8 @@ function render(){
   if(stripUsdCols()) save();
   normAssignees();
   normBajas();
+  normFechas();
+  if(autoFillFechas()) save();
   if(completarNombres()) save();
   const cont=document.getElementById('tables');cont.innerHTML='';
   data.forEach((t,ti)=>{
@@ -479,6 +494,7 @@ function render(){
     const thu=document.createElement('th');thu.textContent='Usuario';thu.className='user-col';htr.appendChild(thu);
     const thc=document.createElement('th');thc.textContent='Cargo';thc.className='user-col';htr.appendChild(thc);
     const thar=document.createElement('th');thar.textContent='Área';thar.className='user-col';htr.appendChild(thar);
+    const thf=document.createElement('th');thf.textContent='Fecha compra';thf.className='user-col';htr.appendChild(thf);
     t.columns.forEach((c,ci)=>{const th=document.createElement('th');th.textContent=c;if(numeric[ci])th.className='num';htr.appendChild(th);
       if(ci===t.valueCol){const thUsd=document.createElement('th');thUsd.textContent='Valor (USD)';thUsd.className='num usd-col';htr.appendChild(thUsd);}});
     const tha=document.createElement('th');tha.className='act';htr.appendChild(tha);
@@ -492,6 +508,7 @@ function render(){
     const fu=document.createElement('td');ftr.appendChild(fu);
     const fc=document.createElement('td');ftr.appendChild(fc);
     const far=document.createElement('td');ftr.appendChild(far);
+    const ffe=document.createElement('td');ftr.appendChild(ffe);
     for(let ci=0;ci<t.columns.length;ci++){
       const td=document.createElement('td');
       if(ci===0){td.className='lbl';td.textContent='Subtotal';}
@@ -504,7 +521,7 @@ function render(){
     wrap.appendChild(tbl);card.appendChild(wrap);
     // add row btn
     const addBtn=document.createElement('button');addBtn.className='btn add-row';addBtn.textContent='＋ Agregar dispositivo';
-    addBtn.addEventListener('click',()=>{const nr=t.columns.map((_,ci)=>numeric[ci]?0:'');t.rows.push(nr);if(!Array.isArray(t.assignees))t.assignees=[];t.assignees.push('');if(!Array.isArray(t.bajas))t.bajas=[];t.bajas.push(null);save();render();updateTotals();});
+    addBtn.addEventListener('click',()=>{const nr=t.columns.map((_,ci)=>numeric[ci]?0:'');t.rows.push(nr);if(!Array.isArray(t.assignees))t.assignees=[];t.assignees.push('');if(!Array.isArray(t.bajas))t.bajas=[];t.bajas.push(null);if(!Array.isArray(t.fechas))t.fechas=[];t.fechas.push('');save();render();updateTotals();});
     card.appendChild(addBtn);
     cont.appendChild(card);
   });
@@ -529,6 +546,13 @@ function buildRow(t,ti,row,ri,numeric){
   uinp.addEventListener('input',()=>{t.assignees[ri]=uinp.value;pintarMeta(uinp.value);save();});
   uinp.addEventListener('change',snap);
   uinp.addEventListener('blur',snap);
+  // Fecha de compra (editable) — se autocompleta por serial desde el inventario oficial
+  const tdf=document.createElement('td');
+  const finp=document.createElement('input');finp.type='date';finp.className='fecha-input';
+  if(!Array.isArray(t.fechas))t.fechas=[];
+  finp.value=t.fechas[ri]||'';
+  finp.addEventListener('input',()=>{t.fechas[ri]=finp.value;save();renderChart();});
+  tdf.appendChild(finp);tr.appendChild(tdf);
   t.columns.forEach((c,ci)=>{
     const td=document.createElement('td');
     const inp=document.createElement('input');
@@ -564,7 +588,7 @@ function buildRow(t,ti,row,ri,numeric){
   });
   tda.appendChild(baja);
   const del=document.createElement('button');del.className='del-row';del.textContent='🗑';del.title='Eliminar fila';
-  del.addEventListener('click',()=>{t.rows.splice(ri,1);if(Array.isArray(t.assignees))t.assignees.splice(ri,1);if(Array.isArray(t.bajas))t.bajas.splice(ri,1);save();render();updateTotals();});
+  del.addEventListener('click',()=>{t.rows.splice(ri,1);if(Array.isArray(t.assignees))t.assignees.splice(ri,1);if(Array.isArray(t.bajas))t.bajas.splice(ri,1);if(Array.isArray(t.fechas))t.fechas.splice(ri,1);save();render();updateTotals();});
   tda.appendChild(del);tr.appendChild(tda);
   return tr;
 }
@@ -671,6 +695,37 @@ function renderChart(){
   el.ondblclick=function(evt){ if(!_chartCat) return; var pts=_chartCat.getElementsAtEventForMode(evt,'nearest',{intersect:true},true); if(pts&&pts.length){ var lab=_chartCat.data.labels[pts[0].index]; _catFilter=(_catFilter===lab)?null:lab; applyCatFilter(); if(_catFilter){ var b=document.getElementById('catFilterBanner'); if(b) b.scrollIntoView({behavior:'smooth',block:'center'}); } } };
   el.style.cursor='pointer'; el.title='Doble clic en una porción para filtrar por categoría';
   applyCatFilter();
+  renderComprasMes();
+}
+
+// ---- Gráfico: compras por mes (porcentaje sobre el total de equipos con fecha) ----
+let _chartMes=null;
+function comprasPorMes(){
+  const cnt={};
+  let total=0;
+  data.forEach(t=>{ if(!Array.isArray(t.fechas))return; t.fechas.forEach(f=>{ if(!f)return; const ym=String(f).slice(0,7); if(!/^\d{4}-\d{2}$/.test(ym))return; cnt[ym]=(cnt[ym]||0)+1; total++; }); });
+  const keys=Object.keys(cnt).sort();
+  return {keys, cnt, total};
+}
+function mesLabel(ym){ const M=['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic']; const p=ym.split('-'); return M[(+p[1])-1]+' '+p[0]; }
+function renderComprasMes(){
+  const {keys,cnt,total}=comprasPorMes();
+  const sub=document.getElementById('comprasSub');
+  if(sub) sub.textContent=total?('· '+total+' equipos con fecha de compra registrada'):'· sin fechas de compra registradas aún';
+  const el=document.getElementById('chart-compras-mes'); if(!el||typeof Chart==='undefined') return;
+  const labels=keys.map(mesLabel);
+  const vals=keys.map(k=>cnt[k]);
+  const pcts=keys.map(k=>total?(cnt[k]/total*100):0);
+  const pctLabel={id:'pctLabelMes', afterDatasetsDraw:function(chart){
+    const ctx=chart.ctx, meta=chart.getDatasetMeta(0);
+    ctx.save(); ctx.font='600 11px Poppins,sans-serif'; ctx.fillStyle='#0d3d24'; ctx.textAlign='center';
+    meta.data.forEach(function(bar,i){ if(!vals[i])return; ctx.fillText(pcts[i].toFixed(1)+'%', bar.x, bar.y-6); });
+    ctx.restore();
+  }};
+  if(_chartMes){ _chartMes.data.labels=labels; _chartMes.data.datasets[0].data=vals; _chartMes._pcts=pcts; _chartMes.update(); return; }
+  _chartMes=new Chart(el.getContext('2d'), { type:'bar', plugins:[pctLabel], data:{labels:labels, datasets:[{label:'Equipos comprados', data:vals, backgroundColor:'#0d8651', borderRadius:6, maxBarThickness:64}]},
+    options:{responsive:true, maintainAspectRatio:false, layout:{padding:{top:18}}, scales:{y:{beginAtZero:true, ticks:{precision:0, font:{family:'Poppins'}}, title:{display:true,text:'N.º de equipos',font:{family:'Poppins'}}}, x:{ticks:{font:{family:'Poppins',size:11}}}},
+      plugins:{legend:{display:false}, tooltip:{callbacks:{label:function(c){ const t=total||0; const p=t?(c.parsed.y/t*100):0; return c.parsed.y+' equipos ('+p.toFixed(1)+'% del total)'; }}}}} });
 }
 // ---- Modal: nueva tabla con columnas personalizadas ----
 const overlay=document.getElementById('modalOverlay');
@@ -768,14 +823,14 @@ document.getElementById('importFile').addEventListener('change',(e)=>{
   rd.onload=()=>{try{const d=JSON.parse(rd.result);if(Array.isArray(d)){data=d;save();render();updateTotals();toast('Backup importado');}else{alert('Archivo no válido.');}}catch(err){alert('No se pudo leer el archivo.');}};
   rd.readAsText(file);e.target.value='';
 });
-function metaFila(t,ri){ const nm=(Array.isArray(t.assignees)&&t.assignees[ri]!=null)?String(t.assignees[ri]):''; const e=resolverEmpleado(nm); return [nm, e?e.c:'', e?e.a:'']; }
+function metaFila(t,ri){ const nm=(Array.isArray(t.assignees)&&t.assignees[ri]!=null)?String(t.assignees[ri]):''; const e=resolverEmpleado(nm); const fe=(Array.isArray(t.fechas)&&t.fechas[ri])?String(t.fechas[ri]):''; return [nm, e?e.c:'', e?e.a:'', fe]; }
 function exportCSV(){
   const rowsOut=[];
   data.forEach(t=>{
     rowsOut.push([t.title]);
-    rowsOut.push(['Usuario','Cargo','Área',...t.columns,'Valor (USD)','Estado']);
+    rowsOut.push(['Usuario','Cargo','Área','Fecha compra',...t.columns,'Valor (USD)','Estado']);
     t.rows.forEach((r,ri)=>rowsOut.push([...metaFila(t,ri),...t.columns.map((_,ci)=>ci===t.valueCol?parseNum(r[ci]):(r[ci]==null?'':r[ci])),Math.round(copToUsd(r[t.valueCol])*100)/100,isBaja(t,ri)?('De baja '+(t.bajas[ri].fecha||'').slice(0,10)):'Activo']));
-    rowsOut.push(['SUBTOTAL (activos)','','',...t.columns.map((_,ci)=>ci===t.valueCol?subtotal(t):''),Math.round(copToUsd(subtotal(t))*100)/100,activeCount(t)+' activos / '+bajaCount(t)+' baja']);
+    rowsOut.push(['SUBTOTAL (activos)','','','',...t.columns.map((_,ci)=>ci===t.valueCol?subtotal(t):''),Math.round(copToUsd(subtotal(t))*100)/100,activeCount(t)+' activos / '+bajaCount(t)+' baja']);
     rowsOut.push([]);
   });
   const _g=data.reduce((a,t)=>a+subtotal(t),0);
@@ -791,9 +846,9 @@ document.getElementById('exportXlsx').addEventListener('click',()=>{
   if(typeof XLSX==='undefined'){exportCSV();return;}
   const wb=XLSX.utils.book_new();
   data.forEach(t=>{
-    const aoa=[['Usuario','Cargo','Área',...t.columns,'Valor (USD)','Estado']];
+    const aoa=[['Usuario','Cargo','Área','Fecha compra',...t.columns,'Valor (USD)','Estado']];
     t.rows.forEach((r,ri)=>aoa.push([...metaFila(t,ri),...t.columns.map((_,ci)=>ci===t.valueCol?parseNum(r[ci]):(typeof r[ci]==='number'?r[ci]:(r[ci]||''))),Math.round(copToUsd(r[t.valueCol])*100)/100,isBaja(t,ri)?('De baja '+(t.bajas[ri].fecha||'').slice(0,10)):'Activo']));
-    aoa.push(['SUBTOTAL (activos)','','',...t.columns.map((_,ci)=>ci===t.valueCol?subtotal(t):''),Math.round(copToUsd(subtotal(t))*100)/100,activeCount(t)+' activos / '+bajaCount(t)+' baja']);
+    aoa.push(['SUBTOTAL (activos)','','','',...t.columns.map((_,ci)=>ci===t.valueCol?subtotal(t):''),Math.round(copToUsd(subtotal(t))*100)/100,activeCount(t)+' activos / '+bajaCount(t)+' baja']);
     const ws=XLSX.utils.aoa_to_sheet(aoa);
     let name=(t.title||'Tabla').replace(/[\\\/\?\*\[\]:]/g,' ').slice(0,28);
     let base=name,k=1;const used=wb.SheetNames;while(used.includes(name)){name=base.slice(0,26)+' '+(++k);}
@@ -896,7 +951,7 @@ function exportPPTX(){
   data.forEach(t=>{
     const numeric=t.columns.map((_,ci)=>isNumericCol(t,ci));
     const _mh=c=>({text:String(c),options:{fill:{color:'0d3d24'},color:'FFFFFF',bold:true,align:'left',fontFace:FF}});
-    const header=[_mh('Usuario'),_mh('Cargo'),_mh('Área'),...t.columns.map(_mh),_mh('Valor (USD)')];
+    const header=[_mh('Usuario'),_mh('Cargo'),_mh('Área'),_mh('Fecha compra'),...t.columns.map(_mh),_mh('Valor (USD)')];
     const body=t.rows.map((r,ri)=>{
       const mf=metaFila(t,ri).map(v=>({text:String(v||''),options:{align:'left',fontFace:FF,color:DARK}}));
       return [...mf,...t.columns.map((_,ci)=>{
@@ -905,7 +960,7 @@ function exportPPTX(){
       }),{text:fmtUsd.format(copToUsd(r[t.valueCol])),options:{align:'right',fontFace:FF,color:'0B6B39'}}];
     });
     const _fc=(txt,al)=>({text:txt,options:{bold:true,fill:{color:'E6F4EC'},color:'067131',align:al||'left',fontFace:FF}});
-    const foot=[_fc('SUBTOTAL'),_fc(''),_fc(''),...t.columns.map((_,ci)=>_fc(ci===t.valueCol?fmt.format(subtotal(t)):'',ci===t.valueCol?'right':'left')),_fc(fmtUsd.format(copToUsd(subtotal(t))),'right')];
+    const foot=[_fc('SUBTOTAL'),_fc(''),_fc(''),_fc(''),...t.columns.map((_,ci)=>_fc(ci===t.valueCol?fmt.format(subtotal(t)):'',ci===t.valueCol?'right':'left')),_fc(fmtUsd.format(copToUsd(subtotal(t))),'right')];
     const groups=[];
     if(body.length){for(let i=0;i<body.length;i+=ROWS_PER)groups.push(body.slice(i,i+ROWS_PER));}else{groups.push([]);}
     groups.forEach((g,gi)=>{
