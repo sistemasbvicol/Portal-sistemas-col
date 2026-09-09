@@ -17,18 +17,19 @@
   }
   *{box-sizing:border-box;}
   body{margin:0;background:var(--bg-page);color:var(--text-primary);font-family:'Poppins',sans-serif;}
-  .topbar{background:linear-gradient(135deg,var(--bg-header),#145232);color:#fff;padding:22px 20px;}
-  .topwrap{max-width:1240px;margin:0 auto;display:flex;align-items:center;gap:16px;flex-wrap:wrap;}
+  .topbar{background:linear-gradient(135deg,var(--bg-header),#145232);color:#fff;padding:22px 26px;}
+  .topwrap{max-width:none;margin:0;display:flex;align-items:center;gap:16px;flex-wrap:wrap;}
   .brand-logo img{height:44px;display:block;}
   .brand-text .eyebrow{margin:0;font-size:12px;letter-spacing:2px;text-transform:uppercase;color:#7fd9a8;font-weight:600;}
   .brand-text h1{margin:2px 0 0;font-family:'Oswald',sans-serif;font-size:26px;font-weight:700;}
   .back-link{margin-left:auto;color:#d9ead9;text-decoration:none;font-size:13px;font-weight:600;border:1px solid rgba(255,255,255,.35);padding:8px 14px;border-radius:10px;}
   .back-link:hover{background:rgba(255,255,255,.12);}
-  main{max-width:1240px;margin:0 auto;padding:22px 20px 60px;}
+  main{max-width:none;margin:0;width:100%;padding:26px 26px 60px;}
   .desc{color:var(--text-secondary);font-size:14px;margin:0 0 18px;}
-  .kpis{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:18px;}
-  @media(max-width:920px){.kpis{grid-template-columns:repeat(2,1fr);}}
-  @media(max-width:560px){.kpis{grid-template-columns:1fr;}}
+  .kpis{display:grid;grid-template-columns:repeat(6,1fr);gap:12px;margin-bottom:18px;}
+  @media(max-width:1200px){.kpis{grid-template-columns:repeat(3,1fr);}}
+  @media(max-width:720px){.kpis{grid-template-columns:repeat(2,1fr);}}
+  @media(max-width:480px){.kpis{grid-template-columns:1fr;}}
   .kpi{background:var(--bg-card);border:1px solid var(--border);border-radius:14px;padding:16px 18px;position:relative;overflow:hidden;}
   .kpi .k{font-size:11px;letter-spacing:1px;text-transform:uppercase;color:var(--text-secondary);font-weight:600;}
   .kpi .v{font-family:'Oswald',sans-serif;font-size:32px;font-weight:700;color:var(--accent-dark);line-height:1.05;margin-top:6px;}
@@ -69,7 +70,7 @@
   .tbl-head{display:flex;align-items:center;gap:10px;margin:22px 0 10px;flex-wrap:wrap;}
   .tbl-head h2{margin:0;font-size:16px;font-weight:700;}
   .tbl-head .count{font-size:13px;color:var(--text-secondary);}
-  footer{max-width:1240px;margin:0 auto;padding:10px 20px 30px;color:var(--text-secondary);font-size:12px;}
+  footer{max-width:none;margin:0;padding:10px 26px 30px;color:var(--text-secondary);font-size:12px;}
   .toast{position:fixed;left:50%;bottom:26px;transform:translateX(-50%) translateY(20px);background:#101c14;color:#fff;padding:11px 18px;border-radius:10px;font-size:13px;opacity:0;pointer-events:none;transition:.25s;z-index:60;}
   .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
   .hint{background:#eaf5ee;border:1px solid #cfe6d8;border-radius:12px;padding:10px 14px;font-size:12.5px;color:#2c4a39;margin-bottom:16px;}
@@ -145,8 +146,8 @@ const DEF_SISTEMA="Usuario, Carpeta compartida y Siigo", DEF_TIPO="Backup", DEF_
 /* ================= Modelo de datos ================= */
 const FKEY='respaldos_backup_indicadores_v1';
 const LKEY='bvicol_respaldos_backup_v1';
-let data=[], editMode=false, cloudReady=false, saveTimer=null, _period='all';
-let _charts={};
+let data=[], editMode=false, cloudReady=false, saveTimer=null, _period='all', _monthFilter=null;
+let _charts={}, _chartKeys={};
 
 function seedData(){
   return SEED_ROWS.map(r=>({id:r[0], fecha:r[1], sistema:DEF_SISTEMA, tipo:DEF_TIPO, estado:DEF_ESTADO, medio:r[2], responsable:DEF_RESP}));
@@ -224,10 +225,15 @@ function periodStart(){
   const n=parseInt(_period,10); if(!n) return null;
   const d=new Date(t); d.setDate(d.getDate()-n+1); return d;
 }
-function filtered(){
+function periodRecs(){
   const ps=periodStart();
   if(!ps) return data.slice();
   return data.filter(r=>{ const d=parseFecha(r.fecha); return d && d>=ps; });
+}
+function filtered(){
+  let recs=periodRecs();
+  if(_monthFilter) recs=recs.filter(r=>{ const d=parseFecha(r.fecha); return d && monthKey(d)===_monthFilter; });
+  return recs;
 }
 
 /* ================= KPIs ================= */
@@ -255,7 +261,7 @@ function renderKPIs(){
     return `<div class="kpi ${cls||''}">${pill?`<span class="pill ${pill.c}">${pill.t}</span>`:''}<div class="k">${label}</div><div class="v">${val}</div>${sub?`<div class="sub">${sub}</div>`:''}</div>`;
   }
   cont.innerHTML =
-    kpi('', 'Respaldos registrados', total, _period==='all'?'Total histórico':'En el periodo') +
+    kpi('', 'Respaldos registrados', total, (_period==='all'&&!_monthFilter)?'Total histórico':'En el periodo') +
     kpi(pct>=99?'ok':(pct>=90?'warn':'bad'), 'Tasa de éxito', pct+'%', exito+' de '+total+' terminados', {c:(pct>=99?'ok':(pct>=90?'warn':'bad')), t:(pct>=99?'Óptimo':(pct>=90?'Revisar':'Bajo'))}) +
     kpi(alertOld?'bad':'ok', 'Último respaldo', ultima?ultima.toLocaleDateString('es-CO',{day:'2-digit',month:'short',year:'numeric'}):'—', ultima?('hace '+diasDesde+' día'+(diasDesde===1?'':'s')):'sin registros', ultima?{c:(alertOld?'bad':'ok'),t:(alertOld?'Atrasado':'Al día')}:null) +
     kpi(cobertura>=99?'ok':(cobertura>=90?'warn':'bad'), 'Cobertura del periodo', cobertura+'%', setDias.size+' de '+rango+' días con respaldo') +
@@ -274,49 +280,75 @@ const GREEN='#0d7a3f', GREENS=['#0d7a3f','#1f9d57','#145232','#3fae74','#0a6234'
 function monthKey(d){ return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0'); }
 function monthLabel(k){ const [y,m]=k.split('-'); return new Date(+y,+m-1,1).toLocaleDateString('es-CO',{month:'short',year:'2-digit'}); }
 function destroyChart(id){ if(_charts[id]){ _charts[id].destroy(); delete _charts[id]; } }
+function attachMonthDbl(id){
+  const el=document.getElementById(id); if(!el) return;
+  el.style.cursor='pointer'; el.title='Doble clic en un mes para filtrar';
+  el.ondblclick=function(evt){
+    const ch=_charts[id]; if(!ch) return;
+    const pts=ch.getElementsAtEventForMode(evt,'nearest',{intersect:true},true);
+    if(pts&&pts.length){ const k=(_chartKeys[id]||[])[pts[0].index]; if(k){ _monthFilter=(_monthFilter===k)?null:k; renderAll(); } }
+  };
+}
 function renderCharts(){
   if(typeof Chart==='undefined') return;
-  const recs=filtered();
+  // Las barras por mes se calculan con TODO el periodo (sin el filtro de mes) para poder cambiar de mes con doble clic.
+  const pr=periodRecs();
+  const fr=filtered();
   // por mes
   const porMes={};
-  recs.forEach(r=>{ const d=parseFecha(r.fecha); if(!d)return; const k=monthKey(d); porMes[k]=(porMes[k]||0)+1; });
-  const mk=Object.keys(porMes).sort();
+  pr.forEach(r=>{ const d=parseFecha(r.fecha); if(!d)return; const k=monthKey(d); porMes[k]=(porMes[k]||0)+1; });
+  const mk=Object.keys(porMes).sort(); _chartKeys.chartMes=mk;
   destroyChart('chartMes');
   _charts['chartMes']=new Chart(document.getElementById('chartMes'),{type:'bar',
-    data:{labels:mk.map(monthLabel),datasets:[{label:'Respaldos',data:mk.map(k=>porMes[k]),backgroundColor:GREEN,borderRadius:6}]},
+    data:{labels:mk.map(monthLabel),datasets:[{label:'Respaldos',data:mk.map(k=>porMes[k]),backgroundColor:mk.map(k=>(_monthFilter&&k!==_monthFilter)?'#c3d8cc':GREEN),borderRadius:6}]},
     options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{beginAtZero:true,ticks:{precision:0}}}}});
-  // estado
-  const est={}; recs.forEach(r=>{ const e=r.estado||'(sin estado)'; est[e]=(est[e]||0)+1; });
+  attachMonthDbl('chartMes');
+  // estado (refleja el filtro de mes)
+  const est={}; fr.forEach(r=>{ const e=r.estado||'(sin estado)'; est[e]=(est[e]||0)+1; });
   const ek=Object.keys(est);
   destroyChart('chartEstado');
   _charts['chartEstado']=new Chart(document.getElementById('chartEstado'),{type:'doughnut',
     data:{labels:ek,datasets:[{data:ek.map(k=>est[k]),backgroundColor:ek.map(k=>esExito(k)?'#0d7a3f':(/pend|proceso/.test(k.toLowerCase())?'#c98a1e':'#c23b3b')),borderColor:'#fff',borderWidth:2}]},
     options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom',labels:{font:{family:'Poppins',size:12}}}}}});
   // cumplimiento diario por mes (% dias del mes con respaldo)
-  const diasMes={}; recs.forEach(r=>{ const d=parseFecha(r.fecha); if(!d)return; const k=monthKey(d); (diasMes[k]=diasMes[k]||new Set()).add(r.fecha); });
-  const ck=Object.keys(diasMes).sort();
+  const diasMes={}; pr.forEach(r=>{ const d=parseFecha(r.fecha); if(!d)return; const k=monthKey(d); (diasMes[k]=diasMes[k]||new Set()).add(r.fecha); });
+  const ck=Object.keys(diasMes).sort(); _chartKeys.chartCumpl=ck;
   const hoy=todayD();
   const cumpl=ck.map(k=>{ const [y,m]=k.split('-'); const dim=new Date(+y,+m,0).getDate();
     const isCur=(hoy.getFullYear()==+y&&hoy.getMonth()+1==+m); const denom=isCur?hoy.getDate():dim;
     return Math.round(diasMes[k].size/denom*1000)/10; });
   destroyChart('chartCumpl');
   _charts['chartCumpl']=new Chart(document.getElementById('chartCumpl'),{type:'bar',
-    data:{labels:ck.map(monthLabel),datasets:[{label:'% días con respaldo',data:cumpl,backgroundColor:cumpl.map(v=>v>=99?'#0d7a3f':(v>=90?'#c98a1e':'#c23b3b')),borderRadius:6}]},
+    data:{labels:ck.map(monthLabel),datasets:[{label:'% días con respaldo',data:cumpl,backgroundColor:ck.map((k,i)=>(_monthFilter&&k!==_monthFilter)?'#dfe6e1':(cumpl[i]>=99?'#0d7a3f':(cumpl[i]>=90?'#c98a1e':'#c23b3b'))),borderRadius:6}]},
     options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>c.parsed.y+'% de días con respaldo'}}},scales:{y:{beginAtZero:true,max:100,ticks:{callback:v=>v+'%'}}}}});
-  // medios top
-  const med={}; recs.forEach(r=>{ const m=(r.medio||'(sin medio)').trim(); med[m]=(med[m]||0)+1; });
+  attachMonthDbl('chartCumpl');
+  // medios top (refleja el filtro de mes)
+  const med={}; fr.forEach(r=>{ const m=(r.medio||'(sin medio)').trim(); med[m]=(med[m]||0)+1; });
   const top=Object.entries(med).sort((a,b)=>b[1]-a[1]).slice(0,8);
   destroyChart('chartMedio');
   _charts['chartMedio']=new Chart(document.getElementById('chartMedio'),{type:'bar',
     data:{labels:top.map(x=>x[0].length>26?x[0].slice(0,25)+'…':x[0]),datasets:[{label:'Respaldos',data:top.map(x=>x[1]),backgroundColor:GREEN,borderRadius:5}]},
     options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{beginAtZero:true,ticks:{precision:0}}}}});
 }
+function monthLabelLong(k){ const [y,m]=k.split('-'); return new Date(+y,+m-1,1).toLocaleDateString('es-CO',{month:'long',year:'numeric'}); }
+function updateMonthBanner(){
+  let b=document.getElementById('monthBanner');
+  if(_monthFilter){
+    if(!b){ b=document.createElement('div'); b.id='monthBanner'; b.style.cssText='display:flex;align-items:center;gap:12px;justify-content:center;margin:0 0 14px;padding:9px 16px;background:#e6f4ec;border:1px solid #0d7a3f;border-radius:12px;font:600 13px Poppins,sans-serif;color:#0d7a3f;';
+      const k=document.getElementById('kpis'); k.parentNode.insertBefore(b,k); }
+    b.innerHTML='';
+    const sp=document.createElement('span'); sp.textContent='🔎 Filtrando por mes: '+monthLabelLong(_monthFilter);
+    const btn=document.createElement('button'); btn.type='button'; btn.textContent='✕ Quitar filtro'; btn.style.cssText='cursor:pointer;border:none;background:#0d7a3f;color:#fff;padding:5px 12px;border-radius:8px;font:600 12px Poppins,sans-serif;';
+    btn.addEventListener('click',()=>{ _monthFilter=null; renderAll(); });
+    b.appendChild(sp); b.appendChild(btn); b.style.display='flex';
+  } else if(b){ b.style.display='none'; }
+}
 
 /* ================= Tabla ================= */
 function renderTable(){
   const tb=document.getElementById('tbody'); tb.innerHTML='';
   const recs=filtered().slice().sort((a,b)=>String(b.fecha).localeCompare(String(a.fecha)) || (b.id-a.id));
-  document.getElementById('tblCount').textContent=recs.length+' registro'+(recs.length===1?'':'s')+(_period==='all'?'':' en el periodo');
+  document.getElementById('tblCount').textContent=recs.length+' registro'+(recs.length===1?'':'s')+((_period==='all'&&!_monthFilter)?'':' en el periodo');
   recs.forEach(rec=>{
     const idx=data.indexOf(rec);
     const tr=document.createElement('tr');
@@ -342,20 +374,20 @@ function renderTable(){
   });
 }
 
-function renderAll(){ renderKPIs(); renderCharts(); renderTable(); }
+function renderAll(){ renderKPIs(); renderCharts(); renderTable(); updateMonthBanner(); }
 
 /* ================= Acciones ================= */
 function nextId(){ return data.reduce((m,r)=>Math.max(m, (typeof r.id==='number'?r.id:parseInt(r.id,10)||0)),0)+1; }
 function addRecord(){
   const last=data.slice().sort((a,b)=>String(b.fecha).localeCompare(String(a.fecha)))[0];
   const rec={ id:nextId(), fecha:new Date().toISOString().slice(0,10), sistema:last?last.sistema:DEF_SISTEMA, tipo:last?last.tipo:DEF_TIPO, estado:DEF_ESTADO, medio:last?last.medio:'', responsable:last?last.responsable:DEF_RESP };
-  data.push(rec); save(); _period='all'; document.getElementById('period').value='all'; renderAll();
+  data.push(rec); save(); _period='all'; _monthFilter=null; document.getElementById('period').value='all'; renderAll();
   toast('Respaldo agregado — edítalo en la tabla');
   window.scrollTo({top:document.body.scrollHeight,behavior:'smooth'});
 }
 document.getElementById('addBtn').addEventListener('click',addRecord);
 document.getElementById('addBtn2').addEventListener('click',addRecord);
-document.getElementById('period').addEventListener('change',e=>{ _period=e.target.value; renderAll(); });
+document.getElementById('period').addEventListener('change',e=>{ _period=e.target.value; _monthFilter=null; renderAll(); });
 document.getElementById('editToggle').addEventListener('click',e=>{ editMode=!editMode; document.body.classList.toggle('editmode',editMode); e.target.classList.toggle('on',editMode); e.target.textContent='🗑 Eliminar: '+(editMode?'ON':'OFF'); });
 document.getElementById('exportJson').addEventListener('click',()=>{ const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'}); const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='respaldos_backup.json'; a.click(); toast('Backup descargado'); });
 document.getElementById('importBtn').addEventListener('click',()=>document.getElementById('importFile').click());
