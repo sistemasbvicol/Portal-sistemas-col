@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Indicadores de Backup — Área de Sistemas</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;600;700&family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<style>
+  :root{
+    --bg-page:#f3f5f3; --bg-header:#0d3d24; --bg-card:#ffffff;
+    --text-primary:#1c1c1a; --text-secondary:#6b6f6c;
+    --accent:#0d7a3f; --accent-dark:#0d3d24; --radius:16px; --border:#e3e6e2;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--bg-page);color:var(--text-primary);font-family:'Poppins',sans-serif;}
+  .topbar{background:linear-gradient(135deg,var(--bg-header),#145232);color:#fff;padding:22px 20px;}
+  .topwrap{max-width:1240px;margin:0 auto;display:flex;align-items:center;gap:16px;flex-wrap:wrap;}
+  .brand-logo img{height:44px;display:block;}
+  .brand-text .eyebrow{margin:0;font-size:12px;letter-spacing:2px;text-transform:uppercase;color:#7fd9a8;font-weight:600;}
+  .brand-text h1{margin:2px 0 0;font-family:'Oswald',sans-serif;font-size:26px;font-weight:700;}
+  .back-link{margin-left:auto;color:#d9ead9;text-decoration:none;font-size:13px;font-weight:600;border:1px solid rgba(255,255,255,.35);padding:8px 14px;border-radius:10px;}
+  .back-link:hover{background:rgba(255,255,255,.12);}
+  main{max-width:1240px;margin:0 auto;padding:22px 20px 60px;}
+  .desc{color:var(--text-secondary);font-size:14px;margin:0 0 18px;}
+  .kpis{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:18px;}
+  @media(max-width:920px){.kpis{grid-template-columns:repeat(2,1fr);}}
+  @media(max-width:560px){.kpis{grid-template-columns:1fr;}}
+  .kpi{background:var(--bg-card);border:1px solid var(--border);border-radius:14px;padding:16px 18px;position:relative;overflow:hidden;}
+  .kpi .k{font-size:11px;letter-spacing:1px;text-transform:uppercase;color:var(--text-secondary);font-weight:600;}
+  .kpi .v{font-family:'Oswald',sans-serif;font-size:32px;font-weight:700;color:var(--accent-dark);line-height:1.05;margin-top:6px;}
+  .kpi .sub{font-size:12px;color:var(--text-secondary);margin-top:4px;}
+  .kpi.ok .v{color:#0d7a3f;} .kpi.warn .v{color:#b06a00;} .kpi.bad .v{color:#c0392b;}
+  .kpi .pill{position:absolute;top:14px;right:14px;font-size:11px;font-weight:700;padding:3px 9px;border-radius:20px;}
+  .pill.ok{background:#e6f4ec;color:#0d7a3f;} .pill.warn{background:#fff3e0;color:#b06a00;} .pill.bad{background:#fdecef;color:#c0392b;}
+  .toolbar{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin:6px 0 16px;}
+  .btn{cursor:pointer;border:1px solid var(--border);background:#fff;color:var(--text-primary);padding:9px 14px;border-radius:10px;font:600 13px 'Poppins',sans-serif;display:inline-flex;align-items:center;gap:7px;}
+  .btn:hover{background:#f0f4f1;}
+  .btn.primary{background:var(--accent);color:#fff;border-color:var(--accent);}
+  .btn.danger-toggle.on{background:#c0392b;color:#fff;border-color:#c0392b;}
+  input[type=file]{display:none;}
+  .spacer{flex:1;}
+  select.period{border:1px solid var(--border);border-radius:10px;padding:9px 12px;font:600 13px 'Poppins',sans-serif;background:#fff;color:var(--text-primary);cursor:pointer;}
+  .sync-pill{font-size:12px;font-weight:600;padding:6px 12px;border-radius:20px;background:#eef0ee;color:#6b6f6c;}
+  .sync-pill.online{background:#e6f4ec;color:#0d7a3f;} .sync-pill.saving{background:#fff8e6;color:#b06a00;} .sync-pill.offline{background:#fdecef;color:#c0392b;}
+  .charts{display:grid;grid-template-columns:1.4fr 1fr;gap:16px;margin-bottom:18px;}
+  @media(max-width:860px){.charts{grid-template-columns:1fr;}}
+  .card{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);padding:16px 18px;}
+  .card h2{margin:0 0 10px;font-size:15px;font-weight:700;display:flex;align-items:center;gap:8px;}
+  .chart-box{position:relative;height:300px;}
+  .chart-box.sm{height:260px;}
+  .tbl-wrap{overflow-x:auto;background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);}
+  table{border-collapse:collapse;width:100%;font-size:13px;}
+  th,td{padding:8px 10px;text-align:left;border-bottom:1px solid #eef1ee;white-space:nowrap;}
+  thead th{background:#0d3d24;color:#fff;font-weight:600;font-size:12px;position:sticky;top:0;}
+  tbody tr:nth-child(even){background:#fafcfa;}
+  td input{width:100%;min-width:90px;border:1px solid transparent;background:transparent;border-radius:6px;padding:5px 6px;font:inherit;font-size:13px;color:var(--text-primary);}
+  td input:focus{outline:none;border-color:var(--accent);background:#fff;box-shadow:0 0 0 2px rgba(13,122,63,.12);}
+  td.idc{color:var(--text-secondary);font-variant-numeric:tabular-nums;}
+  .estado-b{display:inline-block;font-size:11px;font-weight:700;padding:2px 9px;border-radius:20px;}
+  .est-ok{background:#e6f4ec;color:#0d7a3f;} .est-warn{background:#fff3e0;color:#b06a00;} .est-bad{background:#fdecef;color:#c0392b;}
+  .del-row{cursor:pointer;border:none;background:transparent;color:#c0392b;font-size:15px;border-radius:6px;padding:2px 6px;}
+  .del-row:hover{background:#fdecef;}
+  body:not(.editmode) .actcol{display:none;}
+  .add-row{margin:12px 0;}
+  .tbl-head{display:flex;align-items:center;gap:10px;margin:22px 0 10px;flex-wrap:wrap;}
+  .tbl-head h2{margin:0;font-size:16px;font-weight:700;}
+  .tbl-head .count{font-size:13px;color:var(--text-secondary);}
+  footer{max-width:1240px;margin:0 auto;padding:10px 20px 30px;color:var(--text-secondary);font-size:12px;}
+  .toast{position:fixed;left:50%;bottom:26px;transform:translateX(-50%) translateY(20px);background:#101c14;color:#fff;padding:11px 18px;border-radius:10px;font-size:13px;opacity:0;pointer-events:none;transition:.25s;z-index:60;}
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+  .hint{background:#eaf5ee;border:1px solid #cfe6d8;border-radius:12px;padding:10px 14px;font-size:12.5px;color:#2c4a39;margin-bottom:16px;}
+</style>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<script src="firebase-init.js"></script>
+<script src="auth-gate.js"></script>
+</head>
+<body>
+  <div class="topbar">
+    <div class="topwrap">
+      <a class="brand-logo" href="index.html" title="Volver al portal"><img src="bvi-logo-white.png" alt="Barron Vieyra International"></a>
+      <div class="brand-text">
+        <p class="eyebrow">Área de Sistemas</p>
+        <h1>Indicadores de backup</h1>
+      </div>
+      <a class="back-link" href="index.html">← Volver al portal</a>
+    </div>
+  </div>
+  <main>
+    <p class="desc">Seguimiento de los respaldos (backups) de sistemas y bases de datos. Registra cada respaldo, mide el cumplimiento diario y detecta días sin respaldo. Los cambios se guardan en línea y todos los que abran este enlace ven las actualizaciones.</p>
+    <div class="hint" id="alertBox" hidden></div>
+    <div class="toolbar">
+      <select class="period" id="period">
+        <option value="all">Todo el periodo</option>
+        <option value="30">Últimos 30 días</option>
+        <option value="90">Últimos 90 días</option>
+        <option value="365">Último año</option>
+        <option value="month">Mes actual</option>
+      </select>
+      <button class="btn primary" id="addBtn">＋ Agregar respaldo</button>
+      <button class="btn" id="exportXlsx">⬇ Exportar Excel</button>
+      <button class="btn" id="exportJson">💾 Descargar backup</button>
+      <button class="btn" id="importBtn">⬆ Importar backup</button>
+      <input type="file" id="importFile" accept=".json,application/json">
+      <div class="spacer"></div>
+      <span class="sync-pill offline" id="syncPill">● Iniciando…</span>
+      <button class="btn danger-toggle" id="editToggle">🗑 Eliminar: OFF</button>
+    </div>
+
+    <div class="kpis" id="kpis"></div>
+
+    <div class="charts">
+      <div class="card"><h2>📊 Respaldos por mes</h2><div class="chart-box"><canvas id="chartMes"></canvas></div></div>
+      <div class="card"><h2>✅ Estado de los respaldos</h2><div class="chart-box sm"><canvas id="chartEstado"></canvas></div></div>
+    </div>
+    <div class="charts">
+      <div class="card"><h2>📅 Cumplimiento diario por mes</h2><div class="chart-box"><canvas id="chartCumpl"></canvas></div></div>
+      <div class="card"><h2>💾 Medios de almacenamiento (top)</h2><div class="chart-box sm"><canvas id="chartMedio"></canvas></div></div>
+    </div>
+
+    <div class="tbl-head">
+      <h2>Registro de respaldos</h2>
+      <span class="count" id="tblCount"></span>
+    </div>
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr><th>ID</th><th>Fecha</th><th>Sistema o Base de Datos</th><th>Tipo</th><th>Estado</th><th>Medio de Almacenamiento</th><th>Responsable</th><th class="actcol"></th></tr></thead>
+        <tbody id="tbody"></tbody>
+      </table>
+    </div>
+    <button class="btn add-row" id="addBtn2">＋ Agregar respaldo</button>
+  </main>
+  <footer>Portal interno · Área de Sistemas · Indicadores de backup · TC-FT-08</footer>
+  <div class="toast" id="toast"></div>
+<script>
+const SEED_ROWS = [[1, "2025-10-24", "srvdc01_col_n0e15"], [2, "2025-10-25", "srvdc01_col_n0e15"], [3, "2025-10-26", "srvdc01_col_n0e15"], [4, "2025-10-27", "srvdc01_col_n0e15"], [5, "2025-10-28", "srvdc01_col_n0e15"], [6, "2025-10-29", "srvdc01_col_n0e15"], [7, "2025-10-30", "srvdc01_col_n0e15"], [8, "2025-10-31", "srvdc01_col_n0e15"], [9, "2025-11-01", "srvdc01_col_n0e15"], [10, "2025-11-02", "srvdc01_col_n0e15"], [11, "2025-11-03", "srvdc01_col_n0e15"], [12, "2025-11-04", "srvdc01_col_n0e15"], [13, "2025-11-05", "srvdc01_col_n0e15"], [14, "2025-11-06", "srvdc01_col_n0e16"], [15, "2025-11-07", "srvdc01_col_n0e17"], [16, "2025-11-08", "srvdc01_col_n0e18"], [17, "2025-11-09", "srvdc01_col_n0e19"], [18, "2025-11-10", "srvdc01_col_n0e20"], [19, "2025-11-11", "srvdc01_col_n0e21"], [20, "2025-11-12", "srvdc01_col_n0e22"], [21, "2025-11-13", "srvdc01_col_n0e23"], [22, "2025-11-14", "srvdc01_col_n0e24"], [23, "2025-11-15", "srvdc01_col_n0e25"], [24, "2025-11-16", "srvdc01_col_n0e26"], [25, "2025-11-17", "srvdc01_col_n0e27"], [26, "2025-11-18", "srvdc01_col_n0e28"], [27, "2025-11-19", "srvdc01_col_n0e29"], [28, "2025-11-20", "srvdc01_col_n0e30"], [29, "2025-11-21", "srvdc01_col_n0e31"], [30, "2025-11-22", "srvdc01_col_n0e32"], [31, "2025-11-23", "srvdc01_col_n0e33"], [32, "2025-11-24", "srvdc01_col_n0e34"], [33, "2025-11-25", "srvdc01_col_n0e35"], [34, "2025-11-26", "srvdc01_col_n0e36"], [35, "2025-11-27", "srvdc01_col_n0e37"], [36, "2025-11-28", "srvdc01_col_n0e38"], [37, "2025-11-29", "srvdc01_col_n0e39"], [38, "2025-11-30", "srvdc01_col_n0e40"], [39, "2025-12-01", "srvdc01_col_n0e41"], [40, "2025-12-02", "srvdc01_col_n0e42"], [41, "2025-12-03", "srvdc01_col_n0e43"], [42, "2025-12-04", "srvdc01_col_n0e44"], [43, "2025-12-05", "srvdc01_col_n0e45"], [44, "2025-12-06", "srvdc01_col_n0e46"], [45, "2025-12-07", "srvdc01_col_n0e47"], [46, "2025-12-08", "srvdc01_col_n0e48"], [47, "2025-12-09", "srvdc01_col_n0e49"], [48, "2025-12-10", "srvdc01_col_n0e50"], [49, "2025-12-11", "srvdc01_col_n0e51"], [50, "2025-12-12", "srvdc01_col_n0e52"], [51, "2025-12-13", "srvdc01_col_n0e53"], [52, "2025-12-14", "srvdc01_col_n0e54"], [53, "2025-12-15", "srvdc01_col_n0e55"], [54, "2025-12-16", "srvdc01_col_n0e56"], [55, "2025-12-17", "srvdc01_col_n0e57"], [56, "2025-12-18", "srvdc01_col_n0e58"], [57, "2025-12-19", "srvdc01_col_n0e59"], [58, "2025-12-20", "srvdc01_col_n0e60"], [59, "2025-12-21", "srvdc01_col_n0e61"], [60, "2025-12-22", "srvdc01_col_n0e62"], [61, "2025-12-23", "srvdc01_col_n0e63"], [62, "2025-12-24", "srvdc01_col_n0e64"], [63, "2025-12-25", "srvdc01_col_n0e65"], [64, "2025-12-26", "srvdc01_col_n0e66"], [65, "2025-12-27", "srvdc01_col_n0e67"], [66, "2025-12-28", "srvdc01_col_n0e68"], [67, "2025-12-29", "srvdc01_col_n0e69"], [68, "2025-12-30", "srvdc01_col_n0e70"], [69, "2025-12-31", "srvdc01_col_n0e71"], [70, "2026-01-01", "srvdc01_col_n0e72"], [71, "2026-01-02", "srvdc01_col_n0e73"], [72, "2026-01-03", "srvdc01_col_n0e74"], [73, "2026-01-04", "srvdc01_col_n0e75"], [74, "2026-01-05", "srvdc01_col_n0e76"], [75, "2026-01-06", "srvdc01_col_n0e77"], [76, "2026-01-07", "srvdc01_col_n0e78"], [77, "2026-01-08", "srvdc01_col_n0e79"], [78, "2026-01-09", "srvdc01_col_n0e80"], [79, "2026-01-10", "srvdc01_col_n0e81"], [80, "2026-01-11", "srvdc01_col_n0e82"], [81, "2026-01-12", "srvdc01_col_n0e83"], [82, "2026-01-13", "srvdc01_col_n0e84"], [83, "2026-01-14", "srvdc01_col_n0e85"], [84, "2026-01-15", "srvdc01_col_n0e86"], [85, "2026-01-16", "srvdc01_col_n0e87"], [86, "2026-01-17", "srvdc01_col_n0e88"], [87, "2026-01-18", "srvdc01_col_n0e89"], [88, "2026-01-19", "srvdc01_col_n0e90"], [89, "2026-01-20", "srvdc01_col_n0e91"], [90, "2026-01-21", "srvdc01_col_n0e92"], [91, "2026-01-22", "srvdc01_col_n0e93"], [92, "2026-01-23", "srvdc01_col_n0e94"], [93, "2026-01-24", "srvdc01_col_n0e95"], [94, "2026-01-25", "srvdc01_col_n0e96"], [95, "2026-01-26", "srvdc01_col_n0e97"], [96, "2026-01-27", "srvdc01_col_n0e98"], [97, "2026-01-28", "srvdc01_col_n0e99"], [98, "2026-01-29", "srvdc01_col_n0e100"], [99, "2026-01-30", "srvdc01_col_n0e101"], [100, "2026-01-31", "srvdc01_col_n0e102"], [101, "2026-02-01", "srvdc01_col_n0e103"], [102, "2026-02-02", "srvdc01_col_n0e104"], [103, "2026-02-03", "srvdc01_col_n0e105"], [104, "2026-02-04", "srvdc01_col_n0e106"], [105, "2026-02-05", "srvdc01_col_n0e107"], [106, "2026-02-06", "srvdc01_col_n0e108"], [107, "2026-02-07", "srvdc01_col_n0e109"], [108, "2026-02-08", "srvdc01_col_n0e110"], [109, "2026-02-09", "srvdc01_col_n0e111"], [110, "2026-02-10", "srvdc01_col_n0e112"], [111, "2026-02-11", "srvdc01_col_n0e113"], [112, "2026-02-12", "srvdc01_col_n0e114"], [113, "2026-02-13", "srvdc01_col_n0e115"], [114, "2026-02-14", "srvdc01_col_n0e116"], [115, "2026-02-15", "srvdc01_col_n0e117"], [116, "2026-02-16", "srvdc01_col_n0e118"], [117, "2026-02-17", "srvdc01_col_n0e119"], [118, "2026-02-18", "srvdc01_col_n0e120"], [119, "2026-02-19", "srvdc01_col_n0e121"], [120, "2026-02-20", "srvdc01_col_n0e122"], [121, "2026-02-21", "srvdc01_col_n0e123"], [122, "2026-02-22", "srvdc01_col_n0e124"], [123, "2026-02-23", "srvdc01_col_n0e125"], [124, "2026-02-24", "srvdc01_col_n0e126"], [125, "2026-02-25", "srvdc01_col_n0e127"], [126, "2026-02-26", "srvdc01_col_n0e128"], [127, "2026-02-27", "srvdc01_col_n0e129"], [128, "2026-02-28", "srvdc01_col_n0e130"], [129, "2026-03-01", "srvdc01_col_n0e131"], [130, "2026-03-02", "srvdc01_col_n0e132"], [131, "2026-03-03", "srvdc01_col_n0e133"], [132, "2026-03-04", "srvdc01_col_n0e134"], [133, "2026-03-05", "srvdc01_col_n0e135"], [134, "2026-03-06", "srvdc01_col_n0e136"], [135, "2026-03-07", "srvdc01_col_n0e137"], [136, "2026-03-08", "srvdc01_col_n0e138"], [137, "2026-03-09", "srvdc01_col_n0e139"], [138, "2026-03-10", "srvdc01_col_n0e140"], [139, "2026-03-11", "srvdc01_col_n0e141"], [140, "2026-03-12", "srvdc01_col_n0e142"], [141, "2026-03-13", "srvdc01_col_n0e143"], [142, "2026-03-14", "srvdc01_col_n0e144"], [143, "2026-03-15", "srvdc01_col_n0e145"], [144, "2026-03-16", "srvdc01_col_n0e146"], [145, "2026-03-17", "srvdc01_col_n0e147"], [146, "2026-03-18", "srvdc01_col_n0e148"], [147, "2026-03-19", "srvdc01_col_n0e149"], [148, "2026-03-20", "srvdc01_col_n0e150"], [149, "2026-03-21", "srvdc01_col_n0e151"], [150, "2026-03-22", "srvdc01_col_n0e152"], [151, "2026-03-23", "srvdc01_col_n0e153"], [152, "2026-03-24", "srvdc01_col_n0e154"], [153, "2026-03-25", "srvdc01_col_n0e155"], [154, "2026-03-26", "srvdc01_col_n0e156"], [155, "2026-03-27", "srvdc01_col_n0e157"], [156, "2026-03-28", "srvdc01_col_n0e158"], [157, "2026-03-29", "srvdc01_col_n0e159"], [158, "2026-03-30", "srvdc01_col_n0e160"], [159, "2026-03-31", "srvdc01_col_n0e161"], [160, "2026-04-01", "srvdc01_col_n0e162"], [161, "2026-04-02", "srvdc01_col_n0e163"], [162, "2026-04-03", "srvdc01_col_n0e164"], [163, "2026-04-04", "srvdc01_col_n0e165"], [164, "2026-04-05", "srvdc01_col_n0e166"], [165, "2026-04-06", "srvdc01_col_n0e167"], [166, "2026-04-07", "srvdc01_col_n0e168"], [167, "2026-04-08", "srvdc01_col_n0e169"], [168, "2026-04-09", "srvdc01_col_n0e170"], [169, "2026-04-10", "srvdc01_col_n0e171"], [170, "2026-04-11", "srvdc01_col_n0e172"], [171, "2026-04-12", "srvdc01_col_n0e173"], [172, "2026-04-13", "srvdc01_col_n0e174"], [173, "2026-04-14", "srvdc01_col_n0e175"], [174, "2026-04-15", "srvdc01_col_n0e176"], [175, "2026-04-16", "srvdc01_col_n0e177"], [176, "2026-04-17", "srvdc01_col_n0e178"], [177, "2026-04-18", "srvdc01_col_n0e179"], [178, "2026-04-19", "srvdc01_col_n0e180"], [179, "2026-04-20", "srvdc01_col_n0e181"], [180, "2026-04-21", "srvdc01_col_n0e182"], [181, "2026-04-22", "srvdc01_col_n0e183"], [182, "2026-04-23", "srvdc01_col_n0e184"], [183, "2026-04-24", "srvdc01_col_n0e185"], [184, "2026-04-25", "srvdc01_col_n0e186"], [185, "2026-04-26", "srvdc01_col_n0e187"], [186, "2026-04-27", "srvdc01_col_n0e188"], [187, "2026-04-28", "srvdc01_col_n0e189"], [188, "2026-04-29", "srvdc01_col_n0e190"], [189, "2026-04-30", "srvdc01_col_n0e191"], [190, "2026-05-01", "srvdc01_col_n0e192"], [191, "2026-05-02", "srvdc01_col_n0e193"], [192, "2026-05-03", "srvdc01_col_n0e194"], [193, "2026-05-04", "srvdc01_col_n0e195"], [194, "2026-05-05", "srvdc01_col_n0e196"], [195, "2026-05-06", "srvdc01_col_n0e197"], [196, "2026-05-07", "srvdc01_col_n0e198"], [197, "2026-05-08", "srvdc01_col_n0e199"], [198, "2026-05-09", "srvdc01_col_n0e200"], [199, "2026-05-10", "srvdc01_col_n0e201"], [200, "2026-05-11", "srvdc01_col_n0e202"], [201, "2026-05-12", "srvdc01_col_n0e203"], [202, "2026-05-13", "srvdc01_col_n0e204"], [203, "2026-05-14", "srvdc01_col_n0e205"], [204, "2026-05-15", "srvdc01_col_n0e206"], [205, "2026-05-16", "srvdc01_col_n0e207"], [206, "2026-05-17", "srvdc01_col_n0e208"], [207, "2026-05-18", "srvdc01_col_n0e209"], [208, "2026-05-19", "srvdc01_col_n0e210"], [209, "2026-05-20", "srvdc01_col_n0e211"], [210, "2026-05-21", "srvdc01_col_n0e212"], [211, "2026-05-22", "srvdc01_col_n0e213"], [212, "2026-05-23", "srvdc01_col_n0e214"], [213, "2026-05-24", "srvdc01_col_n0e215"], [214, "2026-05-25", "srvdc01_col_n0e216"], [215, "2026-05-26", "srvdc01_col_n0e217"], [216, "2026-05-27", "srvdc01_col_n0e218"], [217, "2026-05-28", "srvdc01_col_n0e219"], [218, "2026-05-29", "srvdc01_col_n0e220"], [219, "2026-05-30", "srvdc01_col_n0e221"], [220, "2026-05-31", "srvdc01_col_n0e222"], [221, "2026-06-01", "srvdc01_col_n0e223"], [222, "2026-06-02", "srvdc01_col_n0e224"], [223, "2026-06-03", "srvdc01_col_n0e225"], [224, "2026-06-04", "srvdc01_col_n0e226"], [225, "2026-06-05", "srvdc01_col_n0e227"], [226, "2026-06-06", "srvdc01_col_n0e228"], [227, "2026-06-07", "srvdc01_col_n0e229"], [228, "2026-06-08", "srvdc01_col_n0e230"], [229, "2026-06-09", "srvdc01_col_n0e231"], [230, "2026-06-10", "srvdc01_col_n0e232"], [231, "2026-06-11", "srvdc01_col_n0e233"], [232, "2026-06-12", "srvdc01_col_n0e234"], [233, "2026-06-13", "srvdc01_col_n0e235"], [234, "2026-06-14", "srvdc01_col_n0e236"], [235, "2026-06-15", "srvdc01_col_n0e237"], [236, "2026-06-16", "srvdc01_col_n0e238"], [237, "2026-06-17", "srvdc01_col_n0e239"], [238, "2026-06-18", "srvdc01_col_n0e240"], [239, "2026-06-19", "srvdc01_col_n0e241"], [240, "2026-06-20", "srvdc01_col_n0e242"], [241, "2026-06-21", "srvdc01_col_n0e243"], [242, "2026-06-22", "srvdc01_col_n0e244"], [243, "2026-06-23", "srvdc01_col_n0e245"], [244, "2026-06-24", "srvdc01_col_n0e246"], [245, "2026-06-25", "srvdc01_col_n0e247"], [246, "2026-06-26", "srvdc01_col_n0e248"], [247, "2026-06-27", "srvdc01_col_n0e249"], [248, "2026-06-28", "srvdc01_col_n0e250"], [249, "2026-06-29", "srvdc01_col_n0e251"], [250, "2026-06-30", "srvdc01_col_n0e252"], [251, "2026-07-01", "srvdc01_col_n0e253"], [252, "2026-07-02", "srvdc01_col_n0e254"], [253, "2026-07-03", "srvdc01_col_n0e255"], [254, "2026-07-04", "srvdc01_col_n0e256"], [255, "2026-07-05", "srvdc01_col_n0e257"], [256, "2026-07-06", "srvdc01_col_n0e258"], [257, "2026-07-07", "srvdc01_col_n0e259"], [258, "2026-07-08", "srvdc01_col_n0e260"], [259, "2026-07-09", "srvdc01_col_n0e261"], [260, "2026-07-10", "srvdc01_col_n0e262 y D:\\"], [261, "2026-07-11", "srvdc01_col_n0e262 y D:\\"], [262, "2026-07-12", "srvdc01_col_n0e262 y D:\\"], [263, "2026-07-13", "srvdc01_col_n0e262 y D:\\"], [264, "2026-07-14", "srvdc01_col_n0e262 y D:\\"]];
+const DEF_SISTEMA="Usuario, Carpeta compartida y Siigo", DEF_TIPO="Backup", DEF_ESTADO="Terminado", DEF_RESP="Martinez Colon Jose Antonio";
+</script>
+<script>
+/* ================= Modelo de datos ================= */
+const FKEY='respaldos_backup_indicadores_v1';
+const LKEY='bvicol_respaldos_backup_v1';
+let data=[], editMode=false, cloudReady=false, saveTimer=null, _period='all';
+let _charts={};
+
+function seedData(){
+  return SEED_ROWS.map(r=>({id:r[0], fecha:r[1], sistema:DEF_SISTEMA, tipo:DEF_TIPO, estado:DEF_ESTADO, medio:r[2], responsable:DEF_RESP}));
+}
+function normalizeRecs(arr){
+  if(!Array.isArray(arr)) return [];
+  return arr.map((r,i)=>({
+    id: (r && r.id!=null)?r.id:(i+1),
+    fecha: (r&&r.fecha)?String(r.fecha).slice(0,10):'',
+    sistema: (r&&r.sistema!=null)?String(r.sistema):DEF_SISTEMA,
+    tipo: (r&&r.tipo!=null)?String(r.tipo):DEF_TIPO,
+    estado: (r&&r.estado!=null)?String(r.estado):DEF_ESTADO,
+    medio: (r&&r.medio!=null)?String(r.medio):'',
+    responsable: (r&&r.responsable!=null)?String(r.responsable):DEF_RESP
+  }));
+}
+function load(){
+  try{const s=localStorage.getItem(LKEY); if(s){const a=JSON.parse(s); if(Array.isArray(a)) return normalizeRecs(a);}}catch(e){}
+  return seedData();
+}
+function localSave(){ try{ localStorage.setItem(LKEY, JSON.stringify(data)); }catch(e){} }
+function setSync(state,msg){ const p=document.getElementById('syncPill'); if(!p)return; p.className='sync-pill '+state; p.textContent=msg; }
+function cloudSave(){
+  if(!cloudReady||!window.storage) return;
+  setSync('saving','● Guardando…');
+  clearTimeout(saveTimer);
+  saveTimer=setTimeout(()=>{
+    window.storage.set(FKEY,{json:JSON.stringify(data)})
+      .then(()=>setSync('online','● En línea'))
+      .catch(()=>setSync('offline','● Error al guardar'));
+  },500);
+}
+function save(){ localSave(); cloudSave(); }
+function readCloud(raw){
+  let v=(raw&&typeof raw==='object'&&'value' in raw)?raw.value:raw;
+  if(v&&typeof v==='object'&&typeof v.json==='string'){ try{ return JSON.parse(v.json); }catch(e){ return null; } }
+  return Array.isArray(v)?v:null;
+}
+function isEditingNow(){ const a=document.activeElement; return a&&a.tagName==='INPUT'&&a.closest('#tbody'); }
+let pendingRemote=null;
+function applyRemote(val){
+  const arr=normalizeRecs(val);
+  if(JSON.stringify(arr)===JSON.stringify(data)) return;
+  data=arr; localSave(); renderAll();
+  setSync('online','● Actualizado por otro usuario'); setTimeout(()=>setSync('online','● En línea'),1800);
+}
+function onRemote(raw){ const val=readCloud(raw); if(val==null)return; if(isEditingNow()){ pendingRemote=val; return; } applyRemote(val); }
+document.addEventListener('focusout',()=>{ setTimeout(()=>{ if(pendingRemote&&!isEditingNow()){ const v=pendingRemote; pendingRemote=null; applyRemote(v); } },200); });
+function initCloud(){
+  if(cloudReady) return;
+  if(!window.storage){ setSync('offline','● Local (sin conexión)'); return; }
+  cloudReady=true; setSync('saving','● Conectando…');
+  window.storage.get(FKEY).then(raw=>{
+    const val=readCloud(raw);
+    if(Array.isArray(val)&&val.length){ data=normalizeRecs(val); localSave(); renderAll(); setSync('online','● En línea'); }
+    else { window.storage.set(FKEY,{json:JSON.stringify(data)}).then(()=>setSync('online','● En línea')).catch(()=>setSync('offline','● Local')); }
+    try{ window.storage.watch(FKEY,onRemote); }catch(e){}
+  }).catch(()=>setSync('offline','● Local'));
+}
+
+/* ================= Utilidades ================= */
+function toast(m){ const el=document.getElementById('toast'); el.textContent=m; el.classList.add('show'); clearTimeout(el._t); el._t=setTimeout(()=>el.classList.remove('show'),2200); }
+function esc(s){ return String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
+function parseFecha(s){ const d=new Date(String(s||'')+'T00:00:00'); return isNaN(d)?null:d; }
+function todayD(){ const d=new Date(); d.setHours(0,0,0,0); return d; }
+function fmtFechaLarga(s){ const d=parseFecha(s); if(!d)return String(s||'—'); try{ return d.toLocaleDateString('es-CO',{year:'numeric',month:'long',day:'numeric'}); }catch(e){ return s; } }
+function daysBetween(a,b){ return Math.round((b-a)/86400000); }
+function estadoClass(e){ const n=String(e||'').toLowerCase(); if(/termin|complet|ok|exito/.test(n))return 'est-ok'; if(/pend|proceso|parcial/.test(n))return 'est-warn'; if(/fall|error|no|cancel/.test(n))return 'est-bad'; return 'est-ok'; }
+function esExito(e){ return /termin|complet|ok|exito/.test(String(e||'').toLowerCase()); }
+
+function periodStart(){
+  if(_period==='all') return null;
+  const t=todayD();
+  if(_period==='month'){ return new Date(t.getFullYear(), t.getMonth(), 1); }
+  const n=parseInt(_period,10); if(!n) return null;
+  const d=new Date(t); d.setDate(d.getDate()-n+1); return d;
+}
+function filtered(){
+  const ps=periodStart();
+  if(!ps) return data.slice();
+  return data.filter(r=>{ const d=parseFecha(r.fecha); return d && d>=ps; });
+}
+
+/* ================= KPIs ================= */
+function renderKPIs(){
+  const recs=filtered();
+  const cont=document.getElementById('kpis'); cont.innerHTML='';
+  const total=recs.length;
+  const exito=recs.filter(r=>esExito(r.estado)).length;
+  const pct= total? Math.round(exito/total*1000)/10 : 0;
+  const fechas=recs.map(r=>parseFecha(r.fecha)).filter(Boolean).sort((a,b)=>a-b);
+  const ultima=fechas.length?fechas[fechas.length-1]:null;
+  const primera=fechas.length?fechas[0]:null;
+  const diasDesde= ultima? daysBetween(ultima, todayD()) : null;
+  // cobertura: dias distintos con respaldo / dias del rango
+  const setDias=new Set(recs.map(r=>r.fecha).filter(Boolean));
+  const rango= (primera&&ultima)? daysBetween(primera,ultima)+1 : 0;
+  const cobertura= rango? Math.round(setDias.size/rango*1000)/10 : 0;
+  const huecos= rango? Math.max(0, rango-setDias.size) : 0;
+  // racha: dias consecutivos terminando en la ultima fecha
+  let racha=0;
+  if(ultima){ let d=new Date(ultima); while(setDias.has(d.toISOString().slice(0,10))){ racha++; d.setDate(d.getDate()-1); } }
+  const alertOld = diasDesde!=null && diasDesde>2;
+
+  function kpi(cls,label,val,sub,pill){
+    return `<div class="kpi ${cls||''}">${pill?`<span class="pill ${pill.c}">${pill.t}</span>`:''}<div class="k">${label}</div><div class="v">${val}</div>${sub?`<div class="sub">${sub}</div>`:''}</div>`;
+  }
+  cont.innerHTML =
+    kpi('', 'Respaldos registrados', total, _period==='all'?'Total histórico':'En el periodo') +
+    kpi(pct>=99?'ok':(pct>=90?'warn':'bad'), 'Tasa de éxito', pct+'%', exito+' de '+total+' terminados', {c:(pct>=99?'ok':(pct>=90?'warn':'bad')), t:(pct>=99?'Óptimo':(pct>=90?'Revisar':'Bajo'))}) +
+    kpi(alertOld?'bad':'ok', 'Último respaldo', ultima?ultima.toLocaleDateString('es-CO',{day:'2-digit',month:'short',year:'numeric'}):'—', ultima?('hace '+diasDesde+' día'+(diasDesde===1?'':'s')):'sin registros', ultima?{c:(alertOld?'bad':'ok'),t:(alertOld?'Atrasado':'Al día')}:null) +
+    kpi(cobertura>=99?'ok':(cobertura>=90?'warn':'bad'), 'Cobertura del periodo', cobertura+'%', setDias.size+' de '+rango+' días con respaldo') +
+    kpi(racha>=7?'ok':(racha>0?'warn':'bad'), 'Racha actual', racha+(racha===1?' día':' días'), 'consecutivos con respaldo') +
+    kpi(huecos===0?'ok':(huecos<=3?'warn':'bad'), 'Días sin respaldo', huecos, huecos===0?'sin huecos en el rango':'días faltantes en el rango');
+
+  // alerta superior
+  const box=document.getElementById('alertBox');
+  if(alertOld){ box.hidden=false; box.style.cssText='background:#fdecef;border:1px solid #f2b8c1;color:#a02335;'; box.innerHTML='⚠️ <b>Atención:</b> el último respaldo fue hace '+diasDesde+' días ('+fmtFechaLarga(ultima.toISOString().slice(0,10))+'). Verifica que los respaldos diarios se estén ejecutando.'; }
+  else if(huecos>0){ box.hidden=false; box.style.cssText='background:#fff7e6;border:1px solid #f0d9a6;color:#7a5a12;'; box.innerHTML='📌 Hay <b>'+huecos+' día(s)</b> sin respaldo dentro del rango analizado. Revisa la continuidad diaria.'; }
+  else { box.hidden=true; }
+}
+
+/* ================= Gráficos ================= */
+const GREEN='#0d7a3f', GREENS=['#0d7a3f','#1f9d57','#145232','#3fae74','#0a6234','#66c28e','#8ed3ab','#c98a1e','#c23b3b','#12324b'];
+function monthKey(d){ return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0'); }
+function monthLabel(k){ const [y,m]=k.split('-'); return new Date(+y,+m-1,1).toLocaleDateString('es-CO',{month:'short',year:'2-digit'}); }
+function destroyChart(id){ if(_charts[id]){ _charts[id].destroy(); delete _charts[id]; } }
+function renderCharts(){
+  if(typeof Chart==='undefined') return;
+  const recs=filtered();
+  // por mes
+  const porMes={};
+  recs.forEach(r=>{ const d=parseFecha(r.fecha); if(!d)return; const k=monthKey(d); porMes[k]=(porMes[k]||0)+1; });
+  const mk=Object.keys(porMes).sort();
+  destroyChart('chartMes');
+  _charts['chartMes']=new Chart(document.getElementById('chartMes'),{type:'bar',
+    data:{labels:mk.map(monthLabel),datasets:[{label:'Respaldos',data:mk.map(k=>porMes[k]),backgroundColor:GREEN,borderRadius:6}]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{beginAtZero:true,ticks:{precision:0}}}}});
+  // estado
+  const est={}; recs.forEach(r=>{ const e=r.estado||'(sin estado)'; est[e]=(est[e]||0)+1; });
+  const ek=Object.keys(est);
+  destroyChart('chartEstado');
+  _charts['chartEstado']=new Chart(document.getElementById('chartEstado'),{type:'doughnut',
+    data:{labels:ek,datasets:[{data:ek.map(k=>est[k]),backgroundColor:ek.map(k=>esExito(k)?'#0d7a3f':(/pend|proceso/.test(k.toLowerCase())?'#c98a1e':'#c23b3b')),borderColor:'#fff',borderWidth:2}]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom',labels:{font:{family:'Poppins',size:12}}}}}});
+  // cumplimiento diario por mes (% dias del mes con respaldo)
+  const diasMes={}; recs.forEach(r=>{ const d=parseFecha(r.fecha); if(!d)return; const k=monthKey(d); (diasMes[k]=diasMes[k]||new Set()).add(r.fecha); });
+  const ck=Object.keys(diasMes).sort();
+  const hoy=todayD();
+  const cumpl=ck.map(k=>{ const [y,m]=k.split('-'); const dim=new Date(+y,+m,0).getDate();
+    const isCur=(hoy.getFullYear()==+y&&hoy.getMonth()+1==+m); const denom=isCur?hoy.getDate():dim;
+    return Math.round(diasMes[k].size/denom*1000)/10; });
+  destroyChart('chartCumpl');
+  _charts['chartCumpl']=new Chart(document.getElementById('chartCumpl'),{type:'bar',
+    data:{labels:ck.map(monthLabel),datasets:[{label:'% días con respaldo',data:cumpl,backgroundColor:cumpl.map(v=>v>=99?'#0d7a3f':(v>=90?'#c98a1e':'#c23b3b')),borderRadius:6}]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>c.parsed.y+'% de días con respaldo'}}},scales:{y:{beginAtZero:true,max:100,ticks:{callback:v=>v+'%'}}}}});
+  // medios top
+  const med={}; recs.forEach(r=>{ const m=(r.medio||'(sin medio)').trim(); med[m]=(med[m]||0)+1; });
+  const top=Object.entries(med).sort((a,b)=>b[1]-a[1]).slice(0,8);
+  destroyChart('chartMedio');
+  _charts['chartMedio']=new Chart(document.getElementById('chartMedio'),{type:'bar',
+    data:{labels:top.map(x=>x[0].length>26?x[0].slice(0,25)+'…':x[0]),datasets:[{label:'Respaldos',data:top.map(x=>x[1]),backgroundColor:GREEN,borderRadius:5}]},
+    options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{beginAtZero:true,ticks:{precision:0}}}}});
+}
+
+/* ================= Tabla ================= */
+function renderTable(){
+  const tb=document.getElementById('tbody'); tb.innerHTML='';
+  const recs=filtered().slice().sort((a,b)=>String(b.fecha).localeCompare(String(a.fecha)) || (b.id-a.id));
+  document.getElementById('tblCount').textContent=recs.length+' registro'+(recs.length===1?'':'s')+(_period==='all'?'':' en el periodo');
+  recs.forEach(rec=>{
+    const idx=data.indexOf(rec);
+    const tr=document.createElement('tr');
+    const cell=(key,extra)=>{ const td=document.createElement('td'); const inp=document.createElement('input'); inp.value=rec[key]==null?'':rec[key]; if(extra)inp.type=extra; inp.addEventListener('input',()=>{ rec[key]=inp.value; save(); }); inp.addEventListener('change',()=>{ renderKPIs(); renderCharts(); }); td.appendChild(inp); return td; };
+    const tdId=document.createElement('td'); tdId.className='idc'; tdId.textContent=rec.id; tr.appendChild(tdId);
+    tr.appendChild(cell('fecha','date'));
+    tr.appendChild(cell('sistema'));
+    tr.appendChild(cell('tipo'));
+    // estado con badge + editable
+    const tdE=document.createElement('td'); const wrapE=document.createElement('div'); wrapE.style.display='flex'; wrapE.style.alignItems='center'; wrapE.style.gap='6px';
+    const bE=document.createElement('span'); bE.className='estado-b '+estadoClass(rec.estado); bE.textContent=rec.estado||'—';
+    const inpE=document.createElement('input'); inpE.value=rec.estado||''; inpE.style.maxWidth='120px';
+    inpE.addEventListener('input',()=>{ rec.estado=inpE.value; bE.className='estado-b '+estadoClass(rec.estado); bE.textContent=rec.estado||'—'; save(); });
+    inpE.addEventListener('change',()=>{ renderKPIs(); renderCharts(); });
+    wrapE.appendChild(bE); wrapE.appendChild(inpE); tdE.appendChild(wrapE); tr.appendChild(tdE);
+    tr.appendChild(cell('medio'));
+    tr.appendChild(cell('responsable'));
+    const tdA=document.createElement('td'); tdA.className='actcol';
+    const del=document.createElement('button'); del.className='del-row'; del.textContent='🗑'; del.title='Eliminar registro';
+    del.addEventListener('click',()=>{ if(confirm('¿Eliminar el respaldo del '+(rec.fecha||'')+'?')){ data.splice(idx,1); save(); renderAll(); toast('Registro eliminado'); } });
+    tdA.appendChild(del); tr.appendChild(tdA);
+    tb.appendChild(tr);
+  });
+}
+
+function renderAll(){ renderKPIs(); renderCharts(); renderTable(); }
+
+/* ================= Acciones ================= */
+function nextId(){ return data.reduce((m,r)=>Math.max(m, (typeof r.id==='number'?r.id:parseInt(r.id,10)||0)),0)+1; }
+function addRecord(){
+  const last=data.slice().sort((a,b)=>String(b.fecha).localeCompare(String(a.fecha)))[0];
+  const rec={ id:nextId(), fecha:new Date().toISOString().slice(0,10), sistema:last?last.sistema:DEF_SISTEMA, tipo:last?last.tipo:DEF_TIPO, estado:DEF_ESTADO, medio:last?last.medio:'', responsable:last?last.responsable:DEF_RESP };
+  data.push(rec); save(); _period='all'; document.getElementById('period').value='all'; renderAll();
+  toast('Respaldo agregado — edítalo en la tabla');
+  window.scrollTo({top:document.body.scrollHeight,behavior:'smooth'});
+}
+document.getElementById('addBtn').addEventListener('click',addRecord);
+document.getElementById('addBtn2').addEventListener('click',addRecord);
+document.getElementById('period').addEventListener('change',e=>{ _period=e.target.value; renderAll(); });
+document.getElementById('editToggle').addEventListener('click',e=>{ editMode=!editMode; document.body.classList.toggle('editmode',editMode); e.target.classList.toggle('on',editMode); e.target.textContent='🗑 Eliminar: '+(editMode?'ON':'OFF'); });
+document.getElementById('exportJson').addEventListener('click',()=>{ const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'}); const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='respaldos_backup.json'; a.click(); toast('Backup descargado'); });
+document.getElementById('importBtn').addEventListener('click',()=>document.getElementById('importFile').click());
+document.getElementById('importFile').addEventListener('change',e=>{ const f=e.target.files[0]; if(!f)return; const rd=new FileReader(); rd.onload=()=>{ try{ const d=JSON.parse(rd.result); if(Array.isArray(d)){ data=normalizeRecs(d); save(); renderAll(); toast('Backup importado'); } else alert('Archivo no válido.'); }catch(err){ alert('No se pudo leer el archivo.'); } }; rd.readAsText(f); e.target.value=''; });
+document.getElementById('exportXlsx').addEventListener('click',()=>{
+  const aoa=[['ID','Fecha','Sistema o Base de Datos','Tipo de Respaldo','Estado','Medio de Almacenamiento','Responsable']];
+  data.slice().sort((a,b)=>String(a.fecha).localeCompare(String(b.fecha))).forEach(r=>aoa.push([r.id,r.fecha,r.sistema,r.tipo,r.estado,r.medio,r.responsable]));
+  if(typeof XLSX==='undefined'){
+    const esc2=v=>{v=(v==null?'':String(v));return /[",;\n]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v;};
+    const csv='﻿'+aoa.map(r=>r.map(esc2).join(';')).join('\n');
+    const a=document.createElement('a'); a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8;'})); a.download='respaldos_backup.csv'; a.click(); toast('Exportado a CSV'); return;
+  }
+  const wb=XLSX.utils.book_new(); const ws=XLSX.utils.aoa_to_sheet(aoa);
+  XLSX.utils.book_append_sheet(wb,ws,'Respaldos'); XLSX.writeFile(wb,'Indicadores_backup.xlsx'); toast('Excel exportado');
+});
+
+/* ================= Arranque ================= */
+data=load(); renderAll();
+if(window.storage){ initCloud(); }
+else { window.addEventListener('storage-ready',initCloud,{once:true}); setTimeout(initCloud,5000); }
+</script>
+</body>
+</html>
