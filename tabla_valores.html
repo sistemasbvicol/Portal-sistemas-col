@@ -206,7 +206,7 @@
     <div class="summary">
       <div class="summary-top">
         <div>
-          <div class="lbl">Gran total del inventario</div>
+          <div class="lbl" id="grandTotalLbl">Gran total del inventario</div>
           <div class="grand" id="grandTotal">$0</div>
           <div class="lbl" style="margin-top:4px;">≈ <b id="grandTotalUsd">$0.00</b> USD</div>
         </div>
@@ -624,8 +624,7 @@ function updateTotals(){
     chip.addEventListener('click',()=>{ _catFilter=(_catFilter===t.title)?null:t.title; if(_catFilter){_rowFilter=null;_updateBars();} applyCatFilter(); applyRowFilter(); updateTotals(); if(_catFilter){const b=document.getElementById('catFilterBanner');if(b)b.scrollIntoView({behavior:'smooth',block:'center'});} });
     chips.appendChild(chip);
   });
-  document.getElementById('grandTotal').textContent=fmt.format(grand);
-  const gu=document.getElementById('grandTotalUsd');if(gu)gu.textContent=fmtUsd.format(copToUsd(grand));
+  refreshGrandTotal();
   const dc=document.getElementById('deviceCount');if(dc)dc.textContent=data.reduce((a,t)=>a+activeCount(t),0);
   {const _tc=document.getElementById('tableCount');if(_tc)_tc.textContent=data.length;}
   renderAnalysis();
@@ -669,11 +668,43 @@ function _rowField(t,ri,kind){
   var f=(Array.isArray(t.fechas)&&t.fechas[ri])?String(t.fechas[ri]):'';
   return kind==='year'?f.slice(0,4):f.slice(0,7);
 }
-function _rowFilterText(count){
+function _rowFilterText(count, sumCop){
+  var money=(typeof sumCop==='number')?(' · '+fmt.format(sumCop)):'';
   if(!_rowFilter) return '';
-  if(_rowFilter.kind==='month') return '🗓 Compras de '+mesLabel(_rowFilter.value)+' — '+count+' equipo(s)';
-  if(_rowFilter.kind==='year') return '📅 Compras de '+_rowFilter.value+' — '+count+' equipo(s)';
-  return '👤 '+_rowFilter.value+' — '+count+' equipo(s)';
+  if(_rowFilter.kind==='month') return '🗓 Compras de '+mesLabel(_rowFilter.value)+' — '+count+' equipo(s)'+money;
+  if(_rowFilter.kind==='year') return '📅 Compras de '+_rowFilter.value+' — '+count+' equipo(s)'+money;
+  return '👤 '+_rowFilter.value+' — '+count+' equipo(s)'+money;
+}
+// Suma del valor (COP) de las filas que cumplen el filtro activo (excluye equipos de baja).
+function rowFilterAgg(){
+  var count=0, sum=0;
+  if(!_rowFilter) return {count:count, sum:sum};
+  data.forEach(function(t){
+    if(!Array.isArray(t.rows)) return;
+    t.rows.forEach(function(r,ri){
+      if(_rowField(t,ri,_rowFilter.kind)===_rowFilter.value){ count++; if(!isBaja(t,ri)) sum+=parseNum(r[t.valueCol]); }
+    });
+  });
+  return {count:count, sum:sum};
+}
+function _rowFilterLabelShort(){
+  if(!_rowFilter) return 'Gran total del inventario';
+  if(_rowFilter.kind==='month') return 'Gasto en '+mesLabel(_rowFilter.value);
+  if(_rowFilter.kind==='year') return 'Gasto en '+_rowFilter.value;
+  return 'Valor asignado a '+_rowFilter.value;
+}
+// Muestra en el KPI "Gran total" la suma del filtro activo, o el total completo si no hay filtro.
+function refreshGrandTotal(filteredSum){
+  var lbl=document.getElementById('grandTotalLbl'); var g;
+  if(_rowFilter){
+    g=(typeof filteredSum==='number')?filteredSum:rowFilterAgg().sum;
+    if(lbl) lbl.textContent=_rowFilterLabelShort();
+  } else {
+    g=data.reduce(function(a,t){return a+subtotal(t);},0);
+    if(lbl) lbl.textContent='Gran total del inventario';
+  }
+  var gt=document.getElementById('grandTotal'); if(gt) gt.textContent=fmt.format(g);
+  var gu=document.getElementById('grandTotalUsd'); if(gu) gu.textContent=fmtUsd.format(copToUsd(g));
 }
 function applyRowFilter(){
   var cont=document.getElementById('tables'); if(!cont) return;
@@ -686,28 +717,30 @@ function applyRowFilter(){
       if(anchor&&anchor.parentNode){ anchor.parentNode.insertBefore(banner, anchor.nextSibling); } else { cont.parentNode.insertBefore(banner, cont); }
     }
     banner.innerHTML='';
-    var count=0;
+    var count=0, sumCop=0;
     Array.prototype.forEach.call(cont.children,function(card,ti){
       var t=data[ti]; if(!t){ card.style.display='none'; return; }
       var tbody=card.querySelector('tbody'); var shown=0;
       if(tbody){ Array.prototype.forEach.call(tbody.rows,function(tr,ri){
         var match=(_rowField(t,ri,_rowFilter.kind)===_rowFilter.value);
-        tr.style.display=match?'':'none'; if(match)shown++;
+        tr.style.display=match?'':'none'; if(match){ shown++; if(!isBaja(t,ri)&&t.rows[ri]) sumCop+=parseNum(t.rows[ri][t.valueCol]); }
       }); }
       card.style.display=shown?'':'none';
       count+=shown;
     });
-    var span=document.createElement('span'); span.textContent=_rowFilterText(count);
+    var span=document.createElement('span'); span.textContent=_rowFilterText(count, sumCop);
     var btn=document.createElement('button'); btn.type='button'; btn.textContent='✕ Quitar filtro';
     btn.style.cssText='cursor:pointer;border:none;background:#b06a00;color:#fff;padding:5px 12px;border-radius:8px;font:600 12px Poppins,sans-serif;';
     btn.addEventListener('click',function(){ _rowFilter=null; applyRowFilter(); _updateBars(); });
     banner.appendChild(span); banner.appendChild(btn); banner.style.display='flex';
+    refreshGrandTotal(sumCop);
   } else {
     if(banner) banner.style.display='none';
     Array.prototype.forEach.call(cont.children,function(card,ti){
       var tbody=card.querySelector('tbody'); if(tbody){ Array.prototype.forEach.call(tbody.rows,function(tr){ tr.style.display=''; }); }
       if(!_catFilter){ card.style.display=''; } // si hay filtro por categoría, applyCatFilter maneja las tarjetas
     });
+    refreshGrandTotal();
   }
 }
 function _escH(s){return String(s==null?'':s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];});}
