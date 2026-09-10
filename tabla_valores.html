@@ -534,6 +534,7 @@ function render(){
   });
   {const _tc=document.getElementById('tableCount');if(_tc)_tc.textContent=data.length;}
   applyCatFilter();
+  applyMonthFilter();
 }
 
 function buildRow(t,ti,row,ri,numeric){
@@ -610,7 +611,7 @@ function updateTotals(){
     const chip=document.createElement('div');chip.className='chip'+(_catFilter===t.title?' active':'');
     chip.innerHTML=`<span>${t.icon||'📦'} <b>${t.title}</b> <small class="chip-n">${activeCount(t)} disp.</small></span><span class="cv">${fmt.format(st)}</span>`;
     chip.title='Clic para filtrar esta categoría y dar de baja';
-    chip.addEventListener('click',()=>{ _catFilter=(_catFilter===t.title)?null:t.title; applyCatFilter(); updateTotals(); if(_catFilter){const b=document.getElementById('catFilterBanner');if(b)b.scrollIntoView({behavior:'smooth',block:'center'});} });
+    chip.addEventListener('click',()=>{ _catFilter=(_catFilter===t.title)?null:t.title; if(_catFilter){_monthFilter=null;if(_chartMes)_chartMes.update();} applyCatFilter(); applyMonthFilter(); updateTotals(); if(_catFilter){const b=document.getElementById('catFilterBanner');if(b)b.scrollIntoView({behavior:'smooth',block:'center'});} });
     chips.appendChild(chip);
   });
   document.getElementById('grandTotal').textContent=fmt.format(grand);
@@ -647,6 +648,43 @@ function applyCatFilter(){
   } else {
     if(banner) banner.style.display='none';
     Array.prototype.forEach.call(cont.children,function(card){ card.style.display=''; });
+  }
+}
+// ---- Filtro por mes de compra (doble clic en una barra) ----
+let _monthFilter=null;
+function applyMonthFilter(){
+  var cont=document.getElementById('tables'); if(!cont) return;
+  var banner=document.getElementById('monthFilterBanner');
+  if(_monthFilter){
+    if(!banner){
+      banner=document.createElement('div'); banner.id='monthFilterBanner';
+      banner.style.cssText='display:flex;align-items:center;gap:12px;justify-content:center;margin:0 0 16px;padding:9px 16px;background:#fdf2e0;border:1px solid #b06a00;border-radius:12px;font:600 13px Poppins,sans-serif;color:#8a5200;';
+      var anchor=document.querySelector('.charts-row')||document.getElementById('comprasCard')||cont;
+      if(anchor&&anchor.parentNode){ anchor.parentNode.insertBefore(banner, anchor.nextSibling); } else { cont.parentNode.insertBefore(banner, cont); }
+    }
+    banner.innerHTML='';
+    var count=0;
+    Array.prototype.forEach.call(cont.children,function(card,ti){
+      var t=data[ti]; if(!t){ card.style.display='none'; return; }
+      var tbody=card.querySelector('tbody'); var shown=0;
+      if(tbody){ Array.prototype.forEach.call(tbody.rows,function(tr,ri){
+        var f=(Array.isArray(t.fechas)&&t.fechas[ri])?String(t.fechas[ri]).slice(0,7):'';
+        var match=(f===_monthFilter); tr.style.display=match?'':'none'; if(match)shown++;
+      }); }
+      card.style.display=shown?'':'none';
+      count+=shown;
+    });
+    var span=document.createElement('span'); span.textContent='🗓 Compras de '+mesLabel(_monthFilter)+' — '+count+' equipo(s)';
+    var btn=document.createElement('button'); btn.type='button'; btn.textContent='✕ Quitar filtro';
+    btn.style.cssText='cursor:pointer;border:none;background:#b06a00;color:#fff;padding:5px 12px;border-radius:8px;font:600 12px Poppins,sans-serif;';
+    btn.addEventListener('click',function(){ _monthFilter=null; applyMonthFilter(); if(_chartMes)_chartMes.update(); });
+    banner.appendChild(span); banner.appendChild(btn); banner.style.display='flex';
+  } else {
+    if(banner) banner.style.display='none';
+    Array.prototype.forEach.call(cont.children,function(card,ti){
+      var tbody=card.querySelector('tbody'); if(tbody){ Array.prototype.forEach.call(tbody.rows,function(tr){ tr.style.display=''; }); }
+      if(!_catFilter){ card.style.display=''; } // si hay filtro por categoría, applyCatFilter maneja las tarjetas
+    });
   }
 }
 function _escH(s){return String(s==null?'':s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];});}
@@ -698,8 +736,18 @@ function renderChart(){
       var txt=p.toFixed(p<10?1:0)+'%'; ctx.lineWidth=3; ctx.strokeStyle='rgba(0,0,0,.35)'; ctx.strokeText(txt,pos.x,pos.y); ctx.fillStyle='#fff'; ctx.fillText(txt,pos.x,pos.y); });
     ctx.restore();
   }};
-  _chartCat=new Chart(el.getContext('2d'), { type:'doughnut', plugins:[pctInside], data:{labels:labels, datasets:[{data:vals, backgroundColor:bg, borderColor:'#fff', borderWidth:2}]}, options:{responsive:true, maintainAspectRatio:false, plugins:{legend:{position:'right', labels:{font:{family:'Poppins',size:12}, boxWidth:14}}, tooltip:{callbacks:{label:function(c){var ds=c.dataset.data;var tot=ds.reduce(function(a,b){return a+b;},0);var p=tot?(c.parsed/tot*100):0;return c.label+': '+fmt.format(c.parsed)+' ('+p.toFixed(1)+'%)';}}}}} });
-  el.ondblclick=function(evt){ if(!_chartCat) return; var pts=_chartCat.getElementsAtEventForMode(evt,'nearest',{intersect:true},true); if(pts&&pts.length){ var lab=_chartCat.data.labels[pts[0].index]; _catFilter=(_catFilter===lab)?null:lab; applyCatFilter(); if(_catFilter){ var b=document.getElementById('catFilterBanner'); if(b) b.scrollIntoView({behavior:'smooth',block:'center'}); } } };
+  var centerText={id:'centerTotal', afterDraw:function(chart){
+    var meta=chart.getDatasetMeta(0); if(!meta.data||!meta.data.length) return;
+    var arc=meta.data[0], x=arc.x, y=arc.y;
+    var tot=chart.data.datasets[0].data.reduce(function(a,b){return a+b;},0);
+    var ctx=chart.ctx; ctx.save(); ctx.textAlign='center'; ctx.textBaseline='middle';
+    ctx.font='600 10px Poppins,sans-serif'; ctx.fillStyle='#8aa596'; ctx.fillText('TOTAL', x, y-14);
+    ctx.font='700 15px Oswald,sans-serif'; ctx.fillStyle='#0d3d24';
+    var val=tot>=1e9?('$'+(tot/1e9).toFixed(1)+'B'):tot>=1e6?('$'+(tot/1e6).toFixed(1)+'M'):('$'+(tot/1e3).toFixed(0)+'K');
+    ctx.fillText(val, x, y+4); ctx.restore();
+  }};
+  _chartCat=new Chart(el.getContext('2d'), { type:'doughnut', plugins:[pctInside,centerText], data:{labels:labels, datasets:[{data:vals, backgroundColor:bg, borderColor:'#fff', borderWidth:2, hoverOffset:8, hoverBorderColor:'#fff'}]}, options:{responsive:true, maintainAspectRatio:false, cutout:'60%', plugins:{legend:{position:'right', labels:{font:{family:'Poppins',size:11.5}, boxWidth:13, padding:8, usePointStyle:true, pointStyle:'circle'}}, tooltip:{backgroundColor:'#0d3d24',padding:10,cornerRadius:8,titleFont:{family:'Poppins',weight:'600'},bodyFont:{family:'Poppins'},callbacks:{label:function(c){var ds=c.dataset.data;var tot=ds.reduce(function(a,b){return a+b;},0);var p=tot?(c.parsed/tot*100):0;return c.label+': '+fmt.format(c.parsed)+' ('+p.toFixed(1)+'%)';}}}}} });
+  el.ondblclick=function(evt){ if(!_chartCat) return; var pts=_chartCat.getElementsAtEventForMode(evt,'nearest',{intersect:true},true); if(pts&&pts.length){ var lab=_chartCat.data.labels[pts[0].index]; _catFilter=(_catFilter===lab)?null:lab; if(_catFilter){_monthFilter=null;if(_chartMes)_chartMes.update();} applyCatFilter(); applyMonthFilter(); if(_catFilter){ var b=document.getElementById('catFilterBanner'); if(b) b.scrollIntoView({behavior:'smooth',block:'center'}); } } };
   el.style.cursor='pointer'; el.title='Doble clic en una porción para filtrar por categoría';
   applyCatFilter();
   renderComprasMes();
@@ -715,24 +763,51 @@ function comprasPorMes(){
   return {keys, cnt, total};
 }
 function mesLabel(ym){ const M=['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic']; const p=ym.split('-'); return M[(+p[1])-1]+' '+p[0]; }
+function _barGradient(ctx, c1, c2){
+  const area=ctx.chart.chartArea; const g=ctx.chart.ctx.createLinearGradient(0, area?area.top:0, 0, area?area.bottom:230);
+  g.addColorStop(0,c1); g.addColorStop(1,c2); return g;
+}
 function renderComprasMes(){
   const {keys,cnt,total}=comprasPorMes();
   const sub=document.getElementById('comprasSub');
-  if(sub) sub.textContent=total?('· '+total+' equipos con fecha de compra registrada'):'· sin fechas de compra registradas aún';
+  if(sub) sub.textContent=total?('· '+total+' equipos · doble clic en un mes para filtrar'):'· sin fechas de compra registradas aún';
   const el=document.getElementById('chart-compras-mes'); if(!el||typeof Chart==='undefined') return;
   const labels=keys.map(mesLabel);
   const vals=keys.map(k=>cnt[k]);
   const pcts=keys.map(k=>total?(cnt[k]/total*100):0);
-  const pctLabel={id:'pctLabelMes', afterDatasetsDraw:function(chart){
+  const barColor=(c)=>{ const key=keys[c.dataIndex]; if(!c.chart.chartArea) return '#0d8651'; return (_monthFilter&&key===_monthFilter)?_barGradient(c,'#e0a52a','#b06a00'):_barGradient(c,'#22a866','#0b6b40'); };
+  const topLabel={id:'topLabelMes', afterDatasetsDraw:function(chart){
     const ctx=chart.ctx, meta=chart.getDatasetMeta(0);
-    ctx.save(); ctx.font='600 11px Poppins,sans-serif'; ctx.fillStyle='#0d3d24'; ctx.textAlign='center';
-    meta.data.forEach(function(bar,i){ if(!vals[i])return; ctx.fillText(pcts[i].toFixed(1)+'%', bar.x, bar.y-6); });
+    ctx.save(); ctx.textAlign='center';
+    meta.data.forEach(function(bar,i){ if(!vals[i])return;
+      ctx.font='700 12px Poppins,sans-serif'; ctx.fillStyle='#0d3d24'; ctx.fillText(String(vals[i]), bar.x, bar.y-16);
+      ctx.font='600 10px Poppins,sans-serif'; ctx.fillStyle='#8a5200'; ctx.fillText(pcts[i].toFixed(1)+'%', bar.x, bar.y-4);
+    });
     ctx.restore();
   }};
-  if(_chartMes){ _chartMes.data.labels=labels; _chartMes.data.datasets[0].data=vals; _chartMes._pcts=pcts; _chartMes.update(); return; }
-  _chartMes=new Chart(el.getContext('2d'), { type:'bar', plugins:[pctLabel], data:{labels:labels, datasets:[{label:'Equipos comprados', data:vals, backgroundColor:'#0d8651', borderRadius:6, maxBarThickness:64}]},
-    options:{responsive:true, maintainAspectRatio:false, layout:{padding:{top:18}}, scales:{y:{beginAtZero:true, ticks:{precision:0, font:{family:'Poppins'}}, title:{display:true,text:'N.º de equipos',font:{family:'Poppins'}}}, x:{ticks:{font:{family:'Poppins',size:11}}}},
-      plugins:{legend:{display:false}, tooltip:{callbacks:{label:function(c){ const t=total||0; const p=t?(c.parsed.y/t*100):0; return c.parsed.y+' equipos ('+p.toFixed(1)+'% del total)'; }}}}} });
+  _chartMes && (_chartMes._keys=keys);
+  if(_chartMes){ _chartMes._keys=keys; _chartMes.data.labels=labels; _chartMes.data.datasets[0].data=vals; _chartMes._pcts=pcts; _chartMes._vals=vals; _chartMes.update(); return; }
+  _chartMes=new Chart(el.getContext('2d'), { type:'bar', plugins:[topLabel], data:{labels:labels, datasets:[{label:'Equipos comprados', data:vals, backgroundColor:barColor, hoverBackgroundColor:barColor, borderRadius:8, borderSkipped:false, maxBarThickness:60}]},
+    options:{responsive:true, maintainAspectRatio:false, layout:{padding:{top:26}},
+      scales:{ y:{beginAtZero:true, grace:'12%', ticks:{precision:0, font:{family:'Poppins',size:11}, color:'#6b7d72'}, grid:{color:'rgba(13,61,36,.06)',drawBorder:false}, title:{display:true,text:'N.º de equipos',font:{family:'Poppins',size:11},color:'#6b7d72'}},
+              x:{ticks:{font:{family:'Poppins',size:11},color:'#0d3d24'}, grid:{display:false}} },
+      plugins:{legend:{display:false},
+        tooltip:{backgroundColor:'#0d3d24',titleFont:{family:'Poppins',weight:'600'},bodyFont:{family:'Poppins'},padding:10,cornerRadius:8,displayColors:false,
+          callbacks:{ title:function(it){return it[0].label;}, label:function(c){ const t=total||0; const p=t?(c.parsed.y/t*100):0; return c.parsed.y+' equipos · '+p.toFixed(1)+'% del total'; }, afterLabel:function(){ return 'Doble clic para filtrar la tabla'; } }}}} });
+  _chartMes._keys=keys; _chartMes._vals=vals;
+  el.style.cursor='pointer'; el.title='Doble clic en un mes para filtrar los equipos por su fecha de compra';
+  el.ondblclick=function(evt){
+    if(!_chartMes) return;
+    var pts=_chartMes.getElementsAtEventForMode(evt,'nearest',{intersect:true},true);
+    if(pts&&pts.length){
+      var key=(_chartMes._keys||[])[pts[0].index]; if(!key) return;
+      _monthFilter=(_monthFilter===key)?null:key;
+      if(_monthFilter){ _catFilter=null; if(_chartCat){_chartCat.update();applyCatFilter();} }
+      _chartMes.update();
+      applyMonthFilter();
+      if(_monthFilter){ var b=document.getElementById('monthFilterBanner'); if(b) b.scrollIntoView({behavior:'smooth',block:'center'}); }
+    }
+  };
 }
 // ---- Modal: nueva tabla con columnas personalizadas ----
 const overlay=document.getElementById('modalOverlay');
