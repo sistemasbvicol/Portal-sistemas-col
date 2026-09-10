@@ -136,6 +136,11 @@
   /* Análisis */
   .analysis{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);padding:20px 22px;margin-bottom:22px;box-shadow:0 2px 10px rgba(13,61,36,.04);}
   .analysis h2{font-family:'Oswald',sans-serif;font-size:16px;margin:0 0 14px;letter-spacing:.3px;color:var(--accent-dark);display:flex;align-items:center;gap:8px;}
+  .charts-row{display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:stretch;}
+  .charts-row .analysis{margin-bottom:22px;}
+  .charts-row .analysis h2{font-size:14px;margin:0 0 10px;}
+  .chart-box{height:230px;}
+  @media(max-width:820px){.charts-row{grid-template-columns:1fr;}}
   .an-kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:18px;}
   .an-kpi{background:#f6f8f6;border:1px solid var(--border);border-radius:10px;padding:12px 14px;}
   .an-kpi .k{font-size:10.5px;letter-spacing:.5px;text-transform:uppercase;color:var(--text-secondary);}
@@ -234,14 +239,16 @@
 
     <div class="analysis" id="analysis"></div>
 
-    <div class="analysis" id="chartCard">
-      <h2><span class="ico">📊</span> Distribución del valor por categoría</h2>
-      <div style="max-width:680px;margin:0 auto;height:320px;"><canvas id="chart-categorias"></canvas></div>
-    </div>
+    <div class="charts-row">
+      <div class="analysis" id="chartCard">
+        <h2><span class="ico">📊</span> Distribución del valor por categoría</h2>
+        <div class="chart-box"><canvas id="chart-categorias"></canvas></div>
+      </div>
 
-    <div class="analysis" id="comprasCard">
-      <h2><span class="ico">🛒</span> Compras por mes <span id="comprasSub" style="font-weight:400;font-size:13px;color:var(--text-secondary);"></span></h2>
-      <div style="height:340px;"><canvas id="chart-compras-mes"></canvas></div>
+      <div class="analysis" id="comprasCard">
+        <h2><span class="ico">🛒</span> Compras por mes <span id="comprasSub" style="font-weight:400;font-size:12px;color:var(--text-secondary);"></span></h2>
+        <div class="chart-box"><canvas id="chart-compras-mes"></canvas></div>
+      </div>
     </div>
 
     <div id="tables"></div>
