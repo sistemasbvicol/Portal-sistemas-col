@@ -486,7 +486,7 @@ function garantiaEstado(fechaCompra, meses){
   var days=Math.round((end.getTime()-today.getTime())/86400000);
   var endTxt=end.toISOString().slice(0,10);
   if(days<0) return {cls:'g-red', txt:'🔴 Vencida', title:'Venció el '+endTxt+' (hace '+Math.abs(days)+' días)'};
-  if(days<=90) return {cls:'g-orange', txt:'🟠 Por vencer · '+days+' d', title:'Vence el '+endTxt};
+  if(days<=30) return {cls:'g-orange', txt:'🟠 Por vencer · '+days+' d', title:'Vence el '+endTxt};
   var rem=(days>=365)?(Math.floor(days/365)+' a '+Math.round((days%365)/30)+' m'):(Math.round(days/30)+' m');
   return {cls:'g-green', txt:'🟢 Vigente · '+rem, title:'Vence el '+endTxt};
 }
