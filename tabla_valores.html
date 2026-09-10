@@ -249,6 +249,16 @@
         <h2><span class="ico">🛒</span> Compras por mes <span id="comprasSub" style="font-weight:400;font-size:12px;color:var(--text-secondary);"></span></h2>
         <div class="chart-box"><canvas id="chart-compras-mes"></canvas></div>
       </div>
+
+      <div class="analysis" id="aniosCard">
+        <h2><span class="ico">📅</span> Compras por año <span id="aniosSub" style="font-weight:400;font-size:12px;color:var(--text-secondary);"></span></h2>
+        <div class="chart-box"><canvas id="chart-anios"></canvas></div>
+      </div>
+
+      <div class="analysis" id="usuariosCard">
+        <h2><span class="ico">👤</span> Equipos por usuario <span id="usuariosSub" style="font-weight:400;font-size:12px;color:var(--text-secondary);"></span></h2>
+        <div class="chart-box" style="height:300px;"><canvas id="chart-usuarios"></canvas></div>
+      </div>
     </div>
 
     <div id="tables"></div>
@@ -534,7 +544,7 @@ function render(){
   });
   {const _tc=document.getElementById('tableCount');if(_tc)_tc.textContent=data.length;}
   applyCatFilter();
-  applyMonthFilter();
+  applyRowFilter();
 }
 
 function buildRow(t,ti,row,ri,numeric){
@@ -611,7 +621,7 @@ function updateTotals(){
     const chip=document.createElement('div');chip.className='chip'+(_catFilter===t.title?' active':'');
     chip.innerHTML=`<span>${t.icon||'📦'} <b>${t.title}</b> <small class="chip-n">${activeCount(t)} disp.</small></span><span class="cv">${fmt.format(st)}</span>`;
     chip.title='Clic para filtrar esta categoría y dar de baja';
-    chip.addEventListener('click',()=>{ _catFilter=(_catFilter===t.title)?null:t.title; if(_catFilter){_monthFilter=null;if(_chartMes)_chartMes.update();} applyCatFilter(); applyMonthFilter(); updateTotals(); if(_catFilter){const b=document.getElementById('catFilterBanner');if(b)b.scrollIntoView({behavior:'smooth',block:'center'});} });
+    chip.addEventListener('click',()=>{ _catFilter=(_catFilter===t.title)?null:t.title; if(_catFilter){_rowFilter=null;_updateBars();} applyCatFilter(); applyRowFilter(); updateTotals(); if(_catFilter){const b=document.getElementById('catFilterBanner');if(b)b.scrollIntoView({behavior:'smooth',block:'center'});} });
     chips.appendChild(chip);
   });
   document.getElementById('grandTotal').textContent=fmt.format(grand);
@@ -650,16 +660,29 @@ function applyCatFilter(){
     Array.prototype.forEach.call(cont.children,function(card){ card.style.display=''; });
   }
 }
-// ---- Filtro por mes de compra (doble clic en una barra) ----
-let _monthFilter=null;
-function applyMonthFilter(){
+// ---- Filtro por filas: mes / año / usuario (doble clic en una barra) ----
+let _rowFilter=null; // {kind:'month'|'year'|'user', value:'...'}
+let _bars={};
+function _updateBars(){ ['mes','anio','user'].forEach(function(k){ if(_bars[k]) _bars[k].update(); }); }
+function _rowField(t,ri,kind){
+  if(kind==='user'){ return (Array.isArray(t.assignees)&&t.assignees[ri]!=null)?String(t.assignees[ri]).trim():''; }
+  var f=(Array.isArray(t.fechas)&&t.fechas[ri])?String(t.fechas[ri]):'';
+  return kind==='year'?f.slice(0,4):f.slice(0,7);
+}
+function _rowFilterText(count){
+  if(!_rowFilter) return '';
+  if(_rowFilter.kind==='month') return '🗓 Compras de '+mesLabel(_rowFilter.value)+' — '+count+' equipo(s)';
+  if(_rowFilter.kind==='year') return '📅 Compras de '+_rowFilter.value+' — '+count+' equipo(s)';
+  return '👤 '+_rowFilter.value+' — '+count+' equipo(s)';
+}
+function applyRowFilter(){
   var cont=document.getElementById('tables'); if(!cont) return;
-  var banner=document.getElementById('monthFilterBanner');
-  if(_monthFilter){
+  var banner=document.getElementById('rowFilterBanner');
+  if(_rowFilter){
     if(!banner){
-      banner=document.createElement('div'); banner.id='monthFilterBanner';
+      banner=document.createElement('div'); banner.id='rowFilterBanner';
       banner.style.cssText='display:flex;align-items:center;gap:12px;justify-content:center;margin:0 0 16px;padding:9px 16px;background:#fdf2e0;border:1px solid #b06a00;border-radius:12px;font:600 13px Poppins,sans-serif;color:#8a5200;';
-      var anchor=document.querySelector('.charts-row')||document.getElementById('comprasCard')||cont;
+      var anchor=document.querySelector('.charts-row')||cont;
       if(anchor&&anchor.parentNode){ anchor.parentNode.insertBefore(banner, anchor.nextSibling); } else { cont.parentNode.insertBefore(banner, cont); }
     }
     banner.innerHTML='';
@@ -668,16 +691,16 @@ function applyMonthFilter(){
       var t=data[ti]; if(!t){ card.style.display='none'; return; }
       var tbody=card.querySelector('tbody'); var shown=0;
       if(tbody){ Array.prototype.forEach.call(tbody.rows,function(tr,ri){
-        var f=(Array.isArray(t.fechas)&&t.fechas[ri])?String(t.fechas[ri]).slice(0,7):'';
-        var match=(f===_monthFilter); tr.style.display=match?'':'none'; if(match)shown++;
+        var match=(_rowField(t,ri,_rowFilter.kind)===_rowFilter.value);
+        tr.style.display=match?'':'none'; if(match)shown++;
       }); }
       card.style.display=shown?'':'none';
       count+=shown;
     });
-    var span=document.createElement('span'); span.textContent='🗓 Compras de '+mesLabel(_monthFilter)+' — '+count+' equipo(s)';
+    var span=document.createElement('span'); span.textContent=_rowFilterText(count);
     var btn=document.createElement('button'); btn.type='button'; btn.textContent='✕ Quitar filtro';
     btn.style.cssText='cursor:pointer;border:none;background:#b06a00;color:#fff;padding:5px 12px;border-radius:8px;font:600 12px Poppins,sans-serif;';
-    btn.addEventListener('click',function(){ _monthFilter=null; applyMonthFilter(); if(_chartMes)_chartMes.update(); });
+    btn.addEventListener('click',function(){ _rowFilter=null; applyRowFilter(); _updateBars(); });
     banner.appendChild(span); banner.appendChild(btn); banner.style.display='flex';
   } else {
     if(banner) banner.style.display='none';
@@ -727,7 +750,7 @@ function renderChart(){
   var labels=cats.map(c=>c.label), vals=cats.map(c=>c.val);
   var palette=['#0d7a3f','#1f9d57','#145232','#3fae74','#0a6234','#66c28e','#12324b','#8ed3ab','#c98a1e','#c23b3b'];
   var bg=labels.map((_,i)=>palette[i%palette.length]);
-  if(_chartCat){ _chartCat.data.labels=labels; _chartCat.data.datasets[0].data=vals; _chartCat.data.datasets[0].backgroundColor=bg; _chartCat.update(); applyCatFilter(); return; }
+  if(_chartCat){ _chartCat.data.labels=labels; _chartCat.data.datasets[0].data=vals; _chartCat.data.datasets[0].backgroundColor=bg; _chartCat.update(); applyCatFilter(); renderComprasMes(); return; }
   var pctInside={id:'pctInside', afterDatasetsDraw:function(chart){
     var ctx=chart.ctx, meta=chart.getDatasetMeta(0), ds=chart.data.datasets[0].data;
     var tot=ds.reduce(function(a,b){return a+b;},0); if(!tot) return;
@@ -747,14 +770,13 @@ function renderChart(){
     ctx.fillText(val, x, y+4); ctx.restore();
   }};
   _chartCat=new Chart(el.getContext('2d'), { type:'doughnut', plugins:[pctInside,centerText], data:{labels:labels, datasets:[{data:vals, backgroundColor:bg, borderColor:'#fff', borderWidth:2, hoverOffset:8, hoverBorderColor:'#fff'}]}, options:{responsive:true, maintainAspectRatio:false, cutout:'60%', plugins:{legend:{position:'right', labels:{font:{family:'Poppins',size:11.5}, boxWidth:13, padding:8, usePointStyle:true, pointStyle:'circle'}}, tooltip:{backgroundColor:'#0d3d24',padding:10,cornerRadius:8,titleFont:{family:'Poppins',weight:'600'},bodyFont:{family:'Poppins'},callbacks:{label:function(c){var ds=c.dataset.data;var tot=ds.reduce(function(a,b){return a+b;},0);var p=tot?(c.parsed/tot*100):0;return c.label+': '+fmt.format(c.parsed)+' ('+p.toFixed(1)+'%)';}}}}} });
-  el.ondblclick=function(evt){ if(!_chartCat) return; var pts=_chartCat.getElementsAtEventForMode(evt,'nearest',{intersect:true},true); if(pts&&pts.length){ var lab=_chartCat.data.labels[pts[0].index]; _catFilter=(_catFilter===lab)?null:lab; if(_catFilter){_monthFilter=null;if(_chartMes)_chartMes.update();} applyCatFilter(); applyMonthFilter(); if(_catFilter){ var b=document.getElementById('catFilterBanner'); if(b) b.scrollIntoView({behavior:'smooth',block:'center'}); } } };
+  el.ondblclick=function(evt){ if(!_chartCat) return; var pts=_chartCat.getElementsAtEventForMode(evt,'nearest',{intersect:true},true); if(pts&&pts.length){ var lab=_chartCat.data.labels[pts[0].index]; _catFilter=(_catFilter===lab)?null:lab; if(_catFilter){_rowFilter=null;_updateBars();} applyCatFilter(); applyRowFilter(); if(_catFilter){ var b=document.getElementById('catFilterBanner'); if(b) b.scrollIntoView({behavior:'smooth',block:'center'}); } } };
   el.style.cursor='pointer'; el.title='Doble clic en una porción para filtrar por categoría';
   applyCatFilter();
   renderComprasMes();
 }
 
-// ---- Gráfico: compras por mes (porcentaje sobre el total de equipos con fecha) ----
-let _chartMes=null;
+// ---- Gráficos de barras: compras por mes / por año / equipos por usuario ----
 function comprasPorMes(){
   const cnt={};
   let total=0;
@@ -763,51 +785,74 @@ function comprasPorMes(){
   return {keys, cnt, total};
 }
 function mesLabel(ym){ const M=['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic']; const p=ym.split('-'); return M[(+p[1])-1]+' '+p[0]; }
-function _barGradient(ctx, c1, c2){
-  const area=ctx.chart.chartArea; const g=ctx.chart.ctx.createLinearGradient(0, area?area.top:0, 0, area?area.bottom:230);
-  g.addColorStop(0,c1); g.addColorStop(1,c2); return g;
+function comprasPorAnio(){
+  const cnt={}; let total=0;
+  data.forEach(t=>{ if(!Array.isArray(t.fechas))return; t.fechas.forEach(f=>{ if(!f)return; const y=String(f).slice(0,4); if(!/^\d{4}$/.test(y))return; cnt[y]=(cnt[y]||0)+1; total++; }); });
+  const keys=Object.keys(cnt).sort();
+  return {keys, cnt, total};
 }
-function renderComprasMes(){
-  const {keys,cnt,total}=comprasPorMes();
-  const sub=document.getElementById('comprasSub');
-  if(sub) sub.textContent=total?('· '+total+' equipos · doble clic en un mes para filtrar'):'· sin fechas de compra registradas aún';
-  const el=document.getElementById('chart-compras-mes'); if(!el||typeof Chart==='undefined') return;
-  const labels=keys.map(mesLabel);
+function equiposPorUsuario(){
+  const cnt={}; let total=0;
+  data.forEach(t=>{ if(!Array.isArray(t.assignees))return; t.assignees.forEach((nm)=>{ const u=(nm==null?'':String(nm).trim()); if(!u)return; cnt[u]=(cnt[u]||0)+1; total++; }); });
+  let keys=Object.keys(cnt).sort((a,b)=>cnt[b]-cnt[a]);
+  if(keys.length>10) keys=keys.slice(0,10);
+  return {keys, cnt, total};
+}
+function _barGradientDir(ctx, c1, c2, horiz){
+  const area=ctx.chart.chartArea; const cc=ctx.chart.ctx;
+  const g=horiz ? cc.createLinearGradient(area?area.left:0,0,area?area.right:400,0) : cc.createLinearGradient(0,area?area.top:0,0,area?area.bottom:230);
+  g.addColorStop(0, horiz?c2:c1); g.addColorStop(1, horiz?c1:c2); return g;
+}
+function renderBar(cfg){
+  const {keys,cnt,total}=cfg.agg();
+  const subEl=document.getElementById(cfg.sub);
+  if(subEl) subEl.textContent=total?('· '+total+' equipos · doble clic para filtrar'):'· sin datos aún';
+  const el=document.getElementById(cfg.id); if(!el||typeof Chart==='undefined') return;
+  const labelFn=cfg.labelFn||(k=>k);
+  const labels=keys.map(labelFn);
   const vals=keys.map(k=>cnt[k]);
   const pcts=keys.map(k=>total?(cnt[k]/total*100):0);
-  const barColor=(c)=>{ const key=keys[c.dataIndex]; if(!c.chart.chartArea) return '#0d8651'; return (_monthFilter&&key===_monthFilter)?_barGradient(c,'#e0a52a','#b06a00'):_barGradient(c,'#22a866','#0b6b40'); };
-  const topLabel={id:'topLabelMes', afterDatasetsDraw:function(chart){
-    const ctx=chart.ctx, meta=chart.getDatasetMeta(0);
-    ctx.save(); ctx.textAlign='center';
+  const horiz=!!cfg.horizontal;
+  const activeVal=function(){ return (_rowFilter&&_rowFilter.kind===cfg.kind)?_rowFilter.value:null; };
+  const barColor=(c)=>{ const key=keys[c.dataIndex]; if(!c.chart.chartArea) return '#0d8651'; return (key===activeVal())?_barGradientDir(c,'#e0a52a','#b06a00',horiz):_barGradientDir(c,'#22a866','#0b6b40',horiz); };
+  const topLabel={id:'topLabel_'+cfg.ref, afterDatasetsDraw:function(chart){
+    const ctx=chart.ctx, meta=chart.getDatasetMeta(0); ctx.save();
     meta.data.forEach(function(bar,i){ if(!vals[i])return;
-      ctx.font='700 12px Poppins,sans-serif'; ctx.fillStyle='#0d3d24'; ctx.fillText(String(vals[i]), bar.x, bar.y-16);
-      ctx.font='600 10px Poppins,sans-serif'; ctx.fillStyle='#8a5200'; ctx.fillText(pcts[i].toFixed(1)+'%', bar.x, bar.y-4);
+      if(horiz){ ctx.textAlign='left'; ctx.textBaseline='middle'; ctx.font='700 11px Poppins,sans-serif'; ctx.fillStyle='#0d3d24'; ctx.fillText(vals[i]+'  ('+pcts[i].toFixed(1)+'%)', bar.x+6, bar.y); }
+      else { ctx.textAlign='center'; ctx.font='700 12px Poppins,sans-serif'; ctx.fillStyle='#0d3d24'; ctx.fillText(String(vals[i]), bar.x, bar.y-16); ctx.font='600 10px Poppins,sans-serif'; ctx.fillStyle='#8a5200'; ctx.fillText(pcts[i].toFixed(1)+'%', bar.x, bar.y-4); }
     });
     ctx.restore();
   }};
-  _chartMes && (_chartMes._keys=keys);
-  if(_chartMes){ _chartMes._keys=keys; _chartMes.data.labels=labels; _chartMes.data.datasets[0].data=vals; _chartMes._pcts=pcts; _chartMes._vals=vals; _chartMes.update(); return; }
-  _chartMes=new Chart(el.getContext('2d'), { type:'bar', plugins:[topLabel], data:{labels:labels, datasets:[{label:'Equipos comprados', data:vals, backgroundColor:barColor, hoverBackgroundColor:barColor, borderRadius:8, borderSkipped:false, maxBarThickness:60}]},
-    options:{responsive:true, maintainAspectRatio:false, layout:{padding:{top:26}},
-      scales:{ y:{beginAtZero:true, grace:'12%', ticks:{precision:0, font:{family:'Poppins',size:11}, color:'#6b7d72'}, grid:{color:'rgba(13,61,36,.06)',drawBorder:false}, title:{display:true,text:'N.º de equipos',font:{family:'Poppins',size:11},color:'#6b7d72'}},
-              x:{ticks:{font:{family:'Poppins',size:11},color:'#0d3d24'}, grid:{display:false}} },
+  if(_bars[cfg.ref]){ const ch=_bars[cfg.ref]; ch._keys=keys; ch.data.labels=labels; ch.data.datasets[0].data=vals; ch._pcts=pcts; ch._vals=vals; ch.update(); return; }
+  const scales = horiz
+    ? { x:{beginAtZero:true, grace:'22%', ticks:{precision:0,font:{family:'Poppins',size:10},color:'#6b7d72'}, grid:{color:'rgba(13,61,36,.06)',drawBorder:false}}, y:{ticks:{font:{family:'Poppins',size:10.5},color:'#0d3d24',autoSkip:false}, grid:{display:false}} }
+    : { y:{beginAtZero:true, grace:'12%', ticks:{precision:0,font:{family:'Poppins',size:11},color:'#6b7d72'}, grid:{color:'rgba(13,61,36,.06)',drawBorder:false}, title:{display:true,text:'N.º de equipos',font:{family:'Poppins',size:11},color:'#6b7d72'}}, x:{ticks:{font:{family:'Poppins',size:11},color:'#0d3d24'}, grid:{display:false}} };
+  const ch=new Chart(el.getContext('2d'), { type:'bar', plugins:[topLabel],
+    data:{labels:labels, datasets:[{label:cfg.dsLabel||'Equipos', data:vals, backgroundColor:barColor, hoverBackgroundColor:barColor, borderRadius:8, borderSkipped:false, maxBarThickness:horiz?24:60}]},
+    options:{indexAxis:horiz?'y':'x', responsive:true, maintainAspectRatio:false, layout:{padding:horiz?{right:56}:{top:26}}, scales:scales,
       plugins:{legend:{display:false},
         tooltip:{backgroundColor:'#0d3d24',titleFont:{family:'Poppins',weight:'600'},bodyFont:{family:'Poppins'},padding:10,cornerRadius:8,displayColors:false,
-          callbacks:{ title:function(it){return it[0].label;}, label:function(c){ const t=total||0; const p=t?(c.parsed.y/t*100):0; return c.parsed.y+' equipos · '+p.toFixed(1)+'% del total'; }, afterLabel:function(){ return 'Doble clic para filtrar la tabla'; } }}}} });
-  _chartMes._keys=keys; _chartMes._vals=vals;
-  el.style.cursor='pointer'; el.title='Doble clic en un mes para filtrar los equipos por su fecha de compra';
+          callbacks:{ title:function(it){return it[0].label;}, label:function(c){ const v=horiz?c.parsed.x:c.parsed.y; const t=total||0; const p=t?(v/t*100):0; return v+' equipos · '+p.toFixed(1)+'% del total'; }, afterLabel:function(){ return 'Doble clic para filtrar la tabla'; } }}}} });
+  ch._keys=keys; ch._vals=vals; _bars[cfg.ref]=ch;
+  el.style.cursor='pointer'; el.title=cfg.title||'Doble clic para filtrar';
   el.ondblclick=function(evt){
-    if(!_chartMes) return;
-    var pts=_chartMes.getElementsAtEventForMode(evt,'nearest',{intersect:true},true);
+    const c=_bars[cfg.ref]; if(!c) return;
+    var pts=c.getElementsAtEventForMode(evt,'nearest',{intersect:true},true);
     if(pts&&pts.length){
-      var key=(_chartMes._keys||[])[pts[0].index]; if(!key) return;
-      _monthFilter=(_monthFilter===key)?null:key;
-      if(_monthFilter){ _catFilter=null; if(_chartCat){_chartCat.update();applyCatFilter();} }
-      _chartMes.update();
-      applyMonthFilter();
-      if(_monthFilter){ var b=document.getElementById('monthFilterBanner'); if(b) b.scrollIntoView({behavior:'smooth',block:'center'}); }
+      var key=(c._keys||[])[pts[0].index]; if(key==null||key==='') return;
+      var same=(_rowFilter&&_rowFilter.kind===cfg.kind&&_rowFilter.value===key);
+      _rowFilter=same?null:{kind:cfg.kind, value:key};
+      if(_rowFilter){ _catFilter=null; if(_chartCat){_chartCat.update();} }
+      _updateBars();
+      applyCatFilter(); applyRowFilter();
+      if(_rowFilter){ var b=document.getElementById('rowFilterBanner'); if(b) b.scrollIntoView({behavior:'smooth',block:'center'}); }
     }
   };
+}
+function renderComprasMes(){
+  renderBar({id:'chart-compras-mes', ref:'mes', kind:'month', agg:comprasPorMes, sub:'comprasSub', dsLabel:'Equipos comprados', labelFn:mesLabel, title:'Doble clic en un mes para filtrar por fecha de compra'});
+  renderBar({id:'chart-anios', ref:'anio', kind:'year', agg:comprasPorAnio, sub:'aniosSub', dsLabel:'Equipos comprados', title:'Doble clic en un año para filtrar por fecha de compra'});
+  renderBar({id:'chart-usuarios', ref:'user', kind:'user', agg:equiposPorUsuario, sub:'usuariosSub', dsLabel:'Equipos', horizontal:true, labelFn:(u=>u.length>16?u.slice(0,15)+'…':u), title:'Doble clic en un usuario para filtrar sus equipos'});
 }
 // ---- Modal: nueva tabla con columnas personalizadas ----
 const overlay=document.getElementById('modalOverlay');
