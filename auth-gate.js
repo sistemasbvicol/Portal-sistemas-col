@@ -9,6 +9,33 @@
   var SESSION_HOURS = 12;
   var IDLE_MS = 5 * 60 * 1000; // cierre de sesión por inactividad (5 minutos)
 
+  /* ---------- tableros del portal (para permisos por usuario) ---------- */
+  var PAGES = [
+    { file: "tabla_valores.html",           label: "Valores del Inventario" },
+    { file: "compras.html",                 label: "Compras en proceso" },
+    { file: "dashboard_tickets_ti.html",    label: "Indicadores de Ticket" },
+    { file: "indicadores_backup.html",      label: "Indicadores de backup" },
+    { file: "matriz_equipamiento.html",     label: "Matriz de Equipamiento (TC-FT-19)" },
+    { file: "sistemas-report.html",         label: "Reporte de Actividades — Sistemas" },
+    { file: "dashboard_capacitaciones.html",label: "Capacitaciones de Tecnología" }
+  ];
+  var PAGE_FILES = PAGES.map(function (p){ return p.file; });
+  function pageLabel(f){ for (var i=0;i<PAGES.length;i++){ if (PAGES[i].file===f) return PAGES[i].label; } return f; }
+  function currentFile(){ var p = location.pathname; var f = p.substring(p.lastIndexOf("/") + 1); return f || "index.html"; }
+  // accesos: null = todos los tableros; array = solo esos archivos. Admin siempre = todos.
+  function userAccesos(u){
+    if (!u || u.rol === "admin") return null;
+    if (Array.isArray(u.accesos)) return u.accesos.slice();
+    return null; // sin campo = compatibilidad: ve todo
+  }
+  function isAllowed(u, file){
+    var acc = userAccesos(u);
+    if (acc === null) return true;
+    if (file === "index.html" || file === "") return true;      // el portal siempre
+    if (PAGE_FILES.indexOf(file) === -1) return true;            // páginas internas no listadas
+    return acc.indexOf(file) !== -1;
+  }
+
   function normEmail(s){ return String(s || "").trim().toLowerCase(); }
   async function sha256(str){
     var buf = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(str));
@@ -72,9 +99,53 @@
     return null;
   }
   function setSession(u){
-    try { localStorage.setItem(SESSION_KEY, JSON.stringify({ email: u.email, nombre: u.nombre, rol: u.rol, exp: Date.now() + IDLE_MS })); } catch (e) {}
+    try { localStorage.setItem(SESSION_KEY, JSON.stringify({ email: u.email, nombre: u.nombre, rol: u.rol, accesos: Array.isArray(u.accesos) ? u.accesos : null, exp: Date.now() + IDLE_MS })); } catch (e) {}
   }
   function clearSession(){ try { localStorage.removeItem(SESSION_KEY); } catch (e) {} }
+
+  /* ---------- control de acceso por tablero (rol usuario) ---------- */
+  function enforceAccess(sess){
+    gateNow(sess); // gating inmediato con lo que haya en sesión
+    (async function(){   // verificación autoritativa (Firebase/local) por si cambió
+      try {
+        await ensureStorage();
+        var users = await getUsers();
+        if (!users) return;
+        var u = users.find(function (x){ return normEmail(x.email) === normEmail(sess.email); });
+        if (!u) return;
+        try { var s = JSON.parse(localStorage.getItem(SESSION_KEY) || "null"); if (s) { s.accesos = Array.isArray(u.accesos) ? u.accesos : null; localStorage.setItem(SESSION_KEY, JSON.stringify(s)); } } catch (e) {}
+        gateNow(u);
+      } catch (e) {}
+    })();
+  }
+  function gateNow(u){
+    if (!u || u.rol === "admin") return;
+    var file = currentFile();
+    if (isAllowed(u, file)) { if (file === "index.html" || file === "") hideCards(u); return; }
+    blockPage();
+  }
+  function hideCards(u){
+    var acc = userAccesos(u);
+    if (acc === null) return;
+    var cards = document.querySelectorAll('a.card[href]');
+    for (var i = 0; i < cards.length; i++) {
+      var href = cards[i].getAttribute("href") || "";
+      var f = href.substring(href.lastIndexOf("/") + 1);
+      if (PAGE_FILES.indexOf(f) !== -1 && acc.indexOf(f) === -1) cards[i].style.display = "none";
+    }
+  }
+  function blockPage(){
+    if (document.getElementById("ag-block")) return;
+    injectCSS();
+    var ov = document.createElement("div"); ov.className = "ag-ov"; ov.id = "ag-block";
+    ov.innerHTML = '<div class="ag-card" style="text-align:center;max-width:420px;">'
+      + '<div class="ag-logo"><div class="b1">BARRON<br>VIEYRA<sup>&reg;</sup></div><div class="b2">INTERNATIONAL</div></div>'
+      + '<div class="ag-sub" style="margin-top:18px;">Acceso restringido</div>'
+      + '<p style="color:#6b7683;font-size:14px;margin:0 0 18px;line-height:1.5;">No tienes permiso para abrir este tablero. Contacta al administrador del área de Sistemas.</p>'
+      + '<button class="ag-btn" id="ag-back">Volver al portal</button></div>';
+    document.documentElement.appendChild(ov);
+    var b = ov.querySelector("#ag-back"); if (b) b.addEventListener("click", function(){ location.href = "index.html"; });
+  }
 
   /* ---------- cierre de sesión por inactividad (5 min) ---------- */
   var _idleTimer = null, _idleStarted = false, _lastRefresh = 0;
@@ -216,7 +287,7 @@
     chip.querySelector(".prof").addEventListener("click", function(){ openProfile(sess); });
     if (admin) chip.querySelector(".usr").addEventListener("click", openAdmin);
     chip.querySelector(".out").addEventListener("click", function(){ clearSession(); location.reload(); });
-    if (!admin) enableReadOnly();
+    if (!admin) { enableReadOnly(); enforceAccess(sess); }
   }
 
   /* ---------- perfil del usuario ---------- */
@@ -327,14 +398,29 @@
     var m = document.createElement("div"); m.className = "ag-modal"; m.id = "ag-modal";
     function rowsHtml(){
       return users.map(function (u, i){
+        var perm = (u.rol === "admin")
+          ? '<span style="color:#8b95a3;">Todas</span>'
+          : '<button class="perm" data-i="' + i + '" style="color:#12933f;cursor:pointer;border:0;background:none;font-size:12px;text-decoration:underline;">' + accSummary(u) + '</button>';
         return '<tr><td>' + esc(u.email) + '</td><td>' + esc(u.nombre || "") + '</td><td>' + esc(u.rol || "usuario")
+          + '</td><td>' + perm
           + '</td><td style="text-align:right;white-space:nowrap;"><button class="key" data-i="' + i + '">clave</button> '
           + '<button class="del" data-i="' + i + '" title="Eliminar">🗑</button></td></tr>';
       }).join("");
     }
+    function accChecklist(idPrefix, selected){
+      // selected: null = todos; array = esos. Marca según corresponda.
+      var all = (selected === null);
+      return '<div style="display:grid;grid-template-columns:1fr 1fr;gap:4px 14px;margin-top:6px;">'
+        + PAGES.map(function (p){
+            var on = all || (Array.isArray(selected) && selected.indexOf(p.file) !== -1);
+            return '<label style="display:flex;align-items:center;gap:6px;font-size:12px;color:#334;font-weight:500;cursor:pointer;">'
+              + '<input type="checkbox" class="' + idPrefix + '" value="' + p.file + '"' + (on ? ' checked' : '') + '> ' + esc(p.label) + '</label>';
+          }).join("")
+        + '</div>';
+    }
     m.innerHTML = '<div class="ag-mbox">'
       + '<h3>Usuarios de acceso</h3>'
-      + '<table><thead><tr><th>Correo</th><th>Nombre</th><th>Rol</th><th></th></tr></thead><tbody id="ag-urows">' + rowsHtml() + '</tbody></table>'
+      + '<table><thead><tr><th>Correo</th><th>Nombre</th><th>Rol</th><th>Pestañas</th><th></th></tr></thead><tbody id="ag-urows">' + rowsHtml() + '</tbody></table>'
       + '<div style="font-size:13px;color:#0d2b4d;font-weight:600;margin-top:6px;">Agregar usuario</div>'
       + '<div class="ag-frm">'
       + '<input class="full" id="ag-nemail" type="email" placeholder="Correo corporativo">'
@@ -342,11 +428,44 @@
       + '<select id="ag-nrol"><option value="usuario">Usuario</option><option value="admin">Administrador</option></select>'
       + '<input class="full" id="ag-npass" type="text" placeholder="Contraseña inicial">'
       + '</div>'
+      + '<div id="ag-naccwrap" style="margin-top:10px;"><div style="font-size:12px;color:#0d2b4d;font-weight:600;">Pestañas que podrá ver y abrir <span style="font-weight:400;color:#8b95a3;">(solo rol Usuario)</span></div>' + accChecklist("ag-nacc", null) + '</div>'
       + '<div class="ag-mbtns"><button class="cancel" id="ag-mc">Cerrar</button><button class="ok" id="ag-madd">Agregar</button></div>'
-      + '<div class="ag-note" style="text-align:left;margin-top:12px;">Nota: este control de acceso protege la vista del portal. Por ser un sitio público, no reemplaza la seguridad del servidor.</div>'
+      + '<div class="ag-note" style="text-align:left;margin-top:12px;">El Administrador ve todas las pestañas. A un Usuario puedes marcarle solo las pestañas que debe ver (p. ej. únicamente «Indicadores de Ticket»); las demás se le ocultan y no podrá abrirlas por enlace directo.<br>Nota: este control protege la vista del portal; por ser un sitio público, no reemplaza la seguridad del servidor.</div>'
       + '</div>';
     document.body.appendChild(m);
     function refresh(){ m.querySelector("#ag-urows").innerHTML = rowsHtml(); bind(); }
+    function accSummary(u){
+      if (u.rol === "admin") return "Todas";
+      var acc = userAccesos(u);
+      if (acc === null) return "Todas";
+      if (acc.length === 0) return "Ninguna";
+      if (acc.length === PAGE_FILES.length) return "Todas";
+      return acc.length + " de " + PAGE_FILES.length;
+    }
+    function openPerms(i){
+      var u = users[i];
+      var pm = document.createElement("div"); pm.className = "ag-modal"; pm.style.zIndex = "2147483647";
+      pm.innerHTML = '<div class="ag-mbox" style="max-width:460px;">'
+        + '<h3>Permisos de pestañas</h3>'
+        + '<div style="font-size:12px;color:#8b95a3;margin:-6px 0 10px;">' + esc(u.email) + '</div>'
+        + '<div style="display:flex;gap:8px;margin-bottom:6px;"><button class="key" id="ag-pall">Marcar todas</button><button class="key" id="ag-pnone">Quitar todas</button></div>'
+        + accChecklist("ag-pedit", userAccesos(u))
+        + '<div class="ag-mbtns"><button class="cancel" id="ag-pcx">Cancelar</button><button class="ok" id="ag-psv">Guardar</button></div>'
+        + '</div>';
+      document.body.appendChild(pm);
+      pm.addEventListener("click", function(e){ if (e.target === pm) pm.parentNode.removeChild(pm); });
+      pm.querySelector("#ag-pcx").addEventListener("click", function(){ pm.parentNode.removeChild(pm); });
+      pm.querySelector("#ag-pall").addEventListener("click", function(){ pm.querySelectorAll(".ag-pedit").forEach(function(c){ c.checked = true; }); });
+      pm.querySelector("#ag-pnone").addEventListener("click", function(){ pm.querySelectorAll(".ag-pedit").forEach(function(c){ c.checked = false; }); });
+      pm.querySelector("#ag-psv").addEventListener("click", async function(){
+        var chosen = [];
+        pm.querySelectorAll(".ag-pedit").forEach(function(c){ if (c.checked) chosen.push(c.value); });
+        users[i].accesos = (chosen.length === PAGE_FILES.length) ? null : chosen; // todas → null
+        await saveUsers(users);
+        pm.parentNode.removeChild(pm);
+        refresh();
+      });
+    }
     function bind(){
       m.querySelectorAll(".del").forEach(function (b){
         b.addEventListener("click", async function(){
@@ -357,6 +476,7 @@
         });
       });
       m.querySelectorAll(".key").forEach(function (b){
+        if (b.hasAttribute("data-i") === false) return;
         b.addEventListener("click", async function(){
           var i = +b.getAttribute("data-i");
           var np = prompt("Nueva contraseña para " + users[i].email + ":");
@@ -365,10 +485,16 @@
           users[i].hash = await sha256(np); await saveUsers(users); alert("Contraseña actualizada.");
         });
       });
+      m.querySelectorAll(".perm").forEach(function (b){
+        b.addEventListener("click", function(){ openPerms(+b.getAttribute("data-i")); });
+      });
     }
     bind();
     m.querySelector("#ag-mc").addEventListener("click", function(){ m.parentNode.removeChild(m); });
     m.addEventListener("click", function(e){ if (e.target === m) m.parentNode.removeChild(m); });
+    var rolSel = m.querySelector("#ag-nrol"), accWrap = m.querySelector("#ag-naccwrap");
+    function syncAccVisibility(){ accWrap.style.display = (rolSel.value === "admin") ? "none" : "block"; }
+    rolSel.addEventListener("change", syncAccVisibility); syncAccVisibility();
     m.querySelector("#ag-madd").addEventListener("click", async function(){
       var email = normEmail(m.querySelector("#ag-nemail").value);
       var nombre = m.querySelector("#ag-nnombre").value.trim();
@@ -377,9 +503,16 @@
       if (!email || !pw) { alert("Correo y contraseña son obligatorios."); return; }
       if (pw.length < 4) { alert("La contraseña debe tener al menos 4 caracteres."); return; }
       if (users.some(function (x){ return normEmail(x.email) === email; })) { alert("Ya existe un usuario con ese correo."); return; }
-      users.push({ email: email, nombre: nombre || email, rol: rol, hash: await sha256(pw) });
+      var nuevo = { email: email, nombre: nombre || email, rol: rol, hash: await sha256(pw) };
+      if (rol !== "admin") {
+        var chosen = [];
+        m.querySelectorAll(".ag-nacc").forEach(function(c){ if (c.checked) chosen.push(c.value); });
+        nuevo.accesos = (chosen.length === PAGE_FILES.length) ? null : chosen; // todas → null
+      }
+      users.push(nuevo);
       await saveUsers(users);
       m.querySelector("#ag-nemail").value = ""; m.querySelector("#ag-nnombre").value = ""; m.querySelector("#ag-npass").value = "";
+      m.querySelectorAll(".ag-nacc").forEach(function(c){ c.checked = true; });
       refresh();
     });
   }
