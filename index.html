@@ -91,10 +91,11 @@
 
   .cards {
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    grid-auto-rows: minmax(160px, 1fr);
-    gap: 20px;
-    flex: 1;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 300px));
+    grid-auto-rows: auto;
+    align-content: start;
+    justify-content: center;
+    gap: 16px;
     min-height: 0;
   }
   @media (max-width: 1100px) {
@@ -110,11 +111,11 @@
     background: var(--bg-card);
     border: 1px solid var(--border);
     border-radius: var(--radius);
-    padding: 30px 28px;
+    padding: 20px 22px;
     display: flex;
     flex-direction: column;
     justify-content: center;
-    gap: 16px;
+    gap: 12px;
     text-decoration: none;
     color: var(--text-primary);
     transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
@@ -139,13 +140,13 @@
   .card:hover::before { opacity: 1; }
 
   .card-icon {
-    width: 54px;
-    height: 54px;
-    border-radius: 12px;
+    width: 44px;
+    height: 44px;
+    border-radius: 11px;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 27px;
+    font-size: 22px;
     flex: none;
   }
   .card-icon.tickets { background: #e6f4ec; color: var(--accent); }
@@ -155,14 +156,14 @@
 
   .card h2 {
     font-family: 'Oswald', sans-serif;
-    font-size: 21px;
+    font-size: 18px;
     font-weight: 600;
     margin: 0;
     letter-spacing: 0.2px;
   }
   .card p.card-desc {
     margin: 0;
-    font-size: 14px;
+    font-size: 13px;
     color: var(--text-secondary);
     line-height: 1.55;
     flex: none;
