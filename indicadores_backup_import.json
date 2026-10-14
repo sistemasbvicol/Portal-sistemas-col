@@ -1,0 +1,3557 @@
+[
+{
+"id": 1,
+"fecha": "2025-10-17",
+"sistema": "System State",
+"tipo": "Backup",
+"estado": "Fallido",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 2,
+"fecha": "2025-10-17",
+"sistema": "System State",
+"tipo": "Backup",
+"estado": "Omitido",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 3,
+"fecha": "2025-10-17",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Omitido",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 4,
+"fecha": "2025-10-17",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Terminado con errores",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 5,
+"fecha": "2025-10-18",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Terminado con errores",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 6,
+"fecha": "2025-10-19",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Terminado con errores",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 7,
+"fecha": "2025-10-20",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Terminado",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 8,
+"fecha": "2025-10-20",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Terminado",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 9,
+"fecha": "2025-10-20",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Terminado con errores",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 10,
+"fecha": "2025-10-20",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Fallido",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 11,
+"fecha": "2025-10-21",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Terminado",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 12,
+"fecha": "2025-10-22",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Terminado",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 13,
+"fecha": "2025-10-23",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Terminado",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 14,
+"fecha": "2025-10-24",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Terminado",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 15,
+"fecha": "2025-10-25",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Terminado",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 16,
+"fecha": "2025-10-26",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Terminado",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 17,
+"fecha": "2025-10-27",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Terminado",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 18,
+"fecha": "2025-10-28",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Terminado",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 19,
+"fecha": "2025-10-29",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Terminado",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 20,
+"fecha": "2025-10-30",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Terminado",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 21,
+"fecha": "2025-10-31",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Terminado",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 22,
+"fecha": "2025-11-01",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Terminado",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 23,
+"fecha": "2025-11-02",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Terminado",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 24,
+"fecha": "2025-11-03",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Terminado",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 25,
+"fecha": "2025-11-04",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Terminado",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 26,
+"fecha": "2025-11-05",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Terminado",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 27,
+"fecha": "2025-11-06",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Terminado",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 28,
+"fecha": "2025-11-07",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Terminado",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 29,
+"fecha": "2025-11-08",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Terminado",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 30,
+"fecha": "2025-11-09",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Terminado",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 31,
+"fecha": "2025-11-10",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Terminado",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 32,
+"fecha": "2025-11-11",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Terminado",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 33,
+"fecha": "2025-11-12",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Terminado",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 34,
+"fecha": "2025-11-12",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Fallido",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 35,
+"fecha": "2025-11-13",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Terminado",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 36,
+"fecha": "2025-11-14",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Fallido",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 37,
+"fecha": "2025-11-15",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Omitido",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 38,
+"fecha": "2025-11-19",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Terminado con errores",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 39,
+"fecha": "2025-11-22",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Omitido",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 40,
+"fecha": "2025-11-23",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Terminado con errores",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 41,
+"fecha": "2025-11-23",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Omitido",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 42,
+"fecha": "2025-11-24",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Terminado",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 43,
+"fecha": "2025-11-25",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Terminado con errores",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 44,
+"fecha": "2025-11-28",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Omitido",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 45,
+"fecha": "2025-11-29",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Terminado",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 46,
+"fecha": "2025-11-30",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Terminado",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 47,
+"fecha": "2025-12-01",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Terminado",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 48,
+"fecha": "2025-12-02",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Terminado",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 49,
+"fecha": "2025-12-03",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Cancelado",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 50,
+"fecha": "2025-12-05",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Terminado con errores",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 51,
+"fecha": "2025-12-05",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Cancelado",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 52,
+"fecha": "2025-12-06",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Terminado",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 53,
+"fecha": "2025-12-07",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Terminado",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 54,
+"fecha": "2025-12-08",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Terminado",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 55,
+"fecha": "2025-12-09",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Terminado",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 56,
+"fecha": "2025-12-10",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Cancelado",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 57,
+"fecha": "2025-12-10",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Cancelado",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 58,
+"fecha": "2025-12-11",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Cancelado",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 59,
+"fecha": "2025-12-12",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Terminado con errores",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 60,
+"fecha": "2025-12-12",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Cancelado",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 61,
+"fecha": "2025-12-12",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Cancelado",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 62,
+"fecha": "2025-12-13",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Terminado",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 63,
+"fecha": "2025-12-14",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Terminado",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 64,
+"fecha": "2025-12-15",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Terminado",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 65,
+"fecha": "2025-12-16",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Terminado",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 66,
+"fecha": "2025-12-16",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Terminado con errores",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 67,
+"fecha": "2025-12-17",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Terminado",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 68,
+"fecha": "2025-12-18",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Terminado",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 69,
+"fecha": "2025-12-19",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Terminado",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 70,
+"fecha": "2025-12-20",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Terminado",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 71,
+"fecha": "2025-12-21",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Terminado",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 72,
+"fecha": "2025-12-22",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Terminado",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 73,
+"fecha": "2025-12-23",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Terminado",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 74,
+"fecha": "2025-12-24",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Terminado",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 75,
+"fecha": "2025-12-25",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Terminado",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 76,
+"fecha": "2025-12-26",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Terminado",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 77,
+"fecha": "2025-12-27",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Terminado",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 78,
+"fecha": "2025-12-28",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Terminado",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 79,
+"fecha": "2025-12-29",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Terminado",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 80,
+"fecha": "2025-12-30",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Fallido",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 81,
+"fecha": "2025-12-30",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Fallido",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 82,
+"fecha": "2025-12-31",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Terminado",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 83,
+"fecha": "2026-01-01",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Terminado",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 84,
+"fecha": "2026-01-02",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Terminado",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 85,
+"fecha": "2026-01-03",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Terminado",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 86,
+"fecha": "2026-01-04",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Terminado",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 87,
+"fecha": "2026-01-05",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Terminado",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 88,
+"fecha": "2026-01-06",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Terminado",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 89,
+"fecha": "2026-01-07",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Terminado",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 90,
+"fecha": "2026-01-08",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Terminado con errores",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 91,
+"fecha": "2026-01-08",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Terminado con errores",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 92,
+"fecha": "2026-01-09",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Terminado",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 93,
+"fecha": "2026-01-10",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Fallido",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 94,
+"fecha": "2026-01-11",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Terminado",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 95,
+"fecha": "2026-01-12",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Terminado",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 96,
+"fecha": "2026-01-13",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Terminado",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 97,
+"fecha": "2026-01-14",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Terminado",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 98,
+"fecha": "2026-01-15",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Fallido",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 99,
+"fecha": "2026-01-15",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Terminado con errores",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 100,
+"fecha": "2026-01-16",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Terminado",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 101,
+"fecha": "2026-01-16",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Terminado",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 102,
+"fecha": "2026-01-16",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Terminado con errores",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 103,
+"fecha": "2026-01-17",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Terminado",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 104,
+"fecha": "2026-01-18",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Terminado",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 105,
+"fecha": "2026-01-19",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Terminado",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 106,
+"fecha": "2026-01-20",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Terminado",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 107,
+"fecha": "2026-01-21",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Terminado",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 108,
+"fecha": "2026-01-21",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Terminado con errores",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 109,
+"fecha": "2026-01-22",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Terminado",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 110,
+"fecha": "2026-01-23",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Terminado",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 111,
+"fecha": "2026-01-24",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Terminado",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 112,
+"fecha": "2026-01-25",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Terminado",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 113,
+"fecha": "2026-01-26",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Terminado",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 114,
+"fecha": "2026-01-27",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Terminado con errores",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 115,
+"fecha": "2026-01-29",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Terminado con errores",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 116,
+"fecha": "2026-01-29",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Omitido",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 117,
+"fecha": "2026-01-30",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Terminado con errores",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 118,
+"fecha": "2026-01-30",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Omitido",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 119,
+"fecha": "2026-01-31",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Terminado",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 120,
+"fecha": "2026-02-01",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Terminado",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 121,
+"fecha": "2026-02-02",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Terminado",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 122,
+"fecha": "2026-02-03",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Terminado",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 123,
+"fecha": "2026-02-04",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Terminado",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 124,
+"fecha": "2026-02-05",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Terminado",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 125,
+"fecha": "2026-02-06",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Terminado",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 126,
+"fecha": "2026-02-07",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Terminado",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 127,
+"fecha": "2026-02-08",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Terminado",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 128,
+"fecha": "2026-02-09",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Terminado",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 129,
+"fecha": "2026-02-10",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Terminado",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 130,
+"fecha": "2026-02-11",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Terminado",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 131,
+"fecha": "2026-02-12",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Terminado",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 132,
+"fecha": "2026-02-13",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Terminado",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 133,
+"fecha": "2026-02-14",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Terminado",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 134,
+"fecha": "2026-02-15",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Terminado",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 135,
+"fecha": "2026-02-16",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Terminado",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 136,
+"fecha": "2026-02-17",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Terminado",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 137,
+"fecha": "2026-02-18",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Terminado",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 138,
+"fecha": "2026-02-19",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Terminado",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 139,
+"fecha": "2026-02-20",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Terminado",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 140,
+"fecha": "2026-02-21",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Terminado",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 141,
+"fecha": "2026-02-22",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Terminado",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 142,
+"fecha": "2026-02-23",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Terminado",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 143,
+"fecha": "2026-02-24",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Terminado",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 144,
+"fecha": "2026-02-25",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Terminado",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 145,
+"fecha": "2026-02-26",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Terminado",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 146,
+"fecha": "2026-02-27",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Terminado",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 147,
+"fecha": "2026-02-28",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Terminado",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 148,
+"fecha": "2026-03-01",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Terminado",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 149,
+"fecha": "2026-03-02",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Terminado",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 150,
+"fecha": "2026-03-03",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Terminado",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 151,
+"fecha": "2026-03-04",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Terminado",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 152,
+"fecha": "2026-03-05",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Terminado con errores",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 153,
+"fecha": "2026-03-06",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Terminado con errores",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 154,
+"fecha": "2026-03-06",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Omitido",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 155,
+"fecha": "2026-03-07",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Terminado",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 156,
+"fecha": "2026-03-08",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Terminado",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 157,
+"fecha": "2026-03-09",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Terminado",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 158,
+"fecha": "2026-03-10",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Terminado",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 159,
+"fecha": "2026-03-10",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Fallido",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 160,
+"fecha": "2026-03-11",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Terminado",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 161,
+"fecha": "2026-03-11",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Terminado con errores",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 162,
+"fecha": "2026-03-12",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Terminado",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 163,
+"fecha": "2026-03-12",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Terminado con errores",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 164,
+"fecha": "2026-03-13",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Terminado",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 165,
+"fecha": "2026-03-13",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Terminado con errores",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 166,
+"fecha": "2026-03-14",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Terminado",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 167,
+"fecha": "2026-03-15",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Terminado",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 168,
+"fecha": "2026-03-16",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Terminado",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 169,
+"fecha": "2026-03-17",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Terminado",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 170,
+"fecha": "2026-03-18",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Terminado",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 171,
+"fecha": "2026-03-19",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Terminado",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 172,
+"fecha": "2026-03-20",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Terminado",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 173,
+"fecha": "2026-03-21",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Terminado",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 174,
+"fecha": "2026-03-22",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Terminado",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 175,
+"fecha": "2026-03-23",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Terminado",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 176,
+"fecha": "2026-03-24",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Terminado",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 177,
+"fecha": "2026-03-25",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Terminado",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 178,
+"fecha": "2026-03-26",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Terminado",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 179,
+"fecha": "2026-03-27",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Terminado",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 180,
+"fecha": "2026-03-28",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Terminado",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 181,
+"fecha": "2026-03-29",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Terminado",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 182,
+"fecha": "2026-03-30",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Terminado",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 183,
+"fecha": "2026-03-31",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Terminado",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 184,
+"fecha": "2026-03-31",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Fallido",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 185,
+"fecha": "2026-03-31",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Fallido",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 186,
+"fecha": "2026-04-01",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Terminado",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 187,
+"fecha": "2026-04-02",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Terminado con errores",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 188,
+"fecha": "2026-04-02",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Fallido",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 189,
+"fecha": "2026-04-03",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Fallido",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 190,
+"fecha": "2026-04-04",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Fallido",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 191,
+"fecha": "2026-04-05",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Fallido",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 192,
+"fecha": "2026-04-06",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Terminado",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 193,
+"fecha": "2026-04-07",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Terminado",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 194,
+"fecha": "2026-04-08",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Terminado",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 195,
+"fecha": "2026-04-09",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Terminado",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 196,
+"fecha": "2026-04-10",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Terminado",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 197,
+"fecha": "2026-04-11",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Terminado",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 198,
+"fecha": "2026-04-12",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Terminado",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 199,
+"fecha": "2026-04-13",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Terminado",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 200,
+"fecha": "2026-04-14",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Terminado",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 201,
+"fecha": "2026-04-14",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Terminado con errores",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 202,
+"fecha": "2026-04-15",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Terminado",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 203,
+"fecha": "2026-04-15",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Terminado con errores",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 204,
+"fecha": "2026-04-15",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Terminado con errores",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 205,
+"fecha": "2026-04-16",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Terminado",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 206,
+"fecha": "2026-04-16",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Fallido",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 207,
+"fecha": "2026-04-16",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Fallido",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 208,
+"fecha": "2026-04-16",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Fallido",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 209,
+"fecha": "2026-04-17",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Terminado",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 210,
+"fecha": "2026-04-18",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Terminado",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 211,
+"fecha": "2026-04-19",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Terminado",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 212,
+"fecha": "2026-04-20",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Terminado",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 213,
+"fecha": "2026-04-21",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Terminado",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 214,
+"fecha": "2026-04-21",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Terminado con errores",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 215,
+"fecha": "2026-04-22",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Terminado",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 216,
+"fecha": "2026-04-23",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Terminado",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 217,
+"fecha": "2026-04-24",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Terminado",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 218,
+"fecha": "2026-04-24",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Fallido",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 219,
+"fecha": "2026-04-25",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Terminado",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 220,
+"fecha": "2026-04-26",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Terminado",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 221,
+"fecha": "2026-04-27",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Terminado",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 222,
+"fecha": "2026-04-28",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Terminado",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 223,
+"fecha": "2026-04-29",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Terminado",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 224,
+"fecha": "2026-04-30",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Terminado con errores",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 225,
+"fecha": "2026-05-01",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Omitido",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 226,
+"fecha": "2026-05-02",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Fallido",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 227,
+"fecha": "2026-05-03",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Terminado",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 228,
+"fecha": "2026-05-04",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Terminado",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 229,
+"fecha": "2026-05-05",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Fallido",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 230,
+"fecha": "2026-05-05",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Terminado con errores",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 231,
+"fecha": "2026-05-06",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Terminado",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 232,
+"fecha": "2026-05-06",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Fallido",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 233,
+"fecha": "2026-05-07",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Terminado",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 234,
+"fecha": "2026-05-08",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Terminado",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 235,
+"fecha": "2026-05-09",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Terminado",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 236,
+"fecha": "2026-05-10",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Terminado",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 237,
+"fecha": "2026-05-11",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Terminado",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 238,
+"fecha": "2026-05-12",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Terminado",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 239,
+"fecha": "2026-05-13",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Terminado",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 240,
+"fecha": "2026-05-14",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Fallido",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 241,
+"fecha": "2026-05-14",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Fallido",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 242,
+"fecha": "2026-05-14",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Fallido",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 243,
+"fecha": "2026-05-15",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Fallido",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 244,
+"fecha": "2026-05-15",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Fallido",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 245,
+"fecha": "2026-05-15",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Fallido",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 246,
+"fecha": "2026-05-15",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Fallido",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 247,
+"fecha": "2026-05-16",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Terminado",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 248,
+"fecha": "2026-05-17",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Terminado",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 249,
+"fecha": "2026-05-18",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Terminado",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 250,
+"fecha": "2026-05-19",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Terminado",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 251,
+"fecha": "2026-05-20",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Terminado",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 252,
+"fecha": "2026-05-21",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Terminado",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 253,
+"fecha": "2026-05-22",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Terminado",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 254,
+"fecha": "2026-05-23",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Terminado",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 255,
+"fecha": "2026-05-24",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Terminado",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 256,
+"fecha": "2026-05-25",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Terminado",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 257,
+"fecha": "2026-05-26",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Terminado",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 258,
+"fecha": "2026-05-27",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Terminado",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 259,
+"fecha": "2026-05-28",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Terminado",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 260,
+"fecha": "2026-05-29",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Terminado",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 261,
+"fecha": "2026-05-30",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Terminado",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 262,
+"fecha": "2026-05-31",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Terminado",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 263,
+"fecha": "2026-06-01",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Terminado",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 264,
+"fecha": "2026-06-02",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Terminado",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 265,
+"fecha": "2026-06-03",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Terminado",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 266,
+"fecha": "2026-06-04",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Fallido",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 267,
+"fecha": "2026-06-04",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Fallido",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 268,
+"fecha": "2026-06-04",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Fallido",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 269,
+"fecha": "2026-06-05",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Terminado",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 270,
+"fecha": "2026-06-06",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Terminado",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 271,
+"fecha": "2026-06-07",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Terminado",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 272,
+"fecha": "2026-06-08",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Terminado",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 273,
+"fecha": "2026-06-09",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Terminado",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 274,
+"fecha": "2026-06-10",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Terminado",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 275,
+"fecha": "2026-06-11",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Terminado",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 276,
+"fecha": "2026-06-12",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Terminado",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 277,
+"fecha": "2026-06-13",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Terminado",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 278,
+"fecha": "2026-06-14",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Terminado",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 279,
+"fecha": "2026-06-15",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Terminado",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 280,
+"fecha": "2026-06-16",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Terminado",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 281,
+"fecha": "2026-06-17",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Terminado",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 282,
+"fecha": "2026-06-18",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Fallido",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 283,
+"fecha": "2026-06-18",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Fallido",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 284,
+"fecha": "2026-06-19",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Terminado",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 285,
+"fecha": "2026-06-20",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Terminado",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 286,
+"fecha": "2026-06-21",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Terminado",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 287,
+"fecha": "2026-06-22",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Terminado",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 288,
+"fecha": "2026-06-23",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Terminado",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 289,
+"fecha": "2026-06-24",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Terminado",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 290,
+"fecha": "2026-06-25",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Terminado",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 291,
+"fecha": "2026-06-26",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Terminado",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 292,
+"fecha": "2026-06-27",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Terminado",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 293,
+"fecha": "2026-06-28",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Terminado",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 294,
+"fecha": "2026-06-29",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Terminado",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 295,
+"fecha": "2026-06-30",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Terminado",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 296,
+"fecha": "2026-07-01",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Terminado",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 297,
+"fecha": "2026-07-02",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Terminado",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 298,
+"fecha": "2026-07-03",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Terminado",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 299,
+"fecha": "2026-07-04",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Terminado",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 300,
+"fecha": "2026-07-05",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Terminado",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 301,
+"fecha": "2026-07-06",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Terminado",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 302,
+"fecha": "2026-07-07",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Terminado",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 303,
+"fecha": "2026-07-08",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Terminado",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 304,
+"fecha": "2026-07-09",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Terminado",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 305,
+"fecha": "2026-07-10",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Terminado",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 306,
+"fecha": "2026-07-11",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Terminado",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 307,
+"fecha": "2026-07-12",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Terminado",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 308,
+"fecha": "2026-07-13",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Terminado",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 309,
+"fecha": "2026-07-14",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Terminado",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 310,
+"fecha": "2026-07-15",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Terminado",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 311,
+"fecha": "2026-07-16",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Terminado",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 312,
+"fecha": "2026-07-17",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Terminado",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 313,
+"fecha": "2026-07-18",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Terminado",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 314,
+"fecha": "2026-07-19",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Terminado",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 315,
+"fecha": "2026-07-20",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Terminado",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 316,
+"fecha": "2026-07-21",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Terminado",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 317,
+"fecha": "2026-07-22",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Terminado",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 318,
+"fecha": "2026-07-23",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Terminado",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 319,
+"fecha": "2026-07-24",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Terminado",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 320,
+"fecha": "2026-07-25",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Terminado",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 321,
+"fecha": "2026-07-26",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Terminado",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 322,
+"fecha": "2026-07-27",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Terminado",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 323,
+"fecha": "2026-07-28",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Terminado",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 324,
+"fecha": "2026-07-29",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Terminado",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 325,
+"fecha": "2026-07-30",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Terminado",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 326,
+"fecha": "2026-07-31",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Terminado",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 327,
+"fecha": "2026-08-01",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Terminado",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 328,
+"fecha": "2026-08-02",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Terminado",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 329,
+"fecha": "2026-08-03",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Terminado",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 330,
+"fecha": "2026-08-04",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Terminado",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 331,
+"fecha": "2026-08-05",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Terminado",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 332,
+"fecha": "2026-08-06",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Terminado",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 333,
+"fecha": "2026-08-07",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Terminado",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 334,
+"fecha": "2026-08-08",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Terminado",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 335,
+"fecha": "2026-08-09",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Terminado",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 336,
+"fecha": "2026-08-10",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Terminado",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 337,
+"fecha": "2026-08-11",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Terminado",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 338,
+"fecha": "2026-08-12",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Terminado",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 339,
+"fecha": "2026-08-13",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Terminado",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 340,
+"fecha": "2026-08-14",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Terminado",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 341,
+"fecha": "2026-08-15",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Terminado",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 342,
+"fecha": "2026-08-16",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Terminado",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 343,
+"fecha": "2026-08-17",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Terminado",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 344,
+"fecha": "2026-08-18",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Terminado",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 345,
+"fecha": "2026-08-19",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Terminado",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 346,
+"fecha": "2026-08-20",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Terminado",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 347,
+"fecha": "2026-08-21",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Terminado",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 348,
+"fecha": "2026-08-22",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Terminado",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 349,
+"fecha": "2026-08-23",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Terminado",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 350,
+"fecha": "2026-08-24",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Terminado",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 351,
+"fecha": "2026-08-25",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Terminado",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 352,
+"fecha": "2026-08-26",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Terminado",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 353,
+"fecha": "2026-08-27",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Terminado",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 354,
+"fecha": "2026-08-28",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Terminado",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 355,
+"fecha": "2026-08-29",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Terminado",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 356,
+"fecha": "2026-08-30",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Terminado",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 357,
+"fecha": "2026-08-31",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Terminado",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 358,
+"fecha": "2026-09-01",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Terminado",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 359,
+"fecha": "2026-09-02",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Terminado",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 360,
+"fecha": "2026-09-03",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Terminado",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 361,
+"fecha": "2026-09-04",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Terminado",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 362,
+"fecha": "2026-09-05",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Terminado",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 363,
+"fecha": "2026-09-06",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Terminado",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 364,
+"fecha": "2026-09-07",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Terminado",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 365,
+"fecha": "2026-09-08",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Terminado",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 366,
+"fecha": "2026-09-09",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Terminado",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 367,
+"fecha": "2026-09-10",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Terminado",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 368,
+"fecha": "2026-09-11",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Terminado",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 369,
+"fecha": "2026-09-12",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Terminado",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 370,
+"fecha": "2026-09-13",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Terminado",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 371,
+"fecha": "2026-09-14",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Terminado",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 372,
+"fecha": "2026-09-15",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Terminado",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 373,
+"fecha": "2026-09-16",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Terminado",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 374,
+"fecha": "2026-09-17",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Terminado",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 375,
+"fecha": "2026-09-18",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Terminado",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 376,
+"fecha": "2026-09-19",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Terminado",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 377,
+"fecha": "2026-09-20",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Terminado",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 378,
+"fecha": "2026-09-21",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Terminado",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 379,
+"fecha": "2026-09-22",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Terminado",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 380,
+"fecha": "2026-09-23",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Terminado",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 381,
+"fecha": "2026-09-24",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Terminado",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 382,
+"fecha": "2026-09-25",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Terminado",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 383,
+"fecha": "2026-09-26",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Terminado",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 384,
+"fecha": "2026-09-27",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Terminado",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 385,
+"fecha": "2026-09-28",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Terminado",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 386,
+"fecha": "2026-09-29",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Terminado",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 387,
+"fecha": "2026-09-30",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Terminado",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 388,
+"fecha": "2026-10-01",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Terminado",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 389,
+"fecha": "2026-10-02",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Terminado",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 390,
+"fecha": "2026-10-03",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Terminado",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 391,
+"fecha": "2026-10-04",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Terminado",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 392,
+"fecha": "2026-10-05",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Terminado",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 393,
+"fecha": "2026-10-06",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Terminado",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 394,
+"fecha": "2026-10-07",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Terminado",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+},
+{
+"id": 395,
+"fecha": "2026-10-08",
+"sistema": "Files and Folders",
+"tipo": "Backup",
+"estado": "Terminado",
+"medio": "",
+"responsable": "Martinez Colon Jose Antonio"
+}
+]
