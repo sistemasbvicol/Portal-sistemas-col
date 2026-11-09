@@ -76,8 +76,11 @@
   .icon-btn.acta{color:#0d7a3f; border-color:#0d7a3f;}
   .icon-btn.entrega{color:#0d7a3f; border-color:#0d7a3f; font-weight:600;}
   .icon-btn.entrega:hover{background:#eaf7f0;}
-  .icon-btn.devolucion{color:#b5651d; border-color:#b5651d; font-weight:600;}
-  .icon-btn.devolucion:hover{background:#fbf0e4;}
+  #btn-add-col{color:#0d3d24; border:1px solid #0d3d24; background:#fff;}
+  #btn-add-col:hover{background:#eaf7f0;}
+  th.col-dev-custom{position:relative; white-space:nowrap;}
+  th.col-dev-custom .col-del{margin-left:6px; border:none; background:transparent; color:#fff; opacity:.75; cursor:pointer; font-size:11px; line-height:1; padding:0 2px;}
+  th.col-dev-custom .col-del:hover{opacity:1; color:#ffd7d7;}
   .acta-ov{position:fixed; inset:0; background:rgba(0,0,0,.5); z-index:1000; display:flex; align-items:center; justify-content:center; padding:16px;}
   .acta-card{background:#fff; border-radius:14px; width:100%; max-width:760px; max-height:92vh; overflow:auto; padding:22px 24px; box-shadow:0 20px 60px rgba(0,0,0,.35); font-family:'Poppins',sans-serif;}
   .acta-title{margin:0 0 12px; font-family:'Oswald',sans-serif; color:#0d3d24; font-size:20px;}
@@ -160,6 +163,7 @@
     </div>
     <div class="toolbar-right">
       <input type="text" id="search" placeholder="Buscar usuario o área...">
+      <button id="btn-add-col" title="Agregar una nueva casilla (columna) a la matriz, p. ej. un cargador">+ Agregar casilla</button>
       <button class="primary" id="btn-add">+ Agregar usuario</button>
     </div>
   </div>
@@ -260,7 +264,8 @@ async function loadValoresPorUsuario(){
 }
 
 // Columnas de dispositivos, en el mismo orden que la matriz TC-FT-19 original.
-const DEVICES = [
+// Columnas base (fijas, no se pueden eliminar)
+const BASE_DEVICES = [
   {id:"portatil",         label:"Portátil"},
   {id:"cpMesa",            label:"CP de mesa"},
   {id:"radio",             label:"Radio"},
@@ -277,6 +282,19 @@ const DEVICES = [
   {id:"impresora",         label:"Impresora"},
   {id:"impresoraZebra",    label:"Impresora Zebra"}
 ];
+// Casillas personalizadas que el usuario agrega (se guardan en la nube y las ven todos)
+const COLS_KEY = "matriz_columnas_extra_v1";
+let customDevices = [];
+let DEVICES = BASE_DEVICES.slice();
+
+function rebuildDevices(){
+  const seen = new Set(BASE_DEVICES.map(d => d.id));
+  const extras = [];
+  (customDevices || []).forEach(d => {
+    if (d && d.id && d.label && !seen.has(d.id)){ seen.add(d.id); extras.push({id:d.id, label:d.label, custom:true}); }
+  });
+  DEVICES = BASE_DEVICES.concat(extras);
+}
 
 function emptyDevices(){
   const d = {};
@@ -371,13 +389,93 @@ function listenCloudUpdates(){
   });
 }
 
+/* ===== Casillas (columnas) personalizadas ===== */
+async function loadCols(){
+  let loaded = null;
+  if (window.storage){
+    try{ await window.storage.ready; const res = await window.storage.get(COLS_KEY, true); if (res && res.value){ loaded = JSON.parse(res.value); } }catch(e){}
+  }
+  if (loaded === null){
+    try{ const raw = localStorage.getItem(COLS_KEY); if (raw){ loaded = JSON.parse(raw); } }catch(e){}
+  }
+  if (loaded === null){
+    // Primera vez: se siembran las casillas de cargadores solicitadas
+    customDevices = [
+      {id:"cargadorCel",    label:"Cargador de celular"},
+      {id:"cargadorRadio",  label:"Cargador de radio"},
+      {id:"cargadorTablet", label:"Cargador de tablet"}
+    ];
+    rebuildDevices();
+    saveCols();
+  } else {
+    customDevices = Array.isArray(loaded) ? loaded : [];
+    rebuildDevices();
+  }
+}
+function saveCols(){
+  try{ localStorage.setItem(COLS_KEY, JSON.stringify(customDevices)); }catch(e){}
+  if (window.storage){
+    window.storage.set(COLS_KEY, JSON.stringify(customDevices), true)
+      .catch(e => console.error("No se pudo guardar las casillas en la nube:", e));
+  }
+}
+function listenColsUpdates(){
+  if (!window.storage || typeof window.storage.watch !== "function") return;
+  window.storage.watch(COLS_KEY, (res) => {
+    if (res && res.value){
+      try{
+        const incoming = JSON.parse(res.value);
+        if (JSON.stringify(incoming) !== JSON.stringify(customDevices)){
+          customDevices = Array.isArray(incoming) ? incoming : [];
+          rebuildDevices(); buildHeadRow(); render();
+        }
+      }catch(e){}
+    }
+  });
+}
+function nuevoIdCasilla(label){
+  const base = (label||"casilla").normalize("NFD").replace(/[̀-ͯ]/g,"").replace(/[^a-zA-Z0-9]+/g,"_").replace(/^_+|_+$/g,"").toLowerCase() || "casilla";
+  const usados = new Set(DEVICES.map(d=>d.id).concat((customDevices||[]).map(d=>d.id)));
+  let id = "x_"+base, n = 1;
+  while (usados.has(id)){ id = "x_"+base+"_"+(++n); }
+  return id;
+}
+function agregarCasilla(){
+  const label = prompt("Nombre de la nueva casilla (columna).\nEjemplos: Cargador de celular, Cargador de radio, Cargador de tablet");
+  if (label === null) return;
+  const lbl = label.trim();
+  if (!lbl) return;
+  if (DEVICES.some(d => (d.label||"").toLowerCase() === lbl.toLowerCase())){ alert("Ya existe una casilla con ese nombre."); return; }
+  const id = nuevoIdCasilla(lbl);
+  customDevices.push({id:id, label:lbl});
+  users.forEach(u => { if (u.dispositivos && !(id in u.dispositivos)) u.dispositivos[id] = ""; });
+  rebuildDevices();
+  saveCols();
+  buildHeadRow();
+  render();
+}
+function eliminarCasilla(id){
+  const d = (customDevices||[]).find(x => x.id === id);
+  if (!d) return;
+  if (!confirm(`¿Eliminar la casilla "${d.label}"?\n\nSe quitará de la tabla para todos los usuarios. (Las columnas base no se pueden eliminar.)`)) return;
+  customDevices = customDevices.filter(x => x.id !== id);
+  rebuildDevices();
+  saveCols();
+  buildHeadRow();
+  render();
+}
+
 function buildHeadRow(){
   const headRow = document.getElementById("head-row");
-  const devTh = DEVICES.map(d => `<th class="col-dev">${d.label}</th>`).join("");
+  const customIds = new Set((customDevices||[]).map(d => d.id));
+  const devTh = DEVICES.map(d => customIds.has(d.id)
+    ? `<th class="col-dev col-dev-custom">${escHtml(d.label)}<button class="col-del" data-delcol="${d.id}" title="Eliminar esta casilla">✕</button></th>`
+    : `<th class="col-dev">${escHtml(d.label)}</th>`).join("");
   headRow.innerHTML =
     `<th class="col-usuario">Usuario</th><th class="col-cargo">Cargo</th><th class="col-area">Área</th>` +
     devTh +
     `<th style="min-width:160px;">Total del valor de equipos por persona</th><th style="min-width:200px;">Observaciones</th><th>Estado</th><th style="min-width:150px;">Acciones</th>`;
+  headRow.querySelectorAll('[data-delcol]').forEach(b => { b.onclick = () => eliminarCasilla(b.dataset.delcol); });
 }
 
 function matchesFilter(u){
@@ -430,12 +528,10 @@ function render(){
       <td class="actions-col">
         ${u.activo
           ? `<button class="icon-btn entrega" data-action="entrega" title="Acta de entrega: el colaborador firma al RECIBIR los equipos">📥 Entrega</button>`+
-            `<button class="icon-btn devolucion" data-action="devolucion" title="Acta de devolución: el colaborador firma al DEVOLVER los equipos">📤 Devolución</button>`+
             `<button class="icon-btn dar-de-baja" data-action="baja" title="Dar de baja con acta firmada">Dar de baja</button>`
           : `<button class="icon-btn reactivar" data-action="reactivar" title="Reactivar usuario">Reactivar</button>${u.acta ? `<button class="icon-btn acta" data-action="acta" title="Descargar acta de baja firmada (PDF)">📄 Acta baja</button>` : ``}`
         }
         ${u.actaEntrega ? `<button class="icon-btn entrega" data-action="acta-entrega" title="Descargar acta de entrega firmada (PDF)">📄 Entrega</button>` : ``}
-        ${u.actaDevolucion ? `<button class="icon-btn devolucion" data-action="acta-devolucion" title="Descargar acta de devolución firmada (PDF)">📄 Devolución</button>` : ``}
         <button class="icon-btn eliminar" data-action="eliminar" title="Eliminar definitivamente">🗑</button>
       </td>
     `;
@@ -497,22 +593,6 @@ function render(){
       descargarActaEntrega(u);
     };
   });
-  tbody.querySelectorAll('[data-action="devolucion"]').forEach(btn => {
-    btn.onclick = () => {
-      const tr = btn.closest("tr");
-      const u = users.find(x => x.id === tr.dataset.id);
-      if (!u) return;
-      abrirModalDevolucion(u);
-    };
-  });
-  tbody.querySelectorAll('[data-action="acta-devolucion"]').forEach(btn => {
-    btn.onclick = () => {
-      const tr = btn.closest("tr");
-      const u = users.find(x => x.id === tr.dataset.id);
-      if (!u || !u.actaDevolucion) return;
-      descargarActaDevolucion(u);
-    };
-  });
   tbody.querySelectorAll('[data-action="reactivar"]').forEach(btn => {
     btn.onclick = () => {
       const tr = btn.closest("tr");
@@ -569,6 +649,8 @@ document.getElementById("btn-add").onclick = () => {
   filter = "activos";
   render();
 };
+
+document.getElementById("btn-add-col").onclick = agregarCasilla;
 
 document.getElementById("btn-print").onclick = () => window.print();
 
@@ -726,10 +808,8 @@ function generarActaDoc(u, acta){
 }
 function descargarActa(u){ const doc=generarActaDoc(u,u.acta); const safe=(u.nombre||"usuario").normalize("NFD").replace(/[̀-ͯ]/g,"").replace(/[^\w ]/g,"").trim().replace(/\s+/g,"_"); doc.save("Acta_baja_"+safe+".pdf"); }
 
-/* ============ Actas de ENTREGA y DEVOLUCIÓN de equipos ============
-   Son DOS documentos independientes, cada uno firmado en su momento:
-   · Entrega:    el colaborador firma AL RECIBIR los equipos.
-   · Devolución: el colaborador firma AL DEVOLVER los equipos.
+/* ============ Acta de ENTREGA de equipos ============
+   El colaborador firma AL RECIBIR los equipos. Genera un PDF con el logo y la firma.
 */
 const ACTA_CFG={
   entrega:{
@@ -743,18 +823,6 @@ const ACTA_CFG={
     decl:"El colaborador declara haber recibido a entera satisfacción, en buen estado y para el desempeño de sus funciones, los siguientes equipos y herramientas tecnológicas, comprometiéndose a su buen uso, custodia y devolución cuando el área de Sistemas lo requiera:",
     resumenLbl:"Equipos a entregar:",
     archivo:"Acta_entrega_"
-  },
-  devolucion:{
-    key:"actaDevolucion", fechaKey:"fechaDevolucion", modalId:"devolucion-modal",
-    titulo:"Acta de devolución de equipos",
-    btnOk:"Generar acta de devolución",
-    lblResp:"Nombre de quien recibe la devolución (área de Sistemas)",
-    phResp:"Nombre de quien recibe los equipos",
-    capFirma:"Firma del colaborador que devuelve",
-    capResp:"Recibido por (área de Sistemas)",
-    decl:"El colaborador declara haber devuelto al área de Sistemas los siguientes equipos y herramientas tecnológicas que le fueron asignados, en el estado que se describe a continuación:",
-    resumenLbl:"Equipos a devolver:",
-    archivo:"Acta_devolucion_"
   }
 };
 const _actaModales={};
@@ -856,16 +924,16 @@ function _descargarActaEquipos(u, tipo){
   doc.save(cfg.archivo+safe+".pdf");
 }
 function abrirModalEntrega(u){ _abrirActaModal(u,"entrega"); }
-function abrirModalDevolucion(u){ _abrirActaModal(u,"devolucion"); }
 function descargarActaEntrega(u){ _descargarActaEquipos(u,"entrega"); }
-function descargarActaDevolucion(u){ _descargarActaEquipos(u,"devolucion"); }
 
 (async function start(){
+  await loadCols();
   buildHeadRow();
   await loadState();
   await loadValoresPorUsuario();
   render();
   listenCloudUpdates();
+  listenColsUpdates();
   if (window.storage && typeof window.storage.watch === "function"){
     try{ window.storage.watch(TABLAS_KEY, function(){ loadValoresPorUsuario().then(render); }); }catch(e){}
   }
